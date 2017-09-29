@@ -117,10 +117,9 @@ end
 local function commandParser(message)
 	if message.author ~= client.user then
 		if message.channel.type == enums.channelType.text then
-			if message.content:startswith(message.guild._settings.prefix) then
+			if message.content:startswith("%"..message.guild._settings.prefix) then
 				local str = message.content:match("^%"..message.guild._settings.prefix.."(%g+)%s*")
-				local args
-				if str then args = message.content:gsub("^%"..message.guild._settings.prefix..str, ""):trim() end
+				local args = message.content:gsub("^%"..message.guild._settings.prefix..str, ""):trim()
 				commands:emit(str:lower(), message, args)
 			end
 		else
