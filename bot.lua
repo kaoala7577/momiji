@@ -163,30 +163,44 @@ clock:on('min', function(time)
 end)
 
 --Change the bot username. Owner only
-local function changeUsername(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if message.author == client.owner then
-		if commandWithArgs[2] and commandWithArgs[1] == 'uname' then
-			print("Changing username to "..commandWithArgs[2])
-			client:setUsername(commandWithArgs[2])
+commands:on('uname', function(message, args)
+	if args ~= "" then
+		if message.author == client.owner then
+			local success = client:setUsername(args)
+			if success then print("Changing username to "..args) end
+		else
+			message:reply("Only the bot owner can do that.")
 		end
+	else
+		message:reply("You need to specify a new name.")
 	end
-end
-client:on('messageCreate', function(message) changeUsername(message) end)
+end)
+
+--Change the bot nickname. Guild owner only
+commands:on('nick', function(message, args)
+	if args ~= "" then
+		if message.member == message.guild.owner then
+			local success = message.guild:getMember(client.user):setNickname(args)
+			if success then message:reply("Changing nickname to "..args) end
+		else
+			message:reply("Only the guild owner can do that.")
+		end
+	else
+		message:reply("You need to specify a new name.")
+	end
+end)
 
 --make Spam! Owner Only
-local function makeSpam(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if message.author == client.owner then
-		if commandWithArgs[1] == 'genspam' then
+commands:on('genspam', function(message, args)
+	if args ~= "" then
+		if message.author == client.owner then
 			message:delete()
-			if commandWithArgs[2] then
-				for i=1, commandWithArgs[2] do message.channel:send("Awoo!") end
+			if tonumber(args) > 0 then
+				for i=1, tonumber(args) do message.channel:send("Awoo!") end
 			end
-		end
-	end
-end
-client:on('messageCreate', function(message) makeSpam(message) end)
+		else message:reply("Only the bot owner can do that.") end
+	else message:reply("You need to specify an amount.") end
+end)
 
 --Help page.... total shit
 commands:on('help', function(message)
@@ -220,36 +234,31 @@ client:on('messageCreate', function(message)
 end)
 
 --change prefix
-local function changePrefix(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'prefix' and message.author == message.guild.owner.user then
-		conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], commandWithArgs[2], message.guild.id))
-		local curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
-		local row = curr:fetch({}, "a")
-		message.guild._settings.prefix = row.prefix
-	end
-end
-client:on('messageCreate', function(m) changePrefix(m) end)
-
---ping
-local function ping(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'ping' then
-		local sw = discordia.Stopwatch()
-		sw:reset()
-		if message.channel:send("Pong!") then
-			sw:stop()
-			message.channel:getLastMessage():setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+commands:on('prefix', function(message, args)
+	if args ~= "" then
+		if message.member == message.guild.owner then
+			conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], commandWithArgs[2], message.guild.id))
+			local curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
+			local row = curr:fetch({}, "a")
+			message.guild._settings.prefix = row.prefix
 		end
 	end
-end
-client:on('messageCreate', function(message) ping(message) end)
+end)
+
+--ping
+commands:on('ping', function(message)
+	local sw = discordia.Stopwatch()
+	sw:reset()
+	if message.channel:send("Pong!") then
+		sw:stop()
+		message.channel:getLastMessage():setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+	end
+end)
 
 --lists members without roles
-local function noRoles(message)
-	local commandWithArgs = getCommand(message, false, false)
+commands:on('noroles', function(message, args)
 	local authorized = authorize(message, true, false)
-	if commandWithArgs[1] == 'noroles' and authorized then
+	if authorized then
 		local predicate = function(member) return #member.roles == 0 end
 		local list = {}
 		message:delete()
@@ -265,193 +274,181 @@ local function noRoles(message)
 			end
 		end
 		local reply
-		if #commandWithArgs > 1 then
-			for i,word in ipairs(commandWithArgs) do
-				if i > 1 then if reply then reply = reply.." "..word else reply = word end end
-			end
-			message:reply(listInLines.."\n"..reply)
+		if args ~= "" then
+			message:reply(listInLines.."\n"..args)
 		else
 			message:reply(listInLines)
 		end
 	end
-end
-client:on('messageCreate', function(message) noRoles(message) end)
+end)
 
 --serverinfo
-local function serverInfo(message)
-	local commandWithArgs = getCommand(message, false, false)
+local function serverInfo(message, args)
 	local guild = message.guild
-	if commandWithArgs[1] == 'serverinfo' or commandWithArgs[1] == 'si' then
-		if client:getGuild(commandWithArgs[2]) then
-			guild = client:getGuild(commandWithArgs[2])
-		end
-		local humans, bots, online = 0,0,0
-		local invite
-		for member in guild.members:iter() do
-			if member.bot then
-				bots = bots+1
-			else
-				humans = humans+1
-			end
-			if not (member.status == 'offline') then
-				online = online+1
-			end
-		end
-		for inv in guild:getInvites():iter() do
-			if inv.inviter == guild.owner.user and not inv.temporary then
-				invite = inv
-			end
-		end
-		timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
-		if invite then
-			message.channel:send {
-				embed = {
-					author = {name = guild.name, icon_url = guild.iconURL},
-					fields = {
-						{name = 'ID', value = guild.id, inline = true},
-						{name = 'Name', value = guild.name, inline = true},
-						{name = 'Owner', value = guild.owner.mentionString, inline = true},
-						{name = 'Region', value = guild.region, inline = true},
-						{name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
-						{name = 'Text Channels', value = #guild.textChannels, inline = true},
-						{name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
-						{name = 'Members', value = #guild.members, inline = true},
-						{name = 'Humans', value = humans, inline = true},
-						{name = 'Bots', value = bots, inline = true},
-						{name = 'Online', value = online, inline = true},
-						{name = 'Roles', value = #guild.roles, inline = true},
-						{name = 'Emojis', value = #guild.emojis, inline = true},
-						{name = 'Invite', value = "https://discord.gg/"..invite.code, inline = false},
-					},
-					thumbnail = {url = guild.iconURL, height = 200, width = 200},
-					color = discordia.Color.fromRGB(244, 198, 200).value,
-					--timestamp = discordia.Date():toISO(),
-					footer = { text = "Server Created : "..timestamp }
-				}
-			}
+	if client:getGuild(args) then
+		guild = client:getGuild(args)
+	end
+	local humans, bots, online = 0,0,0
+	local invite
+	for member in guild.members:iter() do
+		if member.bot then
+			bots = bots+1
 		else
-			message.channel:send {
-				embed = {
-					author = {name = guild.name, icon_url = guild.iconURL},
-					fields = {
-						{name = 'ID', value = guild.id, inline = true},
-						{name = 'Name', value = guild.name, inline = true},
-						{name = 'Owner', value = guild.owner.mentionString, inline = true},
-						{name = 'Region', value = guild.region, inline = true},
-						{name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
-						{name = 'Text Channels', value = #guild.textChannels, inline = true},
-						{name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
-						{name = 'Members', value = #guild.members, inline = true},
-						{name = 'Humans', value = humans, inline = true},
-						{name = 'Bots', value = bots, inline = true},
-						{name = 'Online', value = online, inline = true},
-						{name = 'Roles', value = #guild.roles, inline = true},
-						{name = 'Emojis', value = #guild.emojis, inline = true},
-					},
-					thumbnail = {url = guild.iconURL, height = 200, width = 200},
-					color = discordia.Color.fromRGB(244, 198, 200).value,
-					--timestamp = discordia.Date():toISO(),
-					footer = { text = "Server Created : "..timestamp }
-				}
-			}
+			humans = humans+1
+		end
+		if not (member.status == 'offline') then
+			online = online+1
 		end
 	end
+	for inv in guild:getInvites():iter() do
+		if inv.inviter == guild.owner.user and not inv.temporary then
+			invite = inv
+		end
+	end
+	timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+	if invite then
+		message.channel:send {
+			embed = {
+				author = {name = guild.name, icon_url = guild.iconURL},
+				fields = {
+					{name = 'ID', value = guild.id, inline = true},
+					{name = 'Name', value = guild.name, inline = true},
+					{name = 'Owner', value = guild.owner.mentionString, inline = true},
+					{name = 'Region', value = guild.region, inline = true},
+					{name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
+					{name = 'Text Channels', value = #guild.textChannels, inline = true},
+					{name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
+					{name = 'Members', value = #guild.members, inline = true},
+					{name = 'Humans', value = humans, inline = true},
+					{name = 'Bots', value = bots, inline = true},
+					{name = 'Online', value = online, inline = true},
+					{name = 'Roles', value = #guild.roles, inline = true},
+					{name = 'Emojis', value = #guild.emojis, inline = true},
+					{name = 'Invite', value = "https://discord.gg/"..invite.code, inline = false},
+				},
+				thumbnail = {url = guild.iconURL, height = 200, width = 200},
+				color = discordia.Color.fromRGB(244, 198, 200).value,
+				footer = { text = "Server Created : "..timestamp }
+			}
+		}
+	else
+		message.channel:send {
+			embed = {
+				author = {name = guild.name, icon_url = guild.iconURL},
+				fields = {
+					{name = 'ID', value = guild.id, inline = true},
+					{name = 'Name', value = guild.name, inline = true},
+					{name = 'Owner', value = guild.owner.mentionString, inline = true},
+					{name = 'Region', value = guild.region, inline = true},
+					{name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
+					{name = 'Text Channels', value = #guild.textChannels, inline = true},
+					{name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
+					{name = 'Members', value = #guild.members, inline = true},
+					{name = 'Humans', value = humans, inline = true},
+					{name = 'Bots', value = bots, inline = true},
+					{name = 'Online', value = online, inline = true},
+					{name = 'Roles', value = #guild.roles, inline = true},
+					{name = 'Emojis', value = #guild.emojis, inline = true},
+				},
+				thumbnail = {url = guild.iconURL, height = 200, width = 200},
+				color = discordia.Color.fromRGB(244, 198, 200).value,
+				footer = { text = "Server Created : "..timestamp }
+			}
+		}
+	end
 end
-client:on('messageCreate', function(message) serverInfo(message) end)
+commands:on('serverinfo', function(m, a) serverInfo(m, a) end)
+commands:on('si', function(m, a) serverInfo(m, a) end)
 
 --roleinfo
 local function roleInfo(message)
-	local commandWithArgs = getCommand(message, true, false)
-	if commandWithArgs[1] == 'roleinfo' or commandWithArgs[1] == 'ri' then
-		local role = message.guild.roles:find(function(r) return r.name == commandWithArgs[2] end)
-		if role then
-			local hex = string.match(role:getColor():toHex(), "%x+")
-			local count = 0
-			for m in message.guild.members:iter() do
-				if m:hasRole(role) then count = count + 1 end
-			end
-			local hoisted, mentionable
-			if role.hoist then hoisted = "Yes" else hoisted = "No" end
-			if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-			message.channel:send {
-				embed = {
-					thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
-					fields = {
-						{name = "Name", value = role.name, inline = true},
-						{name = "ID", value = role.id, inline = true},
-						{name = "Hex", value = role:getColor():toHex(), inline = true},
-						{name = "Hoisted", value = hoisted, inline = true},
-						{name = "Mentionable", value = mentionable, inline = true},
-						{name = "Position", value = role.position, inline = true},
-						{name = "Members", value = count, inline = true},
-					},
-					color = role:getColor().value,
-				}
-			}
+	local role = message.guild.roles:find(function(r) return r.name == args end)
+	if role then
+		local hex = string.match(role:getColor():toHex(), "%x+")
+		local count = 0
+		for m in message.guild.members:iter() do
+			if m:hasRole(role) then count = count + 1 end
 		end
+		local hoisted, mentionable
+		if role.hoist then hoisted = "Yes" else hoisted = "No" end
+		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
+		message.channel:send {
+			embed = {
+				thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
+				fields = {
+					{name = "Name", value = role.name, inline = true},
+					{name = "ID", value = role.id, inline = true},
+					{name = "Hex", value = role:getColor():toHex(), inline = true},
+					{name = "Hoisted", value = hoisted, inline = true},
+					{name = "Mentionable", value = mentionable, inline = true},
+					{name = "Position", value = role.position, inline = true},
+					{name = "Members", value = count, inline = true},
+				},
+				color = role:getColor().value,
+			}
+		}
 	end
 end
-client:on('messageCreate', function(message) roleInfo(message) end)
+commands:on('roleinfo', function(m, a) roleInfo(m, a) end)
+commands:on('ri', function(m, a) roleInfo(m, a) end)
 
 --User functions
 --userinfo
-local function userInfo(message)
-	local commandWithArgs = getCommand(message, false, false)
+local function userInfo(message, args)
 	local guild = message.guild
-	if commandWithArgs[1] == 'userinfo' or commandWithArgs[1] == 'ui'  then
-		local member = guild:getMember(message.author)
-		if commandWithArgs[2] then
-			member = guild:getMember(parseMention(commandWithArgs[2]))
+	local member = guild:getMember(message.author)
+	if guild:getMember(parseMention(args)) then
+		member = guild:getMember(parseMention(args))
+	end
+	if member then
+		local roles = ""
+		for i in member.roles:iter() do
+			if roles == "" then roles = i.name else roles = roles..", "..i.name end
 		end
-		if member then
-			local roles = ""
-			for i in member.roles:iter() do
-				if roles == "" then roles = i.name else roles = roles..", "..i.name end
-			end
-			if roles == "" then roles = "None" end
-			local joinTime = humanReadableTime(parseTime(member.joinedAt):toTable())
-			local createTime = humanReadableTime(parseTime(member.timestamp):toTable())
-			local registerTime = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
-			if registerTime ~= 'N/A' then
-				registerTime = registerTime:toTable()
-				registerTime = humanReadableTime(registerTime)
-			end
-			local watchlisted = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
-			local under18 = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
-			if watchlisted == 'f' then watchlisted = 'No' else watchlisted = 'Yes' end
-			if under18 == 'f' then under18 = 'No' else under18 = 'Yes' end
-			message.channel:send {
-				embed = {
-					author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
-					fields = {
-						{name = 'ID', value = member.id, inline = true},
-						{name = 'Mention', value = member.mentionString, inline = true},
-						{name = 'Nickname', value = member.name, inline = true},
-						{name = 'Status', value = member.status, inline = true},
-						{name = 'Joined', value = joinTime, inline = false},
-						{name = 'Created', value = createTime, inline = true},
-						{name = 'Registered', value = registerTime, inline = true},
-						{name = 'Watchlisted', value = watchlisted, inline = true},
-						{name = 'Under 18', value = under18, inline = true},
-						{name = 'Roles ('..#member.roles..')', value = roles, inline = false},
-					},
-					thumbnail = {url = member.avatarURL, height = 200, width = 200},
-					color = member:getColor().value,
-					timestamp = discordia.Date():toISO()
-				}
-			}
-			message.channel:send {
-				embed = {
-					description = "[Fullsize Avatar]("..member.avatarURL..")",
-					color = member:getColor().value
-				}
-			}
-		else
-			message.channel:send("Sorry, I couldn't find that user.")
+		if roles == "" then roles = "None" end
+		local joinTime = humanReadableTime(parseTime(member.joinedAt):toTable())
+		local createTime = humanReadableTime(parseTime(member.timestamp):toTable())
+		local registerTime = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
+		if registerTime ~= 'N/A' then
+			registerTime = registerTime:toTable()
+			registerTime = humanReadableTime(registerTime)
 		end
+		local watchlisted = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
+		local under18 = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
+		if watchlisted == 'f' then watchlisted = 'No' else watchlisted = 'Yes' end
+		if under18 == 'f' then under18 = 'No' else under18 = 'Yes' end
+		message.channel:send {
+			embed = {
+				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
+				fields = {
+					{name = 'ID', value = member.id, inline = true},
+					{name = 'Mention', value = member.mentionString, inline = true},
+					{name = 'Nickname', value = member.name, inline = true},
+					{name = 'Status', value = member.status, inline = true},
+					{name = 'Joined', value = joinTime, inline = false},
+					{name = 'Created', value = createTime, inline = true},
+					{name = 'Registered', value = registerTime, inline = true},
+					{name = 'Watchlisted', value = watchlisted, inline = true},
+					{name = 'Under 18', value = under18, inline = true},
+					{name = 'Roles ('..#member.roles..')', value = roles, inline = false},
+				},
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = member:getColor().value,
+				timestamp = discordia.Date():toISO()
+			}
+		}
+		message.channel:send {
+			embed = {
+				description = "[Fullsize Avatar]("..member.avatarURL..")",
+				color = member:getColor().value
+			}
+		}
+	else
+		message.channel:send("Sorry, I couldn't find that user.")
 	end
 end
-client:on('messageCreate', function(message) userInfo(message) end)
+commands:on('userinfo', function(m, a) userInfo(m, a) end)
+commands:on('ui', function(m, a) userInfo(m, a) end)
 
 --addRole: Mod Function only!
 local function addRole(message)
@@ -729,38 +726,34 @@ client:on('messageCreate', function(message) addSelfRole(message) end)
 client:on('messageCreate', function(message) removeSelfRole(message) end)
 
 --roleList
-local function roleList(message)
-	local commandWithArgs = getCommand(message, true, false)
-	if commandWithArgs[1] == 'roles' then
-		local roleList = {}
-		for k,v in pairs(selfRoles) do
-			for r,_ in pairs(v) do
-				if not roleList[k] then
-					roleList[k] = r.."\n"
-				else
-					roleList[k] = roleList[k]..r.."\n"
-				end
+commands:on('roles', function(message)
+	local roleList = {}
+	for k,v in pairs(selfRoles) do
+		for r,_ in pairs(v) do
+			if not roleList[k] then
+				roleList[k] = r.."\n"
+			else
+				roleList[k] = roleList[k]..r.."\n"
 			end
 		end
-		message.channel:send {
-			embed = {
-				author = {name = "Self-Assignable Roles", icon_url = message.guild.iconURL},
-				fields = {
-					{name = "Gender Identity*", value = roleList['Gender Identity'], inline = true},
-					{name = "Sexuality", value = roleList['Sexuality'], inline = true},
-					{name = "Pronouns*", value = roleList['Pronouns'], inline = true},
-					{name = "Presentation", value = roleList['Presentation'], inline = true},
-					{name = "Assigned Sex", value = roleList['Assigned Sex'], inline = true},
-					{name = "Opt-In Roles", value = roleList['Opt-In Roles'], inline = true},
-				},
-				color = discordia.Color.fromRGB(244, 198, 200).value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text = "* One or more required in this category"}
-			}
-		}
 	end
-end
-client:on('messageCreate', function(message) roleList(message) end)
+	message.channel:send {
+		embed = {
+			author = {name = "Self-Assignable Roles", icon_url = message.guild.iconURL},
+			fields = {
+				{name = "Gender Identity*", value = roleList['Gender Identity'], inline = true},
+				{name = "Sexuality", value = roleList['Sexuality'], inline = true},
+				{name = "Pronouns*", value = roleList['Pronouns'], inline = true},
+				{name = "Presentation", value = roleList['Presentation'], inline = true},
+				{name = "Assigned Sex", value = roleList['Assigned Sex'], inline = true},
+				{name = "Opt-In Roles", value = roleList['Opt-In Roles'], inline = true},
+			},
+			color = discordia.Color.fromRGB(244, 198, 200).value,
+			timestamp = discordia.Date():toISO(),
+			footer = {text = "* One or more required in this category"}
+		}
+	}
+end)
 
 local function welcomeMessage(member)
 	function fn(m) return m.name == member.guild._settings.welcome_channel end
@@ -882,53 +875,49 @@ local function setupMute(message)
 end
 client:on('messageCreate', function(message) setupMute(message) end)
 
-local function prune(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'prune' then
-		function fn(m) return m.name == message.guild._settings.modlog_channel end
-		local logChannel = message.guild.textChannels:find(fn)
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, false)
-		if authorized then
-			local messageDeletes = client:getListeners('messageDelete')
-			local messageDeletesUncached = client:getListeners('messageDeleteUncached')
-			client:removeAllListeners('messageDelete')
-			client:removeAllListeners('messageDeleteUncached')
-			message:delete()
-			if tonumber(commandWithArgs[2]) then
-				commandWithArgs[2] = tonumber(commandWithArgs[2])
-				local xHun, rem = math.floor(commandWithArgs[2]/100), math.fmod(commandWithArgs[2], 100)
-				local numDel = 0
-				if xHun > 0 then
-					for i=1, xHun do
-						deletions = message.channel:getMessages(100)
-						success = message.channel:bulkDelete(deletions)
-						numDel = numDel+100
-					end
-				end
-				if rem > 0 then
-					deletions = message.channel:getMessages(rem)
+commands:on('prune', function(message, args)
+	function fn(m) return m.name == message.guild._settings.modlog_channel end
+	local logChannel = message.guild.textChannels:find(fn)
+	local author = message.guild:getMember(message.author.id)
+	local authorized = authorize(message, true, false)
+	if authorized then
+		local messageDeletes = client:getListeners('messageDelete')
+		local messageDeletesUncached = client:getListeners('messageDeleteUncached')
+		client:removeAllListeners('messageDelete')
+		client:removeAllListeners('messageDeleteUncached')
+		message:delete()
+		if tonumber(args) > 0 then
+			args = tonumber(args)
+			local xHun, rem = math.floor(args/100), math.fmod(args, 100)
+			local numDel = 0
+			if xHun > 0 then
+				for i=1, xHun do
+					deletions = message.channel:getMessages(100)
 					success = message.channel:bulkDelete(deletions)
-					numDel = numDel+rem
+					numDel = numDel+100
 				end
-				logChannel:send {
-					embed = {
-						description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
-						color = discordia.Color.fromRGB(255, 0, 0).value,
-						timestamp = discordia.Date():toISO()
-					}
+			end
+			if rem > 0 then
+				deletions = message.channel:getMessages(rem)
+				success = message.channel:bulkDelete(deletions)
+				numDel = numDel+rem
+			end
+			logChannel:send {
+				embed = {
+					description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
+					color = discordia.Color.fromRGB(255, 0, 0).value,
+					timestamp = discordia.Date():toISO()
 				}
-			end
-			for listener in messageDeletes do
-				client:on('messageDelete', listener)
-			end
-			for listener in messageDeletesUncached do
-				client:on('messageDeleteUncached', listener)
-			end
+			}
+		end
+		for listener in messageDeletes do
+			client:on('messageDelete', listener)
+		end
+		for listener in messageDeletesUncached do
+			client:on('messageDeleteUncached', listener)
 		end
 	end
-end
-client:on('messageCreate', function(message) prune(message) end)
+end)
 
 --Logging functions
 --Member join message
