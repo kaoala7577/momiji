@@ -170,7 +170,7 @@ client:on('messageCreate', function(message)
 	if commandWithArgs[1] == 'help' then
 		message.author:send([[**Commands for everyone**
 `.ping`: pings the bot to see if it's awake
-`.userinfo` <@user|userID>: pulls up some information on the user. If no user specified it uses the sender. Aliases: `.ui`
+`.userinfo <@user|userID>`: pulls up some information on the user. If no user specified it uses the sender. Aliases: `.ui`
 `.role <role[, role, ...]>`: adds all the roles listed to the sending user if the roles are on the self role list. Aliases: `.asr`
 `.derole <role[, role, ...]>`: same as .role but removes the roles. Aliases: `.rsr`
 `.roles`: list available self-roles
