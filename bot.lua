@@ -627,7 +627,8 @@ end)
 
 --addSelfRole
 local function addSelfRole(message)
-	local roles, member = parseRoleList(message)
+	local roles = parseRoleList(message)
+	local member = message.guild:getMember(message.author)
 	local rolesToAdd = {}
 	local rolesFailed = {}
 	for i,role in ipairs(roles) do
@@ -662,6 +663,7 @@ local function addSelfRole(message)
 		for _,r in ipairs(roles) do
 			roleList = roleList..r.."\n"
 		end
+		return roleList
 	end
 	if #rolesAdded > 0 then
 		message.channel:send {
@@ -688,15 +690,14 @@ local function addSelfRole(message)
 end
 --removeSelfRole
 local function removeSelfRole(message)
-	local roles, member = parseRoleList(message)
+	local roles = parseRoleList(message)
+	local member = message.guild:getMember(message.author)
 	local rolesToRemove = {}
 	for _,role in pairs(roles) do
-		if i>1 then
-			for _,l in pairs(selfRoles) do
-				for r,a in pairs(l) do
-					if (string.lower(role) == string.lower(r)) or (table.search(a, string.lower(role))) then
-						rolesToRemove[#rolesToRemove+1] = r
-					end
+		for _,l in pairs(selfRoles) do
+			for r,a in pairs(l) do
+				if (string.lower(role) == string.lower(r)) or (table.search(a, string.lower(role))) then
+					rolesToRemove[#rolesToRemove+1] = r
 				end
 			end
 		end
