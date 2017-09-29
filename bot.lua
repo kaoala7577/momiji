@@ -89,6 +89,22 @@ local function parseCommands(message, useDelim, firstIsMention)
 	return messageWithoutPrefix
 end
 
+local function parseRoleList(message)
+	local member, roles
+	if #message.mentionedUsers == 1 then
+		for m in message.mentionedUsers:iter() do
+			member = m
+			roles = message.content:gsub("<@.+>", "")
+		end
+	else
+		roles = message.content
+	end
+	roles = roles:gsub("^%"..message.guild._settings.prefix.."%g+", ""):trim()
+	roles = roles:split(",")
+	for i,r in ipairs(roles) do roles[i] = roles[i]:trim() end
+	return roles, member
+end
+
 local function getCommand(message, useDelim, firstIsMention)
 	local commandWithArgs = {}
 	if message.channel.type ~= enums.channelType.text then return commandWithArgs end
@@ -130,7 +146,20 @@ end
 client:on('messageCreate', function(m) commandParser(m) end)
 
 commands:on('test', function(message, args)
-	if args ~= "" then message:reply(args) else message:reply("A basic test? What is this, middle school?") end
+	if args ~= "" then
+		local roles, member = parseRoleList(message)
+		local rolelist = ""
+		for _,r in pairs(roles) do if rolelist == "" then rolelist = r else rolelist = rolelist.."\n"..r end end
+		if member and rolelist then
+			message:reply(member.name.."\n"..rolelist)
+		elseif member then
+			message:reply(member.name)
+		elseif rolelist then
+			message:reply(rolelist)
+		end
+	else
+		message:reply("A basic test? What is this, middle school?")
+	end
 end)
 
 --stupid color changing function to learn how to hook callbacks to the clock
