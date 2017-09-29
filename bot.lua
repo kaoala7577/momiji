@@ -139,6 +139,8 @@ local function changeColor(time)
 	if guild and (math.fmod(time.min, 10) == 0) then
 		local role = guild:getRole('348665099550195713')
 		local success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		role = guild:getRole('363398104491229184')
+		success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
 end
 clock:on('min', function(time) changeColor(time) end)
@@ -361,7 +363,7 @@ commands:on('serverinfo', function(m, a) serverInfo(m, a) end)
 commands:on('si', function(m, a) serverInfo(m, a) end)
 
 --roleinfo
-local function roleInfo(message)
+local function roleInfo(message, args)
 	local role = message.guild.roles:find(function(r) return r.name == args end)
 	if role then
 		local hex = string.match(role:getColor():toHex(), "%x+")
@@ -370,7 +372,7 @@ local function roleInfo(message)
 			if m:hasRole(role) then count = count + 1 end
 		end
 		local hoisted, mentionable
-		if role.hoist then hoisted = "Yes" else hoisted = "No" end
+		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
 		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
 		message.channel:send {
 			embed = {
