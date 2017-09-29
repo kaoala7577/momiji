@@ -93,7 +93,7 @@ local function parseRoleList(message)
 	local member, roles
 	if #message.mentionedUsers == 1 then
 		for m in message.mentionedUsers:iter() do
-			member = m
+			member = message.guild:getMember(m)
 			roles = message.content:gsub("<@.+>", "")
 		end
 	else
@@ -482,162 +482,142 @@ commands:on('userinfo', function(m, a) userInfo(m, a) end)
 commands:on('ui', function(m, a) userInfo(m, a) end)
 
 --addRole: Mod Function only!
-local function addRole(message)
-	local commandWithArgs = getCommand(message, true, true)
-	if commandWithArgs[1] == 'ar' then
-		local member = message.guild:getMember(parseMention(commandWithArgs[2]))
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, true)
-		if authorized and member then
-			local rolesToAdd = {}
-			for i,role in ipairs(commandWithArgs) do
-				if i>2 then
-					for r in message.guild.roles:iter() do
-						if string.lower(role) == string.lower(r.name) then
+commands:on('ar', function(message)
+	local roles, member = parseRoleList(message)
+	local author = message.guild:getMember(message.author.id)
+	local authorized = authorize(message, true, true)
+	if authorized and member then
+		local rolesToAdd = {}
+		for _,role in pairs(roles) do
+			for r in message.guild.roles:iter() do
+				if string.lower(role) == string.lower(r.name) then
+					rolesToAdd[#rolesToAdd+1] = r
+				end
+			end
+		end
+		for _,role in ipairs(rolesToAdd) do
+			member:addRole(message.guild:getRole(role.id))
+		end
+		local roleList = ""
+		for _,r in ipairs(rolesToAdd) do
+			roleList = roleList..r.name.."\n"
+		end
+		if #rolesToAdd > 0 then
+			message.channel:send {
+				embed = {
+					author = {name = "Roles Added", icon_url = member.avatarURL},
+					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
+					color = member:getColor().value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}
+			}
+		end
+	end
+end)
+--removeRole: Mod function only!
+commands:on('rr', function(message)
+	local roles, member = parseRoleList(message)
+	local author = message.guild:getMember(message.author.id)
+	local authorized = authorize(message, true, true)
+	if authorized and member then
+		local rolesToRemove = {}
+		for _,role in pairs(roles) do
+			for r in message.guild.roles:iter() do
+				if string.lower(role) == string.lower(r.name) then
+					rolesToRemove[#rolesToRemove+1] = r
+				end
+			end
+		end
+		for _,role in ipairs(rolesToRemove) do
+			member:removeRole(member.guild:getRole(role.id))
+		end
+		local roleList = ""
+		for _,r in ipairs(rolesToRemove) do
+			roleList = roleList..r.name.."\n"
+		end
+		if #rolesToRemove > 0 then
+			message.channel:send {
+				embed = {
+					author = {name = "Roles Removed", icon_url = member.avatarURL},
+					description = "**Removed "..member.mentionString.." from the following roles** \n"..roleList,
+					color = member:getColor().value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}
+			}
+		end
+	end
+end)
+--Register, same as ar but removes Not Verified
+local function register(message)
+	function fn(m) return m.name == message.guild._settings.modlog_channel end
+	local channel = message.guild.textChannels:find(fn)
+	local roles, member = parseRoleList(message)
+	local author = message.guild:getMember(message.author.id)
+	local authorized = authorize(message, true, true)
+	if authorized and member then
+		local rolesToAdd = {}
+		local hasGender, hasPronouns
+		for _,role in pairs(roles) do
+			for k,l in pairs(selfRoles) do
+				for r,a in pairs(l) do
+					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
+						if (r == 'Gamer') or (r == '18+') or not (k == 'Opt-In Roles') then
 							rolesToAdd[#rolesToAdd+1] = r
 						end
 					end
 				end
 			end
-			for _,role in ipairs(rolesToAdd) do
-				member:addRole(member.guild:getRole(role.id))
+		end
+		for k,l in pairs(selfRoles) do
+			for _,j in pairs(rolesToAdd) do
+				if (k == 'Gender Identity') then
+					for r,_ in pairs(l) do
+						if r == j then hasGender = true end
+					end
+				end
+				if (k == 'Pronouns') then
+					for r,_ in pairs(l) do
+						if r == j then hasPronouns = true end
+					end
+				end
+			end
+		end
+		if hasGender and hasPronouns then
+			for _,role in pairs(rolesToAdd) do
+				function fn(r) return r.name == role end
+				member:addRole(member.guild.roles:find(fn))
 			end
 			local function makeRoleList(roles)
 				local roleList = ""
 				for _,r in ipairs(roles) do
-					roleList = roleList..r.name.."\n"
+					roleList = roleList..r.."\n"
 				end
 				return roleList
 			end
+			member:addRole(member.guild:getRole('348873284265312267'))
 			if #rolesToAdd > 0 then
-				message.channel:send {
+				channel:send {
 					embed = {
-						author = {name = "Roles Added", icon_url = member.avatarURL},
-						description = "**Added "..member.mentionString.." to the following roles** \n"..makeRoleList(rolesToAdd),
+						author = {name = "Registered", icon_url = member.avatarURL},
+						description = "**Registered "..member.mentionString.." with the following roles** \n"..makeRoleList(rolesToAdd),
 						color = member:getColor().value,
 						timestamp = discordia.Date():toISO(),
 						footer = {text = "ID: "..member.id}
 					}
 				}
+				client:emit('memberRegistered', member)
+				local status, err = conn:execute(string.format([[UPDATE members SET registered='%s' WHERE member_id='%s';]], discordia.Date():toISO(), member.id))
 			end
+		else
+			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
 		end
+		message:delete()
 	end
 end
---removeRole: Mod function only!
-local function removeRole(message)
-	local commandWithArgs = getCommand(message, true, true)
-	if commandWithArgs[1] == 'rr' then
-		local member = message.guild:getMember(parseMention(commandWithArgs[2]))
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, true)
-		if authorized and member then
-			local rolesToRemove = {}
-			for i,role in ipairs(commandWithArgs) do
-				for r in message.guild.roles:iter() do
-					if string.lower(role) == string.lower(r.name) then
-						rolesToRemove[#rolesToRemove+1] = r
-					end
-				end
-			end
-			for _,role in ipairs(rolesToRemove) do
-				member:removeRole(member.guild:getRole(role.id))
-			end
-			local function makeRoleList(roles)
-				local roleList = ""
-				for _,r in ipairs(roles) do
-					roleList = roleList..r.name.."\n"
-				end
-				return roleList
-			end
-			if #rolesToRemove > 0 then
-				message.channel:send {
-					embed = {
-						author = {name = "Roles Removed", icon_url = member.avatarURL},
-						description = "**Removed "..member.mentionString.." from the following roles** \n"..makeRoleList(rolesToRemove),
-						color = member:getColor().value,
-						timestamp = discordia.Date():toISO(),
-						footer = {text = "ID: "..member.id}
-					}
-				}
-			end
-		end
-	end
-end
---Register, same as ar but removes Not Verified
-local function register(message)
-	local commandWithArgs = getCommand(message, true, true)
-	if commandWithArgs[1] == 'register' or commandWithArgs[1] == 'reg' then
-		function fn(m) return m.name == message.guild._settings.modlog_channel end
-		local channel = message.guild.textChannels:find(fn)
-		local member = message.guild:getMember(parseMention(commandWithArgs[2]))
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, true)
-		if authorized and member then
-			local rolesToAdd = {}
-			local hasGender, hasPronouns
-			for i,role in ipairs(commandWithArgs) do
-				if i>2 then
-					for k,l in pairs(selfRoles) do
-						for r,a in pairs(l) do
-							if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
-								if (r == 'Gamer') or (r == '18+') or not (k == 'Opt-In Roles') then
-									rolesToAdd[#rolesToAdd+1] = r
-								end
-							end
-						end
-					end
-				end
-			end
-			for k,l in pairs(selfRoles) do
-				for _,j in pairs(rolesToAdd) do
-					if (k == 'Gender Identity') then
-						for r,_ in pairs(l) do
-							if r == j then hasGender = true end
-						end
-					end
-					if (k == 'Pronouns') then
-						for r,_ in pairs(l) do
-							if r == j then hasPronouns = true end
-						end
-					end
-				end
-			end
-			if hasGender and hasPronouns then
-				for _,role in ipairs(rolesToAdd) do
-					function fn(r) return r.name == role end
-					member:addRole(member.guild.roles:find(fn))
-				end
-				local function makeRoleList(roles)
-					local roleList = ""
-					for _,r in ipairs(roles) do
-						roleList = roleList..r.."\n"
-					end
-					return roleList
-				end
-				member:addRole(member.guild:getRole('348873284265312267'))
-				if #rolesToAdd > 0 then
-					channel:send {
-						embed = {
-							author = {name = "Registered", icon_url = member.avatarURL},
-							description = "**Registered "..member.mentionString.." with the following roles** \n"..makeRoleList(rolesToAdd),
-							color = member:getColor().value,
-							timestamp = discordia.Date():toISO(),
-							footer = {text = "ID: "..member.id}
-						}
-					}
-					client:emit('memberRegistered', member)
-					local status, err = conn:execute(string.format([[UPDATE members SET registered='%s' WHERE member_id='%s';]], discordia.Date():toISO(), member.id))
-				end
-			else
-				message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
-			end
-			message:delete()
-		end
-	end
-end
-client:on('messageCreate', function(message) addRole(message) end)
-client:on('messageCreate', function(message) removeRole(message) end)
-client:on('messageCreate', function(message) register(message) end)
+commands:on('register', function(message) register(message) end)
+commands:on('reg', function(message) register(message) end)
 client:on('memberRegistered', function(member)
 	local channel = member.guild:getChannel('350764752898752513')
 	if channel then
@@ -681,18 +661,15 @@ local function addSelfRole(message)
 				member:addRole(member.guild.roles:find(fn))
 			else rolesFailed[#rolesFailed+1] = "You already have "..role end
 		end
-		local function makeRoleList(roles)
-			local roleList = ""
-			for _,r in ipairs(roles) do
-				roleList = roleList..r.."\n"
-			end
-			return roleList
+		local roleList = ""
+		for _,r in ipairs(roles) do
+			roleList = roleList..r.."\n"
 		end
 		if #rolesAdded > 0 then
 			message.channel:send {
 				embed = {
 					author = {name = "Roles Added", icon_url = member.avatarURL},
-					description = "**Added "..member.mentionString.." to the following roles** \n"..makeRoleList(rolesAdded),
+					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
 					color = member:getColor().value,
 					timestamp = discordia.Date():toISO(),
 					footer = {text = "ID: "..member.id}
