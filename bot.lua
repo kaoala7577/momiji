@@ -1,11 +1,15 @@
 local discordia = require('discordia')
+discordia.extensions()
+local enums = discordia.enums
 local client = discordia.Client({cacheAllMembers = true})
 local token = require'token'
 local luasql = require'luasql.postgres'
 local env = luasql.postgres()
 local conn = env:connect('mydb')
-discordia.extensions()
-local enums = discordia.enums
+
+local core = require'core'
+local CommandEmitter = core.Emitter:extend()
+local commands = CommandEmitter:new()
 
 local clock = discordia.Clock()
 clock:start()
@@ -14,6 +18,7 @@ local selfRoles = require'rolelist'
 
 local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+local roleCommands = {"role", "asr", "derole", "rsr", "ar", "rr", "register", "reg"}
 
 local function sqlStringToTable(str)
 	if str:startswith('{') and str:endswith('}') then
@@ -109,6 +114,25 @@ local function authorize(message, admins, mods)
 	return false
 end
 
+local function commandParser(message)
+	if message.author ~= client.user then
+		if message.channel.type == enums.channelType.text then
+			if message.content:startswith(message.guild._settings.prefix) then
+				local str = message.content:match("^%"..message.guild._settings.prefix.."(%g+)%s*")
+				local args = message.content:gsub("^%"..message.guild._settings.prefix..str, ""):trim()
+				commands:emit(str:lower(), message, args)
+			end
+		else
+			message:reply("I'm not currently set up to handle private messages")
+		end
+	end
+end
+client:on('messageCreate', function(m) commandParser(m) end)
+
+commands:on('test', function(message, args)
+	if args ~= "" then message:reply(args) else message:reply("A basic test? What is this, middle school?") end
+end)
+
 --stupid color changing function to learn how to hook callbacks to the clock
 local function changeColor(time)
 	local guild = client:getGuild('348660188951216129')
@@ -165,10 +189,9 @@ end
 client:on('messageCreate', function(message) makeSpam(message) end)
 
 --Help page.... total shit
-client:on('messageCreate', function(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'help' then
-		message.author:send([[**Commands for everyone**
+commands:on('help', function(message)
+	message.author:send([[**Commands for everyone**
+`.help`: DM this help page
 `.ping`: pings the bot to see if it's awake
 `.userinfo <@user|userID>`: pulls up some information on the user. If no user specified it uses the sender. Aliases: `.ui`
 `.role <role[, role, ...]>`: adds all the roles listed to the sending user if the roles are on the self role list. Aliases: `.asr`
@@ -188,7 +211,6 @@ client:on('messageCreate', function(message)
 
 **Admin Commands**
 `.prune <number>`: bulk deletes a number of messages]])
-	end
 end)
 
 client:on('messageCreate', function(message)
