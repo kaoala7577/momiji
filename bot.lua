@@ -894,13 +894,13 @@ commands:on('prune', function(message, args)
 				for i=1, xHun do
 					deletions = message.channel:getMessages(100)
 					success = message.channel:bulkDelete(deletions)
-					numDel = numDel+100
+					numDel = numDel+#deletions
 				end
 			end
 			if rem > 0 then
 				deletions = message.channel:getMessages(rem)
 				success = message.channel:bulkDelete(deletions)
-				numDel = numDel+rem
+				numDel = numDel+#deletions
 			end
 			logChannel:send {
 				embed = {
