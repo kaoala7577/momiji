@@ -18,7 +18,6 @@ local selfRoles = require'rolelist'
 
 local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
-local roleCommands = {"role", "asr", "derole", "rsr", "ar", "rr", "register", "reg"}
 
 local function sqlStringToTable(str)
 	if str:startswith('{') and str:endswith('}') then
@@ -92,10 +91,8 @@ end
 local function parseRoleList(message)
 	local member, roles
 	if #message.mentionedUsers == 1 then
-		for m in message.mentionedUsers:iter() do
-			member = message.guild:getMember(m)
-			roles = message.content:gsub("<@.+>", "")
-		end
+		member = message.guild:getMember(message.mentionedUsers:iter()())
+		roles = message.content:gsub("<@.+>", "")
 	else
 		roles = message.content
 	end
@@ -130,6 +127,18 @@ local function authorize(message, admins, mods)
 	return false
 end
 
+local function safeCall(func, message, args)
+	local status, ret = xpcall(func, debug.traceback, message, args)
+	if ret and not status then print(ret) end
+	local react
+	if status and ret then
+		react = '✅'
+	else
+		react = '❌'
+	end
+	message:addReaction(react)
+end
+
 local function commandParser(message)
 	if message.author ~= client.user then
 		if message.channel.type == enums.channelType.text then
@@ -145,22 +154,15 @@ local function commandParser(message)
 end
 client:on('messageCreate', function(m) commandParser(m) end)
 
-commands:on('test', function(message, args)
+local function test(message, args)
 	if args ~= "" then
-		local roles, member = parseRoleList(message)
-		local rolelist = ""
-		for _,r in pairs(roles) do if rolelist == "" then rolelist = r else rolelist = rolelist.."\n"..r end end
-		if member and rolelist then
-			message:reply(member.name.."\n"..rolelist)
-		elseif member then
-			message:reply(member.name)
-		elseif rolelist then
-			message:reply(rolelist)
+		if #message.mentionedUsers == 1 then
+			local success = message:reply(message.mentionedUsers:iter()().name)
+			return success
 		end
-	else
-		message:reply("A basic test? What is this, middle school?")
 	end
-end)
+end
+commands:on('test', function(m, a) safeCall(test, m, a) end)
 
 --stupid color changing function to learn how to hook callbacks to the clock
 local function changeColor(time)
@@ -194,48 +196,52 @@ clock:on('min', function(time)
 end)
 
 --Change the bot username. Owner only
-commands:on('uname', function(message, args)
+local function changeUsername(message, args)
 	if args ~= "" then
 		if message.author == client.owner then
 			local success = client:setUsername(args)
-			if success then print("Changing username to "..args) end
+			return status
 		else
-			message:reply("Only the bot owner can do that.")
+			message.author:send("Only the bot owner can do that.")
 		end
 	else
-		message:reply("You need to specify a new name.")
+		message.author:send("You need to specify a new name.")
 	end
-end)
+end
+commands:on('uname', function(m, a) safeCall(changeUsername, m, a) end)
 
 --Change the bot nickname. Guild owner only
-commands:on('nick', function(message, args)
+local function nick(message, args)
 	if args ~= "" then
-		if message.member == message.guild.owner then
+		if authorize(message, true, true) then
 			local success = message.guild:getMember(client.user):setNickname(args)
-			if success then message:reply("Changing nickname to "..args) end
+			return status
 		else
-			message:reply("Only the guild owner can do that.")
+			message.author:send("Only moderators can do that.")
 		end
 	else
-		message:reply("You need to specify a new name.")
+		message.author:send("You need to specify a new name.")
 	end
-end)
+end
+commands:on('nick', function(m, a) safeCall(nick, m, a) end)
 
 --make Spam! Owner Only
-commands:on('genspam', function(message, args)
+local function genSpam(message, args)
 	if args ~= "" then
 		if message.author == client.owner then
-			message:delete()
 			if tonumber(args) > 0 then
-				for i=1, tonumber(args) do message.channel:send("Awoo!") end
+				for i=1, tonumber(args)-1 do message:reply("Awoo!") end
+				local success = message:reply("Final Awoo!")
+				return status
 			end
-		else message:reply("Only the bot owner can do that.") end
-	else message:reply("You need to specify an amount.") end
-end)
+		else message.author:send("Only the bot owner can do that.") end
+	else message.author:send("You need to specify an amount.") end
+end
+commands:on('genspam', function(m, a) safeCall(genSpam, m, a) end)
 
 --Help page.... total shit
-commands:on('help', function(message)
-	message.author:send([[**Commands for everyone**
+local function helpMessage(message)
+	local success = message.author:send([[**Commands for everyone**
 `.help`: DM this help page
 `.ping`: pings the bot to see if it's awake
 `.userinfo <@user|userID>`: pulls up some information on the user. If no user specified it uses the sender. Aliases: `.ui`
@@ -266,7 +272,9 @@ commands:on('help', function(message)
 **Bot Owner Only**
 `.genspam <number>`: sends a number of spam messages. used for testing
 `.uname <name>`: sets the bot's username]])
-end)
+	return status
+end
+commands:on('help', function(m, a) safeCall(helpMessage, m, a) end)
 
 client:on('messageCreate', function(message)
 	if message.channel.type == enums.channelType.text then
@@ -275,26 +283,33 @@ client:on('messageCreate', function(message)
 end)
 
 --change prefix
-commands:on('prefix', function(message, args)
+local function changePrefix(message, args)
 	if args ~= "" then
 		if message.member == message.guild.owner then
-			conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], commandWithArgs[2], message.guild.id))
-			local curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
-			local row = curr:fetch({}, "a")
-			message.guild._settings.prefix = row.prefix
+			local status, err = conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], args, message.guild.id))
+			if status then
+				local curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
+				local row = curr:fetch({}, "a")
+				message.guild._settings.prefix = row.prefix
+				return status
+			end
 		end
 	end
-end)
+end
+commands:on('prefix', function(m,a) safeCall(changePrefix, m, a) end)
 
 --ping
-commands:on('ping', function(message)
+local function ping(message)
 	local sw = discordia.Stopwatch()
 	sw:reset()
-	if message.channel:send("Pong!") then
+	local response = message:reply("Pong!")
+	if response then
 		sw:stop()
-		message.channel:getLastMessage():setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+		local success = response:setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+		return status
 	end
-end)
+end
+commands:on('ping', function(m,a) safeCall(ping, m, a) end)
 
 --lists members without roles
 commands:on('noroles', function(message, args)
@@ -458,7 +473,7 @@ local function userInfo(message, args)
 		local under18 = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
 		if watchlisted == 'f' then watchlisted = 'No' else watchlisted = 'Yes' end
 		if under18 == 'f' then under18 = 'No' else under18 = 'Yes' end
-		message.channel:send {
+		local status = message.channel:send {
 			embed = {
 				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
 				fields = {
@@ -478,18 +493,21 @@ local function userInfo(message, args)
 				timestamp = discordia.Date():toISO()
 			}
 		}
-		message.channel:send {
-			embed = {
-				description = "[Fullsize Avatar]("..member.avatarURL..")",
-				color = member:getColor().value
+		if status then
+			message.channel:send {
+				embed = {
+					description = "[Fullsize Avatar]("..member.avatarURL..")",
+					color = member:getColor().value
+				}
 			}
-		}
+			return true
+		end
 	else
 		message.channel:send("Sorry, I couldn't find that user.")
 	end
 end
-commands:on('userinfo', function(m, a) userInfo(m, a) end)
-commands:on('ui', function(m, a) userInfo(m, a) end)
+commands:on('userinfo', function(m, a) safeCall(userInfo, m, a) end)
+commands:on('ui', function(m, a) safeCall(userInfo, m, a) end)
 
 --addRole: Mod Function only!
 commands:on('ar', function(message)
@@ -790,35 +808,33 @@ end
 client:on('memberJoin', function(member) welcomeMessage(member) end)
 
 --Mute: Mod only
-local function mute(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'mute' then
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, true)
-		if authorized then
-			--Syntax here is a bit odd, this will be true if the 2nd arg is NOT a channel mention. i.e. We're expecting a user mention
-			function fn(m) return m.name == message.guild._settings.modlog_channel end
-			local logChannel = message.guild.textChannels:find(fn)
-			local member
-			local reason = ""
-			if parseChannel(commandWithArgs[2]) == commandWithArgs[2] then
-				member = message.guild:getMember(parseMention(commandWithArgs[2]))
-				if member then
-					for i,j in ipairs(commandWithArgs) do if i>2 then reason = reason.." "..j end end
-					member:addRole('349060739815964673')
-					message.channel:send("Muting "..member.mentionString.." server-wide")
-				end
-			else --This will go through if the 2nd arg happens to be a channel mention because the ID will be returned by parseChannel()
-				local channelID = parseChannel(commandWithArgs[2])
-				local channel = message.guild:getChannel(channelID)
-				member = message.guild:getMember(parseMention(commandWithArgs[3]))
+local function mute(message, args)
+	local author = message.author
+	local authorized = authorize(message, true, true)
+	if authorized then
+		local logChannel = message.guild.textChannels:find(function(m) return m.name == message.guild._settings.modlog_channel end)
+		local success, member, channel
+		local reason = ""
+		if #message.mentionedUsers == 1 then
+			channel = message.mentionedChannels:iter()()
+			member = message.guild:getMember(message.mentionedUsers:iter()())
+			if member and not channel then
+				success = member:addRole('349060739815964673')
+				message.channel:send("Muting "..member.mentionString.." server-wide")
+			elseif member and channel then
+				success = channel:getPermissionOverwriteFor(member):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
+				message.channel:send("Muting "..member.mentionString.." in "..channel.mentionString)
+			end
+			if args ~= "" then
 				if member and channel then
-					for i,j in ipairs(commandWithArgs) do if i>3 then reason = reason.." "..j end end
-					channel:getPermissionOverwriteFor(member):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
-					message.channel:send("Muting "..member.mentionString.." in "..channel.mentionString)
+					reason = args:gsub("<@.+>", ""):gsub("<#.+>", "")
+				elseif member then
+					reason = args:gsub("<@.+>", "")
 				end
 			end
-			if reason == "" then reason = "None" end
+		end
+		if reason == "" then reason = "None" end
+		if success then
 			logChannel:send {
 				embed = {
 					title = "Member Muted",
@@ -830,38 +846,30 @@ local function mute(message)
 				}
 			}
 		end
+		return success
 	end
 end
 --Unmute, counterpart to above
 local function unmute(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'unmute' then
-		local author = message.guild:getMember(message.author.id)
-		local authorized = authorize(message, true, true)
-		if authorized then
-			function fn(m) return m.name == message.guild._settings.modlog_channel end
-			local logChannel = message.guild.textChannels:find(fn)
-			local member
-			--Syntax here is a bit odd, this will be true if the 2nd arg is NOT a channel mention. i.e. We're expecting a user mention
-			if parseChannel(commandWithArgs[2]) == commandWithArgs[2] then
-				member = message.guild:getMember(parseMention(commandWithArgs[2]))
-				if member then
-					member:removeRole('349060739815964673')
-					message.channel:send("Unmuting "..member.mentionString.." server-wide")
+	local author = message.author
+	local authorized = authorize(message, true, true)
+	if authorized then
+		local logChannel = message.guild.textChannels:find(function(m) return m.name == message.guild._settings.modlog_channel end)
+		local success, member, channel
+		if #message.mentionedUsers == 1 then
+			channel = message.mentionedChannels:iter()()
+			member = message.guild:getMember(message.mentionedUsers:iter()())
+			if member and not channel then
+				success = member:removeRole('349060739815964673')
+				message.channel:send("Unmuting "..member.mentionString.." server-wide")
+			elseif member and channel then
+				if channel:getPermissionOverwriteFor(member) then
+					success = channel:getPermissionOverwriteFor(member):delete()
 				end
-			else --This will go through if the 2nd arg happens to be a channel mention because the ID will be returned by parseChannel()
-				local channelID = parseChannel(commandWithArgs[2])
-				local channel = message.guild:getChannel(channelID)
-				member = message.guild:getMember(parseMention(commandWithArgs[3]))
-				if member and channel then
-					if channel:getPermissionOverwriteFor(member).allowedPermissions then
-						channel:getPermissionOverwriteFor(member):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
-					else
-						channel:getPermissionOverwriteFor(member):delete()
-					end
-					message.channel:send("Unmuting "..member.mentionString.." in "..channel.mentionString)
-				end
+				message.channel:send("Unmuting "..member.mentionString.." in "..channel.mentionString)
 			end
+		end
+		if success then
 			logChannel:send {
 				embed = {
 					title = "Member Unmuted",
@@ -872,10 +880,11 @@ local function unmute(message)
 				}
 			}
 		end
+		return success
 	end
 end
-client:on('messageCreate', function(message) mute(message) end)
-client:on('messageCreate', function(message) unmute(message) end)
+commands:on('mute', function(m, a) safeCall(mute, m, a) end)
+commands:on('unmute', function(m) safeCall(unmute, m) end)
 
 local function setupMute(message)
 	local commandWithArgs = getCommand(message, false, false)
@@ -1011,7 +1020,7 @@ local function userUnban(user, guild)
 end
 client:on('userBan', function(user, guild) userBan(user, guild) end)
 client:on('userUnban', function(user, guild) userUnban(user, guild) end)
---Caches message deletion
+--Cached message deletion
 local function messageDelete(message)
 	local member = message.member
 	function fn(m) return m.name == message.guild._settings.log_channel end
