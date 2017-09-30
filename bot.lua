@@ -249,13 +249,23 @@ commands:on('help', function(message)
 `.mute [#channel] <@user|userID>`: mutes a user, if a channel is mentioned it only mutes them in that channel
 `.unmute [#channe] <@user|userID>`: undoes mute
 `.register <@user|userID> <role[, role, ...]>`: registers a user with the given roles. Aliases: `.reg`
-`.ar <@user|userID> <role[, role, ...]>`: adds a user to the given roles
-`.rr <@user|userID> <role[, role, ...]>`: removes a user from the given roles
 `.watchlist <@user|userID>`: adds/removes a user from the watchlist. Aliases: `.wl`
 `.toggle18 <@user|userID>`: toggles the under 18 user flag. Aliases: `.t18`
 
 **Admin Commands**
-`.prune <number>`: bulk deletes a number of messages]])
+`.prune <number>`: bulk deletes a number of messages
+`.ar <@user|userID> <role[, role, ...]>`: adds a user to the given roles
+`.rr <@user|userID> <role[, role, ...]>`: removes a user from the given roles
+`.noroles [message]`: pings every member without any roles and attaches an optional message
+
+**Guild Owner Commands**
+`.nick`: changes the bot nickname
+`.prefix`: changes the prefix
+`.populate`: ensures that momiji has the members table up-to-date
+
+**Bot Owner Only**
+`.genspam <number>`: sends a number of spam messages. used for testing
+`.uname <name>`: sets the bot's username]])
 end)
 
 client:on('messageCreate', function(message)
@@ -485,7 +495,7 @@ commands:on('ui', function(m, a) userInfo(m, a) end)
 commands:on('ar', function(message)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, true)
+	local authorized = authorize(message, true, false)
 	if authorized and member then
 		local rolesToAdd = {}
 		for _,role in pairs(roles) do
@@ -519,7 +529,7 @@ end)
 commands:on('rr', function(message)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, true)
+	local authorized = authorize(message, true, false)
 	if authorized and member then
 		local rolesToRemove = {}
 		for _,role in pairs(roles) do
