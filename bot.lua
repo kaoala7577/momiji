@@ -635,11 +635,11 @@ local function addSelfRole(message)
 		for k,l in pairs(selfRoles) do
 			for r,a in pairs(l) do
 				if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
-					if member:hasRole(member.guild:getRole('name', 'Cooldown')) and (k == 'Opt-In Roles') then
+					if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
 						if (r == 'Gamer') or (r == '18+') or (r == 'Momiji Dev') then
 							rolesToAdd[#rolesToAdd+1] = r
 						else rolesFailed[#rolesFailed+1] = r.." is only available after cooldown" end
-					elseif (member:hasRole(member.guild:getRole('name', 'Cis Male')) or member:hasRole(member.guild:getRole('name', 'Cis Female'))) and (k == 'Opt-In Roles') then
+					elseif (member:hasRole(member.guild:getRole('349051015758348289')) or member:hasRole(member.guild:getRole('349051017226354729'))) and (k == 'Opt-In Roles') then
 						if not (r == 'NSFW-Selfies' or r == 'NSFW-Nb' or r == 'NSFW-Fem' or r == 'NSFW-Masc') then
 							rolesToAdd[#rolesToAdd+1] = r
 						else rolesFailed[#rolesFailed+1] = r.." is not available to cis people" end
