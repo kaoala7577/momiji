@@ -215,7 +215,7 @@ local function nick(message, args)
 	if args ~= "" then
 		if authorize(message, true, true) then
 			local success = message.guild:getMember(client.user):setNickname(args)
-			return status
+			return success
 		else
 			message.author:send("Only moderators can do that.")
 		end
