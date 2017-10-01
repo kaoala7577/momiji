@@ -40,6 +40,9 @@ client:on('ready', function()
 			end
 			row = cur:fetch(row, "a")
 		end
+		for member in guild.members:iter() do
+			conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
+		end
 	end
 end)
 
@@ -59,35 +62,6 @@ local function humanReadableTime(table)
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
-local function stripPrefix(message)
-	return string.gsub(message.content, "%"..message.guild._settings.prefix, "")
-end
-
-local function parseCommands(message, useDelim, firstIsMention)
-	local strippedMessage = stripPrefix(message)
-	local command = string.match(strippedMessage, "^(%g+)%s+")
-	local messageWithoutPrefix = {command}
-	strippedMessage = string.gsub(strippedMessage, "^(%g+)%s+", "")
-
-	if firstIsMention then
-		messageWithoutPrefix[2] = string.match(strippedMessage, "^(%g+)%s+")
-		strippedMessage = string.gsub(strippedMessage, "^(%g+)%s+", "")
-	end
-	if useDelim then
-		for _,word in pairs(string.split(strippedMessage, ",")) do
-			messageWithoutPrefix[#messageWithoutPrefix+1] = word
-		end
-	else
-		for word in string.gmatch(strippedMessage, "%g+") do
-			messageWithoutPrefix[#messageWithoutPrefix+1] = string.gsub(word, "%,", "")
-		end
-	end
-	for i, w in ipairs(messageWithoutPrefix) do
-		messageWithoutPrefix[i] = messageWithoutPrefix[i]:trim()
-	end
-	return messageWithoutPrefix
-end
-
 local function parseRoleList(message)
 	local member, roles
 	if #message.mentionedUsers == 1 then
@@ -100,15 +74,6 @@ local function parseRoleList(message)
 	roles = roles:split(",")
 	for i,r in ipairs(roles) do roles[i] = roles[i]:trim() end
 	return roles, member
-end
-
-local function getCommand(message, useDelim, firstIsMention)
-	local commandWithArgs = {}
-	if message.channel.type ~= enums.channelType.text then return commandWithArgs end
-	if message.content:match('^%'..message.guild._settings.prefix) then
-		commandWithArgs = parseCommands(message, useDelim, firstIsMention)
-	end
-	return commandWithArgs
 end
 
 local function authorize(message, admins, mods)
@@ -885,17 +850,14 @@ commands:on('mute', function(m, a) safeCall(mute, m, a) end)
 commands:on('unmute', function(m) safeCall(unmute, m) end)
 
 local function setupMute(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'setupmute' then
-		if message.author == message.guild.owner then
-			local role = message.guild:getRole('name', 'Muted')
-			for channel in message.guild.textChannels do
-				channel:getPermissionOverwriteFor(role):denyPermissions('sends', 'addReactions')
-			end
+	if message.author == message.guild.owner then
+		local role = message.guild:getRole('name', 'Muted')
+		for channel in message.guild.textChannels do
+			channel:getPermissionOverwriteFor(role):denyPermissions('sends', 'addReactions')
 		end
 	end
 end
-client:on('messageCreate', function(message) setupMute(message) end)
+commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
 commands:on('prune', function(message, args)
 	function fn(m) return m.name == message.guild._settings.modlog_channel end
@@ -1055,48 +1017,50 @@ client:on('messageDelete', function(message) messageDelete(message) end)
 client:on('messageDeleteUncached', function(channel, messageID) messageDeleteUncached(channel, messageID) end)
 
 local function populateMembers(message)
-	local commandWithArgs = getCommand(message, false, false)
-	if commandWithArgs[1] == 'populate' and message.author == message.guild.owner.user then
+	if message.author == message.guild.owner.user then
 		local guild = message.guild
 		for member in guild.members:iter() do
 			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
 		end
+		return status
 	end
 end
-client:on('messageCreate', function(m) populateMembers(m) end)
+commands:on('populate', function(m, a) safeCall(populateMembers, m, a) end)
 
-local function watchlist(message)
-	local commandWithArgs = getCommand(message, false, false)
-	local authorized = authorize(message, true, true)
-	if authorized and (commandWithArgs[1] == 'watchlist' or commandWithArgs[1] == 'wl') then
-		local member = message.guild:getMember(parseMention(commandWithArgs[2]))
+local function watchlist(message, args)
+	if authorize(message, true, true) then
+		local member = message.guild:getMember(parseMention(args))
 		if member then
+			local success
 			local currentVal = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
 			if currentVal == 'f' then
-				conn:execute(string.format([[UPDATE members SET watchlisted=true WHERE member_id='%s';]], member.id))
+				success = conn:execute(string.format([[UPDATE members SET watchlisted=true WHERE member_id='%s';]], member.id))
 			else
-				conn:execute(string.format([[UPDATE members SET watchlisted=false WHERE member_id='%s';]], member.id))
+				success = conn:execute(string.format([[UPDATE members SET watchlisted=false WHERE member_id='%s';]], member.id))
 			end
+			return success
 		end
 	end
 end
-client:on('messageCreate', function(m) watchlist(m) end)
+commands:on('watchlist', function(m) safeCall(watchlist, m, a) end)
+commands:on('wl', function(m) safeCall(watchlist, m, a) end)
 
-local function toggle18(message)
-	local commandWithArgs = getCommand(message, false, false)
-	local authorized = authorize(message, true, true)
-	if authorized and (commandWithArgs[1] == 'toggle18' or commandWithArgs[1] == 't18') then
-		local member = message.guild:getMember(parseMention(commandWithArgs[2]))
+local function toggle18(message, args)
+	if authorize(message, true, true) then
+		local member = message.guild:getMember(parseMention(args))
 		if member then
+			local success
 			local currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
 			if currentVal == 'f' then
-				conn:execute(string.format([[UPDATE members SET under18=true WHERE member_id='%s';]], member.id))
+				success = conn:execute(string.format([[UPDATE members SET under18=true WHERE member_id='%s';]], member.id))
 			else
-				conn:execute(string.format([[UPDATE members SET under18=false WHERE member_id='%s';]], member.id))
+				success = conn:execute(string.format([[UPDATE members SET under18=false WHERE member_id='%s';]], member.id))
 			end
+			return success
 		end
 	end
 end
-client:on('messageCreate', function(m) toggle18(m) end)
+commands:on('toggle18', function(m) safeCall(toggle18, m, a) end)
+commands:on('t18', function(m) safeCall(toggle18, m, a) end)
 
 client:run(token)
