@@ -317,7 +317,6 @@ commands:on('noroles', function(message, args)
 	if authorized then
 		local predicate = function(member) return #member.roles == 0 end
 		local list = {}
-		message:delete()
 		for m in message.guild.members:findAll(predicate) do
 			list[#list+1] = m.mentionString
 		end
@@ -641,7 +640,6 @@ local function register(message)
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
 		end
-		message:delete()
 	end
 end
 commands:on('register', function(message) register(message) end)
