@@ -1,24 +1,33 @@
+--[[ Required for discordia ]]
 local discordia = require('discordia')
 discordia.extensions()
 local enums = discordia.enums
 local client = discordia.Client({cacheAllMembers = true})
 local token = require'token'
+--[[ Required for luaSQL which loads per-guild settings and member data ]]
 local luasql = require'luasql.postgres'
 local env = luasql.postgres()
 local conn = env:connect('mydb')
 
+--[[ Required for my custom command parsing ]]
 local core = require'core'
 local CommandEmitter = core.Emitter:extend()
 local commands = CommandEmitter:new()
 
+--[[ Required for interval-based functions ]]
 local clock = discordia.Clock()
 clock:start()
 
+--[[ Crude way of getting self roles ]]
+--TODO
+--Replace this with a per-guild list
 local selfRoles = require'rolelist'
 
+--Involved in date-time parsing
 local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 
+--luasql.postgres returns individual objects as strings, this lets us convert those to lua tables
 local function sqlStringToTable(str)
 	if str:startswith('{') and str:endswith('}') then
 		str = string.gsub(str, "[{}]", "")
@@ -27,6 +36,7 @@ local function sqlStringToTable(str)
 	return
 end
 
+--[[ init functions: load per-guild settings and ensure that all members are cached in the members table ]]
 client:on('ready', function()
 	print('Logged in as '.. client.user.username)
 	for guild in client.guilds:iter() do
@@ -46,22 +56,29 @@ client:on('ready', function()
 	end
 end)
 
+--[[ Takes string that might be a user mention, returns the userID if it is ]]
 local function parseMention(mention)
 	return string.match(mention, "%<%@%!(%d+)%>") or string.match(mention, "%<%@(%d+)%>") or mention
 end
 
+--[[ Takes a string that might be a channel mention, returns channelID if it is ]]
 local function parseChannel(mention)
 	return string.match(mention, "%<%#(%d+)%>") or mention
 end
 
+--[[ creates a Date object with the given ISO-format time if valid, otherwise returns the original string ]]
 local function parseTime(time)
 	if time:match('(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
+--[[ takes a date table in the format of os.date("*t"), returns human readable ]]
 local function humanReadableTime(table)
+	if #tostring(table.min) == 1 then table.min = "0"..table.min end
+	if #tostring(table.hour) == 1 then table.hour = "0"..table.hour end
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
+--[[ used by the role functions, splits a user mention from the comma-separated role list ]]
 local function parseRoleList(message)
 	local member, roles
 	if #message.mentionedUsers == 1 then
@@ -76,6 +93,7 @@ local function parseRoleList(message)
 	return roles, member
 end
 
+--[[ authorizes a command for roles based on guild._settings.admin_roles and guild._settings.mod_roles ]]
 local function authorize(message, admins, mods)
 	if not message or (message.channel.type ~= enums.channelType.text) then return end
 	local member = message.guild:getMember(message.author.id)
@@ -92,9 +110,20 @@ local function authorize(message, admins, mods)
 	return false
 end
 
+--[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
 local function safeCall(func, message, args)
 	local status, ret = xpcall(func, debug.traceback, message, args)
-	if ret and not status then print(ret) end
+	if ret and not status then
+		local channel = message.guild:getChannel('364148499715063818')
+		channel:send {
+			embed = {
+				title = "Error thrown",
+				description = ret,
+				timestamp = discordia.Date():toISO(),
+				color = discordia.Color.fromRGB(255, 0 ,0).value,
+			}
+		}
+	end
 	local react
 	if status and ret then
 		react = '✅'
@@ -104,6 +133,7 @@ local function safeCall(func, message, args)
 	message:addReaction(react)
 end
 
+--[[ splits a command into command and everything else. handles literally every command ]]
 local function commandParser(message)
 	if message.author ~= client.user then
 		if message.channel.type == enums.channelType.text then
@@ -119,6 +149,7 @@ local function commandParser(message)
 end
 client:on('messageCreate', function(m) commandParser(m) end)
 
+--[[ Silly test func, changes based on what I need to test ]]
 local function test(message, args)
 	if args ~= "" then
 		if #message.mentionedUsers == 1 then
@@ -241,6 +272,7 @@ local function helpMessage(message)
 end
 commands:on('help', function(m, a) safeCall(helpMessage, m, a) end)
 
+--Update last_message in members table. not used yet
 client:on('messageCreate', function(message)
 	if message.channel.type == enums.channelType.text then
 		local status, err = conn:execute(string.format([[UPDATE members SET last_message='%s' WHERE member_id='%s';]], discordia.Date():toISO(), message.member.id))
@@ -751,6 +783,7 @@ commands:on('roles', function(message)
 	}
 end)
 
+--Welcome message on memberJoin
 local function welcomeMessage(member)
 	function fn(m) return m.name == member.guild._settings.welcome_channel end
 	local channel = member.guild.textChannels:find(fn)
@@ -849,6 +882,7 @@ end
 commands:on('mute', function(m, a) safeCall(mute, m, a) end)
 commands:on('unmute', function(m) safeCall(unmute, m) end)
 
+--sets up mute in every text channel. currently broken due to 2.0
 local function setupMute(message)
 	if message.author == message.guild.owner then
 		local role = message.guild:getRole('name', 'Muted')
@@ -859,6 +893,7 @@ local function setupMute(message)
 end
 commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
+--bulk delete command
 commands:on('prune', function(message, args)
 	function fn(m) return m.name == message.guild._settings.modlog_channel end
 	local logChannel = message.guild.textChannels:find(fn)
@@ -902,6 +937,56 @@ commands:on('prune', function(message, args)
 		end
 	end
 end)
+
+--manually ensure all members are present in the db. should be deprecated
+local function populateMembers(message)
+	if message.author == message.guild.owner.user then
+		local guild = message.guild
+		for member in guild.members:iter() do
+			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
+		end
+		return status
+	end
+end
+commands:on('populate', function(m, a) safeCall(populateMembers, m, a) end)
+
+--toggles the watchlist state for a member
+local function watchlist(message, args)
+	if authorize(message, true, true) then
+		local member = message.guild:getMember(parseMention(args))
+		if member then
+			local success
+			local currentVal = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
+			if currentVal == 'f' then
+				success = conn:execute(string.format([[UPDATE members SET watchlisted=true WHERE member_id='%s';]], member.id))
+			else
+				success = conn:execute(string.format([[UPDATE members SET watchlisted=false WHERE member_id='%s';]], member.id))
+			end
+			return success
+		end
+	end
+end
+commands:on('watchlist', function(m) safeCall(watchlist, m, a) end)
+commands:on('wl', function(m) safeCall(watchlist, m, a) end)
+
+--toggles the under18 state for a member
+local function toggle18(message, args)
+	if authorize(message, true, true) then
+		local member = message.guild:getMember(parseMention(args))
+		if member then
+			local success
+			local currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
+			if currentVal == 'f' then
+				success = conn:execute(string.format([[UPDATE members SET under18=true WHERE member_id='%s';]], member.id))
+			else
+				success = conn:execute(string.format([[UPDATE members SET under18=false WHERE member_id='%s';]], member.id))
+			end
+			return success
+		end
+	end
+end
+commands:on('toggle18', function(m) safeCall(toggle18, m, a) end)
+commands:on('t18', function(m) safeCall(toggle18, m, a) end)
 
 --Logging functions
 --Member join message
@@ -1015,52 +1100,5 @@ local function messageDeleteUncached(channel, messageID)
 end
 client:on('messageDelete', function(message) messageDelete(message) end)
 client:on('messageDeleteUncached', function(channel, messageID) messageDeleteUncached(channel, messageID) end)
-
-local function populateMembers(message)
-	if message.author == message.guild.owner.user then
-		local guild = message.guild
-		for member in guild.members:iter() do
-			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
-		end
-		return status
-	end
-end
-commands:on('populate', function(m, a) safeCall(populateMembers, m, a) end)
-
-local function watchlist(message, args)
-	if authorize(message, true, true) then
-		local member = message.guild:getMember(parseMention(args))
-		if member then
-			local success
-			local currentVal = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
-			if currentVal == 'f' then
-				success = conn:execute(string.format([[UPDATE members SET watchlisted=true WHERE member_id='%s';]], member.id))
-			else
-				success = conn:execute(string.format([[UPDATE members SET watchlisted=false WHERE member_id='%s';]], member.id))
-			end
-			return success
-		end
-	end
-end
-commands:on('watchlist', function(m) safeCall(watchlist, m, a) end)
-commands:on('wl', function(m) safeCall(watchlist, m, a) end)
-
-local function toggle18(message, args)
-	if authorize(message, true, true) then
-		local member = message.guild:getMember(parseMention(args))
-		if member then
-			local success
-			local currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
-			if currentVal == 'f' then
-				success = conn:execute(string.format([[UPDATE members SET under18=true WHERE member_id='%s';]], member.id))
-			else
-				success = conn:execute(string.format([[UPDATE members SET under18=false WHERE member_id='%s';]], member.id))
-			end
-			return success
-		end
-	end
-end
-commands:on('toggle18', function(m) safeCall(toggle18, m, a) end)
-commands:on('t18', function(m) safeCall(toggle18, m, a) end)
 
 client:run(token)
