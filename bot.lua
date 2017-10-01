@@ -117,7 +117,6 @@ local function safeCall(func, message, args)
 		local channel = message.guild:getChannel('364148499715063818')
 		channel:send {
 			embed = {
-				title = "Error thrown",
 				description = ret,
 				timestamp = discordia.Date():toISO(),
 				color = discordia.Color.fromRGB(255, 0 ,0).value,
