@@ -95,9 +95,13 @@ end
 
 function Resolver.emoji(obj)
 	if isInstance(obj, classes.Emoji) then
-		return obj.hash
+		return obj.name .. ':' .. obj.id
 	elseif isInstance(obj, classes.Reaction) then
-		return obj.emojiHash
+		if obj.emojiId then
+			return obj.emojiName .. ':' .. obj.emojiId
+		else
+			return obj.emojiName
+		end
 	end
 	return tostring(obj)
 end
