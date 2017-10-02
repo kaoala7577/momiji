@@ -302,7 +302,7 @@ local function ping(message)
 	if response then
 		sw:stop()
 		local success = response:setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
-		return status
+		return success
 	end
 end
 commands:on('ping', function(m,a) safeCall(ping, m, a) end)
