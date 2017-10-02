@@ -308,7 +308,7 @@ end
 commands:on('ping', function(m,a) safeCall(ping, m, a) end)
 
 --lists members without roles
-commands:on('noroles', function(message, args)
+local function noRoles(message, args)
 	local authorized = authorize(message, true, false)
 	if authorized then
 		local predicate = function(member) return #member.roles == 0 end
@@ -331,7 +331,8 @@ commands:on('noroles', function(message, args)
 			message:reply(listInLines)
 		end
 	end
-end)
+end
+commands:on('noroles', function(m,a) safeCall(noRoles, m, a) end)
 
 --serverinfo
 local function serverInfo(message, args)
@@ -408,8 +409,8 @@ local function serverInfo(message, args)
 		}
 	end
 end
-commands:on('serverinfo', function(m, a) serverInfo(m, a) end)
-commands:on('si', function(m, a) serverInfo(m, a) end)
+commands:on('serverinfo', function(m, a) safeCall(serverInfo, m, a) end)
+commands:on('si', function(m, a) safeCall(serverInfo, m, a) end)
 
 --roleinfo
 local function roleInfo(message, args)
@@ -440,8 +441,8 @@ local function roleInfo(message, args)
 		}
 	end
 end
-commands:on('roleinfo', function(m, a) roleInfo(m, a) end)
-commands:on('ri', function(m, a) roleInfo(m, a) end)
+commands:on('roleinfo', function(m, a) safeCall(roleInfo, m, a) end)
+commands:on('ri', function(m, a) safeCall(roleInfo, m, a) end)
 
 --User functions
 --userinfo
@@ -505,7 +506,7 @@ commands:on('userinfo', function(m, a) safeCall(userInfo, m, a) end)
 commands:on('ui', function(m, a) safeCall(userInfo, m, a) end)
 
 --addRole: Mod Function only!
-commands:on('ar', function(message)
+local function addRole(message, args)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
@@ -537,9 +538,9 @@ commands:on('ar', function(message)
 			}
 		end
 	end
-end)
+end
 --removeRole: Mod function only!
-commands:on('rr', function(message)
+local function removeRole(message, args)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
@@ -571,7 +572,10 @@ commands:on('rr', function(message)
 			}
 		end
 	end
-end)
+end
+commands:on('ar', function(m,a) safeCall(addRole,m,a) end)
+commands:on('rr', function(m,a) safeCall(removeRole,m,a) end)
+
 --Register, same as ar but removes Not Verified
 local function register(message)
 	function fn(m) return m.name == message.guild._settings.modlog_channel end
@@ -747,13 +751,13 @@ local function removeSelfRole(message)
 		}
 	end
 end
-commands:on('role', function(message) addSelfRole(message) end)
-commands:on('asr', function(message) addSelfRole(message) end)
-commands:on('derole', function(message) removeSelfRole(message) end)
-commands:on('rsr', function(message) removeSelfRole(message) end)
+commands:on('role', function(message) safeCall(addSelfRole, message) end)
+commands:on('asr', function(message) safeCall(addSelfRole, message) end)
+commands:on('derole', function(message) safeCall(removeSelfRole, message) end)
+commands:on('rsr', function(message) safeCall(removeSelfRole, message) end)
 
 --roleList
-commands:on('roles', function(message)
+local function roleList(message)
 	local roleList = {}
 	for k,v in pairs(selfRoles) do
 		for r,_ in pairs(v) do
@@ -780,7 +784,8 @@ commands:on('roles', function(message)
 			footer = {text = "* One or more required in this category"}
 		}
 	}
-end)
+end
+commands:on('roles', function(m,a) safeCall(roleList,m,a) end)
 
 --Welcome message on memberJoin
 local function welcomeMessage(member)
@@ -893,7 +898,7 @@ end
 commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
 --bulk delete command
-commands:on('prune', function(message, args)
+local function bulkDelete(message, args)
 	function fn(m) return m.name == message.guild._settings.modlog_channel end
 	local logChannel = message.guild.textChannels:find(fn)
 	local author = message.guild:getMember(message.author.id)
@@ -935,7 +940,8 @@ commands:on('prune', function(message, args)
 			client:on('messageDeleteUncached', listener)
 		end
 	end
-end)
+end
+commands:on('prune', function(m,a) safeCall(bulkDelete,m,a) end)
 
 --manually ensure all members are present in the db. should be deprecated
 local function populateMembers(message)
