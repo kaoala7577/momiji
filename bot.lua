@@ -41,7 +41,7 @@ client:on('ready', function()
 	print('Logged in as '.. client.user.username)
 	for guild in client.guilds:iter() do
 		local cur = conn:execute([[SELECT * FROM settings;]])
-		if not cur then conn:execute([[CREATE TABLE settings (guild_id VARCHAR(20), prefix VARCHAR(20), log_channel VARCHAR(50), modlog_channel VARCHAR(50), welcome_channel VARCHAR(50), admin_roles VARCHAR(50) [], mod_roles VARCHAR(50) [], user_modules bool [], moderation_modules bool [], logging_modules bool []);]])
+		if not cur then conn:execute([[CREATE TABLE settings (guild_id VARCHAR(20), prefix VARCHAR(20), log_channel VARCHAR(50), modlog_channel VARCHAR(50), welcome_channel VARCHAR(50), admin_roles VARCHAR(50) \[\], mod_roles VARCHAR(50) \[\], user_modules bool \[\], moderation_modules bool \[\], logging_modules bool \[\]);]]) end
 		local row = cur:fetch({}, "a")
 		while row do
 			if row.guild_id == guild.id then
