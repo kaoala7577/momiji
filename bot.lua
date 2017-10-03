@@ -970,6 +970,32 @@ local function populateMembers(message)
 end
 commands:on('populate', function(m, a) safeCall(populateMembers, m, a) end)
 
+--list all watchlisted members
+local function listWatchlist(message, args)
+	if authorize(message, true, true) then
+		local cur = conn:execute([[SELECT member_id FROM members WHERE watchlisted=true;]])
+		local row = cur:fetch({}, "a")
+		local success = row ~= nil or false
+		local members = {}
+		while row do
+			table.insert(members, row.member_id)
+			row = cur:fetch(row, "a")
+		end
+		if members then
+			local list = ""
+			for _,m in pairs(members) do
+				local member = message.guild:getMember(m)
+				if list ~= "" then list = list.."\n"..member.mentionString else list = member.mentionString end
+			end
+			message:reply(list)
+		else
+			message:reply("No members are watchlisted.")
+		end
+		return success
+	end
+end
+commands:on('listwl', function(m,a) safeCall(listWatchlist,m,a) end)
+
 --toggles the watchlist state for a member
 local function watchlist(message, args)
 	if authorize(message, true, true) then
