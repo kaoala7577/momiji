@@ -421,7 +421,7 @@ commands:on('si', function(m, a) safeCall(serverInfo, m, a) end)
 
 --roleinfo
 local function roleInfo(message, args)
-	local role = message.guild.roles:find(function(r) return r.name == args end)
+	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
 		local hex = string.match(role:getColor():toHex(), "%x+")
 		local count = 0
@@ -653,8 +653,8 @@ local function register(message)
 		end
 	end
 end
-commands:on('register', function(message) register(message) end)
-commands:on('reg', function(message) register(message) end)
+commands:on('register', function(m, a) safeCall(register, m, a) end)
+commands:on('reg', function(m, a) safeCall(register, m, a) end)
 client:on('memberRegistered', function(member)
 	local channel = member.guild:getChannel('350764752898752513')
 	if channel then
@@ -765,10 +765,10 @@ local function removeSelfRole(message)
 		return status
 	end
 end
-commands:on('role', function(message) safeCall(addSelfRole, message) end)
-commands:on('asr', function(message) safeCall(addSelfRole, message) end)
-commands:on('derole', function(message) safeCall(removeSelfRole, message) end)
-commands:on('rsr', function(message) safeCall(removeSelfRole, message) end)
+commands:on('role', function(m, a) safeCall(addSelfRole, m, a) end)
+commands:on('asr', function(m, a) safeCall(addSelfRole, m, a) end)
+commands:on('derole', function(m, a) safeCall(removeSelfRole, m, a) end)
+commands:on('rsr', function(m, a) safeCall(removeSelfRole, m, a) end)
 
 --roleList
 local function roleList(message)
@@ -899,7 +899,7 @@ local function unmute(message)
 	end
 end
 commands:on('mute', function(m, a) safeCall(mute, m, a) end)
-commands:on('unmute', function(m) safeCall(unmute, m) end)
+commands:on('unmute', function(m, a) safeCall(unmute, m, a) end)
 
 --sets up mute in every text channel. currently broken due to 2.0
 local function setupMute(message)
@@ -986,8 +986,8 @@ local function watchlist(message, args)
 		end
 	end
 end
-commands:on('watchlist', function(m) safeCall(watchlist, m, a) end)
-commands:on('wl', function(m) safeCall(watchlist, m, a) end)
+commands:on('watchlist', function(m,a) safeCall(watchlist, m, a) end)
+commands:on('wl', function(m,a) safeCall(watchlist, m, a) end)
 
 --toggles the under18 state for a member
 local function toggle18(message, args)
@@ -1005,8 +1005,8 @@ local function toggle18(message, args)
 		end
 	end
 end
-commands:on('toggle18', function(m) safeCall(toggle18, m, a) end)
-commands:on('t18', function(m) safeCall(toggle18, m, a) end)
+commands:on('toggle18', function(m,a) safeCall(toggle18, m, a) end)
+commands:on('t18', function(m,a) safeCall(toggle18, m, a) end)
 
 --Logging functions
 --Member join message
