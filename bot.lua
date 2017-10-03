@@ -41,7 +41,6 @@ client:on('ready', function()
 	print('Logged in as '.. client.user.username)
 	for guild in client.guilds:iter() do
 		local cur = conn:execute([[SELECT * FROM settings;]])
-		if not cur then conn:execute([[CREATE TABLE settings (guild_id VARCHAR(20), prefix VARCHAR(20), log_channel VARCHAR(50), modlog_channel VARCHAR(50), welcome_channel VARCHAR(50), admin_roles VARCHAR(50) \[\], mod_roles VARCHAR(50) \[\], user_modules bool \[\], moderation_modules bool \[\], logging_modules bool \[\]);]]) end
 		local row = cur:fetch({}, "a")
 		while row do
 			if row.guild_id == guild.id then
@@ -51,6 +50,7 @@ client:on('ready', function()
 			end
 			row = cur:fetch(row, "a")
 		end
+		--if not row then conn:execute(string.format([[INSERT INTO settings (guild_id) VALUES ('%s');]], guild.id)) end
 		for member in guild.members:iter() do
 			conn:execute(string.format([[INSERT INTO members (member_id, nicknames, guild_id) VALUES ('%s','{"%s"}','%s') ON CONFLICT (member_id) DO UPDATE SET guild_id='%s';]], member.id, member.name, guild.id, guild.id))
 		end
@@ -589,8 +589,7 @@ commands:on('rr', function(m,a) safeCall(removeRole,m,a) end)
 
 --Register, same as ar but removes Not Verified
 local function register(message)
-	function fn(m) return m.name == message.guild._settings.modlog_channel end
-	local channel = message.guild.textChannels:find(fn)
+	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, true)
@@ -828,7 +827,7 @@ local function mute(message, args)
 	local author = message.author
 	local authorized = authorize(message, true, true)
 	if authorized then
-		local logChannel = message.guild.textChannels:find(function(m) return m.name == message.guild._settings.modlog_channel end)
+		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
 		local success, member, channel
 		local reason = ""
 		if #message.mentionedUsers == 1 then
@@ -870,7 +869,7 @@ local function unmute(message)
 	local author = message.author
 	local authorized = authorize(message, true, true)
 	if authorized then
-		local logChannel = message.guild.textChannels:find(function(m) return m.name == message.guild._settings.modlog_channel end)
+		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
 		local success, member, channel
 		if #message.mentionedUsers == 1 then
 			channel = message.mentionedChannels:iter()()
@@ -915,8 +914,7 @@ commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
 --bulk delete command
 local function bulkDelete(message, args)
-	function fn(m) return m.name == message.guild._settings.modlog_channel end
-	local logChannel = message.guild.textChannels:find(fn)
+	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
 	if authorized then
@@ -1043,8 +1041,7 @@ commands:on('t18', function(m,a) safeCall(toggle18, m, a) end)
 --Logging functions
 --Member join message
 local function memberJoin(member)
-	function fn(m) return m.name == member.guild._settings.log_channel end
-	local channel = member.guild.textChannels:find(fn)
+	local channel = member.guild:getChannel(member.guild._settings.log_channel)
 	local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s', '{"%s"}');]], member.id, member.name))
 	if channel then
 		channel:send {
@@ -1061,8 +1058,7 @@ local function memberJoin(member)
 end
 --Member leave message
 local function memberLeave(member)
-	function fn(m) return m.name == member.guild._settings.log_channel end
-	local channel = member.guild.textChannels:find(fn)
+	local channel = member.guild:getChannel(member.guild._settings.log_channel)
 	local status, err = conn:execute(string.format([[DELETE FROM members WHERE member_id='%s';]], member.id))
 	if channel then
 		channel:send {
@@ -1082,8 +1078,7 @@ client:on('memberLeave', function(member) memberLeave(member) end)
 --Ban message
 local function userBan(user, guild)
 	local member = guild:getMember(user) or user
-	function fn(m) return m.name == guild._settings.modlog_channel end
-	local channel = guild.textChannels:find(fn)
+	local channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
 		channel:send {
 			embed = {
@@ -1100,8 +1095,7 @@ end
 --Unban message
 local function userUnban(user, guild)
 	local member = guild:getMember(user) or user
-	function fn(m) return m.name == guild._settings.modlog_channel end
-	local channel = guild.textChannels:find(fn)
+	local channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
 		channel:send {
 			embed = {
@@ -1120,8 +1114,7 @@ client:on('userUnban', function(user, guild) userUnban(user, guild) end)
 --Cached message deletion
 local function messageDelete(message)
 	local member = message.member
-	function fn(m) return m.name == message.guild._settings.log_channel end
-	local logChannel = message.guild.textChannels:find(fn)
+	local logChannel = message.guild:getChannel(member.guild._settings.log_channel)
 	if logChannel and member then
 		logChannel:send {
 			embed = {
@@ -1136,8 +1129,7 @@ local function messageDelete(message)
 end
 --Uncached message deletion
 local function messageDeleteUncached(channel, messageID)
-	function fn(m) return m.name == message.guild._settings.log_channel end
-	local logChannel = message.guild.textChannels:find(fn)
+	local logChannel = message.guild:getChannel(member.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
 			embed = {
