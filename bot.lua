@@ -51,7 +51,7 @@ client:on('ready', function()
 			row = cur:fetch(row, "a")
 		end
 		for member in guild.members:iter() do
-			conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
+			conn:execute(string.format([[INSERT INTO members (member_id, nicknames, guild_id) VALUES ('%s','{"%s"}','%s') ON CONFLICT (member_id) DO UPDATE SET guild_id='%s';]], member.id, member.name, guild.id, guild.id))
 		end
 	end
 end)
