@@ -358,8 +358,9 @@ local function serverInfo(message, args)
 		end
 	end
 	timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+	local status
 	if invite then
-		message.channel:send {
+		status = message.channel:send {
 			embed = {
 				author = {name = guild.name, icon_url = guild.iconURL},
 				fields = {
@@ -384,7 +385,7 @@ local function serverInfo(message, args)
 			}
 		}
 	else
-		message.channel:send {
+		status = message.channel:send {
 			embed = {
 				author = {name = guild.name, icon_url = guild.iconURL},
 				fields = {
@@ -408,6 +409,7 @@ local function serverInfo(message, args)
 			}
 		}
 	end
+	return status
 end
 commands:on('serverinfo', function(m, a) safeCall(serverInfo, m, a) end)
 commands:on('si', function(m, a) safeCall(serverInfo, m, a) end)
@@ -424,7 +426,7 @@ local function roleInfo(message, args)
 		local hoisted, mentionable
 		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
 		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-		message.channel:send {
+		local status = message.channel:send {
 			embed = {
 				thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
 				fields = {
@@ -439,6 +441,7 @@ local function roleInfo(message, args)
 				color = role:getColor().value,
 			}
 		}
+		return status
 	end
 end
 commands:on('roleinfo', function(m, a) safeCall(roleInfo, m, a) end)
@@ -527,7 +530,7 @@ local function addRole(message, args)
 			roleList = roleList..r.name.."\n"
 		end
 		if #rolesToAdd > 0 then
-			message.channel:send {
+			local status = message.channel:send {
 				embed = {
 					author = {name = "Roles Added", icon_url = member.avatarURL},
 					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
@@ -536,6 +539,7 @@ local function addRole(message, args)
 					footer = {text = "ID: "..member.id}
 				}
 			}
+			return status
 		end
 	end
 end
@@ -561,7 +565,7 @@ local function removeRole(message, args)
 			roleList = roleList..r.name.."\n"
 		end
 		if #rolesToRemove > 0 then
-			message.channel:send {
+			local status = message.channel:send {
 				embed = {
 					author = {name = "Roles Removed", icon_url = member.avatarURL},
 					description = "**Removed "..member.mentionString.." from the following roles** \n"..roleList,
@@ -570,6 +574,7 @@ local function removeRole(message, args)
 					footer = {text = "ID: "..member.id}
 				}
 			}
+			return status
 		end
 	end
 end
@@ -636,6 +641,7 @@ local function register(message)
 				}
 				client:emit('memberRegistered', member)
 				local status, err = conn:execute(string.format([[UPDATE members SET registered='%s' WHERE member_id='%s';]], discordia.Date():toISO(), member.id))
+				return status
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
@@ -691,8 +697,9 @@ local function addSelfRole(message)
 		end
 		return roleList
 	end
+	local status
 	if #rolesAdded > 0 then
-		message.channel:send {
+		status = message.channel:send {
 			embed = {
 				author = {name = "Roles Added", icon_url = member.avatarURL},
 				description = "**Added "..member.mentionString.." to the following roles** \n"..makeRoleList(rolesAdded),
@@ -713,6 +720,7 @@ local function addSelfRole(message)
 			}
 		}
 	end
+	return status
 end
 --removeSelfRole
 local function removeSelfRole(message)
@@ -740,7 +748,7 @@ local function removeSelfRole(message)
 		return roleList
 	end
 	if #rolesToRemove > 0 then
-		message.channel:send {
+		local status = message.channel:send {
 			embed = {
 				author = {name = "Roles Removed", icon_url = member.avatarURL},
 				description = "**Removed "..member.mentionString.." from the following roles** \n"..makeRoleList(rolesToRemove),
@@ -749,6 +757,7 @@ local function removeSelfRole(message)
 				footer = {text = "ID: "..member.id}
 			}
 		}
+		return status
 	end
 end
 commands:on('role', function(message) safeCall(addSelfRole, message) end)
@@ -768,7 +777,7 @@ local function roleList(message)
 			end
 		end
 	end
-	message.channel:send {
+	local status = message.channel:send {
 		embed = {
 			author = {name = "Self-Assignable Roles", icon_url = message.guild.iconURL},
 			fields = {
@@ -784,6 +793,7 @@ local function roleList(message)
 			footer = {text = "* One or more required in this category"}
 		}
 	}
+	return status
 end
 commands:on('roles', function(m,a) safeCall(roleList,m,a) end)
 
