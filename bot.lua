@@ -985,7 +985,7 @@ local function listWatchlist(message, args)
 			local list = "**Count: "..#members.."**"
 			for _,m in pairs(members) do
 				local member = message.guild:getMember(m)
-				if list ~= "" then list = list.."\n"..member.mentionString else list = member.mentionString end
+				if list ~= "" then list = list.."\n"..member.username.."#"..member.discriminator..":"..member.mentionString else list = member.username.."#"..member.discriminator..":"..member.mentionString end
 			end
 			message:reply {
 				embed = {
