@@ -982,12 +982,17 @@ local function listWatchlist(message, args)
 			row = cur:fetch(row, "a")
 		end
 		if members then
-			local list = ""
+			local list = "**Count: "..#members.."**"
 			for _,m in pairs(members) do
 				local member = message.guild:getMember(m)
 				if list ~= "" then list = list.."\n"..member.mentionString else list = member.mentionString end
 			end
-			message:reply(list)
+			message:reply {
+				embed = {
+					title = "Watchlisted Members",
+					description = list,
+				}
+			}
 		else
 			message:reply("No members are watchlisted.")
 		end
