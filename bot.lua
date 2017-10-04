@@ -237,7 +237,7 @@ commands:on('genspam', function(m, a) safeCall(genSpam, m, a) end)
 
 --Help page.... total shit
 local function helpMessage(message)
-	local success = message.author:send([[**How to read this doc:**
+	local status = message.author:send([[**How to read this doc:**
 When reading the commands, arguments in angle brackets (`<>`) are mandatory
 while arguments in square brackets (`[]`) are optional.
 **No brackets should be included in the commands**
