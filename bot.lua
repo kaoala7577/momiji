@@ -1114,7 +1114,7 @@ client:on('userUnban', function(user, guild) userUnban(user, guild) end)
 --Cached message deletion
 local function messageDelete(message)
 	local member = message.member
-	local logChannel = message.guild:getChannel(member.guild._settings.log_channel)
+	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
 		logChannel:send {
 			embed = {
@@ -1129,7 +1129,7 @@ local function messageDelete(message)
 end
 --Uncached message deletion
 local function messageDeleteUncached(channel, messageID)
-	local logChannel = message.guild:getChannel(member.guild._settings.log_channel)
+	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
 			embed = {
