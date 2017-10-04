@@ -804,8 +804,7 @@ commands:on('roles', function(m,a) safeCall(roleList,m,a) end)
 
 --Welcome message on memberJoin
 local function welcomeMessage(member)
-	function fn(m) return m.name == member.guild._settings.welcome_channel end
-	local channel = member.guild.textChannels:find(fn)
+	local channel = member.guild:getChannel(member.guild._settings.welcome_channel)
 	if channel then
 		channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify and what pronouns you would like to use. These are required.")
 		--[[channel:send {
@@ -1113,7 +1112,7 @@ client:on('userBan', function(user, guild) userBan(user, guild) end)
 client:on('userUnban', function(user, guild) userUnban(user, guild) end)
 --Cached message deletion
 local function messageDelete(message)
-	local member = message.member
+	local member = message.guild:getMember(message.author.id)
 	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
 		logChannel:send {
