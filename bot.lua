@@ -279,7 +279,7 @@ commands:on('help', function(m, a) safeCall(helpMessage, m, a) end)
 
 --Update last_message in members table. not used yet
 client:on('messageCreate', function(message)
-	if message.channel.type == enums.channelType.text then
+	if message.channel.type == enums.channelType.text and message.author.bot ~= true then
 		local status, err = conn:execute(string.format([[UPDATE members SET last_message='%s' WHERE member_id='%s';]], discordia.Date():toISO(), message.member.id))
 	end
 end)
