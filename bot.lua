@@ -85,7 +85,7 @@ end
 
 --[[ creates a Date object with the given ISO-format time if valid, otherwise returns the original string ]]
 local function parseTime(time)
-	if time:match('(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
+	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
 --[[ takes a date table in the format of os.date("*t"), returns human readable ]]
@@ -155,7 +155,7 @@ local function commandParser(message)
 	if message.channel.type == enums.channelType.text then
         local prefix = message.guild._settings.prefix
 		if message.content:startswith(prefix) then
-			local str = message.content:match("^%"..prefix.."(%w+)%s+")
+			local str = message.content:match("^%"..prefix.."(%g+)")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
 			commands:emit(str:lower(), message, args)
 		end
@@ -194,9 +194,10 @@ clock:on('min', function(time)
 	if guild then
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
-				local date = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
-				if date ~= 'N/A' then
-					date = date:toTable()
+				local reg = conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch()
+				print(reg)
+				if reg and reg ~= 'N/A' then
+					local date = parseTime(reg):toTable()
 					if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
 						member:addRole('348693274917339139')
 						member:removeRole('348873284265312267')
