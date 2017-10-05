@@ -19,6 +19,7 @@ local clock = discordia.Clock()
 clock:start()
 
 --[[ Required for opening json files ]]
+local json = require('json')
 function readAll(file)
     local f = io.open(file, "rb")
     local content = f:read("*all")
