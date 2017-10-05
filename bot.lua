@@ -153,7 +153,7 @@ end
 local function commandParser(message)
 	if message.author.bot then return end
 	if message.channel.type == enums.channelType.text then
-        local prefix = message.guild._settings.prefix or "%."
+        local prefix = message.guild._settings.prefix
 		if message.content:startswith(prefix) then
 			local str = message.content:match("^%"..prefix.."(%w+)%s+")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
