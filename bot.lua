@@ -135,7 +135,7 @@ end
 
 --[[ splits a command into command and everything else. handles literally every command ]]
 local function commandParser(message)
-	if message.author ~= client.user then
+	if not message.author.bot then
 		if message.channel.type == enums.channelType.text then
 			if message.content:startswith("%"..message.guild._settings.prefix) then
 				local str = message.content:match("^%"..message.guild._settings.prefix.."(%g+)%s*")
