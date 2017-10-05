@@ -18,6 +18,21 @@ local commands = CommandEmitter:new()
 local clock = discordia.Clock()
 clock:start()
 
+--[[ Required for opening json files ]]
+function readAll(file)
+    local f = io.open(file, "rb")
+    local content = f:read("*all")
+    f:close()
+    return content
+end
+local notes = json.parse(readAll('notes.json')) or {}
+function saveNotes(tbl, file)
+    local f = io.open(file, "w")
+    local str = json.stringify(tbl)
+    f:write(str)
+    f:close()
+end
+
 --[[ Crude way of getting self roles ]]
 --TODO
 --Replace this with a per-guild list
@@ -135,17 +150,17 @@ end
 
 --[[ splits a command into command and everything else. handles literally every command ]]
 local function commandParser(message)
-	if not message.author.bot then
-		if message.channel.type == enums.channelType.text then
-			if message.content:startswith("%"..message.guild._settings.prefix) then
-				local str = message.content:match("^%"..message.guild._settings.prefix.."(%g+)%s*")
-				local args = message.content:gsub("^%"..message.guild._settings.prefix..str, ""):trim()
-				commands:emit(str:lower(), message, args)
-			end
-		else
-			message:reply("I'm not currently set up to handle private messages")
+	if message.author.bot then return end
+	if message.channel.type == enums.channelType.text then
+        local prefix = message.guild._settings.prefix or "%."
+		if message.content:startswith(prefix) then
+			local str = message.content:match("^%"..prefix.."(%g+)%s*")
+			local args = message.content:gsub("^%"..prefix..str, ""):trim()
+			commands:emit(str:lower(), message, args)
 		end
-	end
+    else
+        message:reply("I'm not currently set up to handle private messages")
+    end
 end
 client:on('messageCreate', function(m) commandParser(m) end)
 
@@ -1036,6 +1051,89 @@ local function toggle18(message, args)
 end
 commands:on('toggle18', function(m,a) safeCall(toggle18, m, a) end)
 commands:on('t18', function(m,a) safeCall(toggle18, m, a) end)
+
+--[[ Note Functions ]]
+function addNote(message, args)
+	if authorize(message,true,true) then
+	    local a = message.guild:getMember(message.author.id)
+	    local m
+	    if message.mentionedUsers then
+	        if #message.mentionedUsers == 1 then
+	            m = message.mentionedUsers:iter()()
+	            args = args:gsub("<@.+>",""):trim()
+	        end
+	    end
+	    if not m then return end
+	    if notes[1] then
+	        if notes[1][m.id] then
+	            table.insert(notes[1][m.id].notes, {note = args, moderator = m.username, time = message.timestamp})
+	        end
+	    else
+	        table.insert(notes, {[m.id] = {
+	            notes = {
+	                {note = args, moderator = m.username, time = message.timestamp}
+	            }
+	        }})
+	    end
+	    saveNotes(notes, 'notes.json')
+	    return true
+	end
+end
+commands:on('addnote', function(m,a) safeCall(addNote,m,a) end)
+
+function delNote(message, args)
+	if authorize(message,true,true) then
+	    local a = message.guild:getMember(message.author.id)
+	    local m
+	    if message.mentionedUsers then
+	        if #message.mentionedUsers == 1 then
+	            m = message.mentionedUsers:iter()()
+	            args = args:gsub("<@.+>",""):trim()
+	        end
+	    end
+	    if not m then return end
+	    if args == "" then return end
+	    if not notes[1] then return end
+	    if not notes[1][m.id] then return end
+	    args = tonumber(args)
+	    if args then
+	        local n = notes[1][m.id]
+	        if args <= #n.notes then
+	            table.remove(n.notes, args)
+	            saveNotes(notes, 'notes.json')
+	            return true
+	        end
+	    end
+	end
+end
+commands:on('delnote', function(m,a) safeCall(delNote,m,a) end)
+
+function viewNotes(message, args)
+	if authorize(message,true,true) then
+	    local a = message.guild:getMember(message.author.id)
+	    local m
+	    if message.mentionedUsers then
+	        if #message.mentionedUsers == 1 then
+	            m = message.mentionedUsers:iter()()
+	            args = args:gsub("<@.+>",""):trim()
+	        end
+	    end
+	    if not m then return end
+	    if not notes[1][m.id] then return end
+	    local notelist = {}
+	    for _,v in pairs(notes[1][m.id].notes) do
+	        table.insert(notelist, {name = "Note Added by: "..v.moderator, value = v.note})
+	    end
+	    local status = message:reply {
+	        embed = {
+	            author = {name = m.name, icon_url = m.avatarURL},
+	            fields = notelist,
+	        }
+	    }
+	    return status
+	end
+end
+commands:on('viewnotes', function(m,a) safeCall(viewNotes,m,a) end)
 
 --Logging functions
 --Member join message
