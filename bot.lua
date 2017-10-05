@@ -154,7 +154,7 @@ local function commandParser(message)
 	if message.author.bot then return end
 	if message.channel.type == enums.channelType.text then
         local prefix = message.guild._settings.prefix
-		if message.content:startswith(prefix) then
+		if message.content:match("^%"..prefix) then
 			local str = message.content:match("^%"..prefix.."(%g+)")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
 			commands:emit(str:lower(), message, args)
@@ -195,7 +195,6 @@ clock:on('min', function(time)
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
 				local reg = conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch()
-				print(reg)
 				if reg and reg ~= 'N/A' then
 					local date = parseTime(reg):toTable()
 					if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
