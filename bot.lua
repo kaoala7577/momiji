@@ -1072,7 +1072,7 @@ function addNote(message, args)
 	    else
 	        table.insert(notes, {[m.id] = {
 	            notes = {
-	                {note = args, moderator = m.username, time = message.timestamp}
+	                {note = args, moderator = a.username, time = message.timestamp}
 	            }
 	        }})
 	    end
