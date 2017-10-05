@@ -155,7 +155,7 @@ local function commandParser(message)
 	if message.channel.type == enums.channelType.text then
         local prefix = message.guild._settings.prefix or "%."
 		if message.content:startswith(prefix) then
-			local str = message.content:match("^%"..prefix.."(%g+)%s*")
+			local str = message.content:match("^%"..prefix.."(%w+)%s+")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
 			commands:emit(str:lower(), message, args)
 		end
@@ -1067,7 +1067,7 @@ function addNote(message, args)
 	    if not m then return end
 	    if notes[1] then
 	        if notes[1][m.id] then
-	            table.insert(notes[1][m.id].notes, {note = args, moderator = m.username, time = message.timestamp})
+	            table.insert(notes[1][m.id].notes, {note = args, moderator = a.username, time = message.timestamp})
 	        end
 	    else
 	        table.insert(notes, {[m.id] = {
