@@ -1094,6 +1094,7 @@ function addNote(message, args)
 	            }
 	        }})
 			saveTable(notes, 'notes.json')
+			notes = json.parse(readAll('notes.json'))
 		    return true
 	    end
 	end
@@ -1123,6 +1124,7 @@ function delNote(message, args)
 	        if args <= #n.notes then
 	            table.remove(n.notes, args)
 	            saveTable(notes, 'notes.json')
+				notes = json.parse(readAll('notes.json'))
 	            return true
 	        end
 	    end
