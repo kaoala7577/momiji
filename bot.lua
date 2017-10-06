@@ -1078,7 +1078,13 @@ function addNote(message, args)
 	    if notes[1] then
 	        if notes[1][m.id] then
 	            table.insert(notes[1][m.id].notes, {note = args, moderator = a.username, time = message.timestamp})
-	        end
+	        else
+				table.insert(notes, {[m.id] = {
+		            notes = {
+		                {note = args, moderator = a.username, time = message.timestamp}
+		            }
+		        }})
+			end
 	    else
 	        table.insert(notes, {[m.id] = {
 	            notes = {
