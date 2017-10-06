@@ -274,6 +274,9 @@ while arguments in square brackets (`[]`) are optional.
 `.register <@user|userID> <role[, role, ...]>`: registers a user with the given roles. Aliases: `.reg`
 `.watchlist <@user|userID>`: adds/removes a user from the watchlist. Aliases: `.wl`
 `.toggle18 <@user|userID>`: toggles the under 18 user flag. Aliases: `.t18`
+`.addnote <@user|userID> <note>`: Adds a note to the mentioned user.
+`.delnote <@user|userID> <index>`: Deletes the note at index for the mentioned user.
+`.viewnotes <@user|userID>`: Lists all notes on the mentioned user.
 
 **Admin Commands**
 `.prune <number>`: bulk deletes a number of messages
