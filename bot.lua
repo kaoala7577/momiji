@@ -276,8 +276,8 @@ while arguments in square brackets (`[]`) are optional.
 `.toggle18 <@user|userID>`: toggles the under 18 user flag. Aliases: `.t18`
 `.addnote <@user|userID> <note>`: Adds a note to the mentioned user.
 `.delnote <@user|userID> <index>`: Deletes the note at index for the mentioned user.
-`.viewnotes <@user|userID>`: Lists all notes on the mentioned user.
-
+`.viewnotes <@user|userID>`: Lists all notes on the mentioned user.]])
+	message.author:send([[
 **Admin Commands**
 `.prune <number>`: bulk deletes a number of messages
 `.ar <@user|userID> <role[, role, ...]>`: adds a user to the given roles
@@ -1070,7 +1070,8 @@ function addNote(message, args)
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
 	        else
-				m = message.guild:getMember(args)
+				m = message.guild:getMember(args:match("%d+"))
+				args = args:gsub(m.id,""):trim()
 			end
 	    end
 	    if not m then return end
@@ -1100,7 +1101,8 @@ function delNote(message, args)
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
 			else
-				m = message.guild:getMember(args)
+				m = message.guild:getMember(args:match("%d+"))
+				args = args:gsub(m.id,""):trim()
 	        end
 	    end
 	    if not m then return end
@@ -1129,7 +1131,8 @@ function viewNotes(message, args)
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
 			else
-				m = message.guild:getMember(args)
+				m = message.guild:getMember(args:match("%d+"))
+				args = args:gsub(m.id,""):trim()
 	        end
 	    end
 	    if not m then return end
