@@ -26,7 +26,7 @@ function readAll(file)
     f:close()
     return content
 end
-local notes = json.parse(readAll('notes.json')) or {}
+local notes = json.parse(readAll('notes.json'))[1] or {}
 function saveTable(tbl, file)
     local f = io.open(file, "w")
     local str = json.stringify(tbl)
@@ -1075,9 +1075,9 @@ function addNote(message, args)
 			end
 	    end
 	    if not m then return end
-	    if notes[1] then
-	        if notes[1][m.id] then
-	            table.insert(notes[1][m.id].notes, {note = args, moderator = a.username, time = message.timestamp})
+	    if notes then
+	        if notes[m.id] then
+	            table.insert(notes[m.id].notes, {note = args, moderator = a.username, time = message.timestamp})
 	        else
 				table.insert(notes, {[m.id] = {
 		            notes = {
@@ -1116,11 +1116,11 @@ function delNote(message, args)
 	    end
 	    if not m then return end
 	    if args == "" then return end
-	    if not notes[1] then return end
-	    if not notes[1][m.id] then return end
+	    if not notes then return end
+	    if not notes[m.id] then return end
 	    args = tonumber(args)
 	    if args then
-	        local n = notes[1][m.id]
+	        local n = notes[m.id]
 	        if args <= #n.notes then
 	            table.remove(n.notes, args)
 	            saveTable(notes, 'notes.json')
@@ -1148,7 +1148,7 @@ function viewNotes(message, args)
 	    if not m then return end
 	    if not notes[1] then return end
 	    local notelist = {}
-	    for _,v in pairs(notes[1][m.id].notes) do
+	    for _,v in pairs(notes[m.id].notes) do
 	        table.insert(notelist, {name = "Note Added by: "..v.moderator, value = v.note})
 	    end
 	    local status = message:reply {
