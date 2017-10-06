@@ -27,7 +27,7 @@ function readAll(file)
     return content
 end
 local notes = json.parse(readAll('notes.json')) or {}
-function saveNotes(tbl, file)
+function saveTable(tbl, file)
     local f = io.open(file, "w")
     local str = json.stringify(tbl)
     f:write(str)
@@ -473,9 +473,13 @@ commands:on('ri', function(m, a) safeCall(roleInfo, m, a) end)
 --userinfo
 local function userInfo(message, args)
 	local guild = message.guild
-	local member = guild:getMember(message.author)
-	if guild:getMember(parseMention(args)) then
-		member = guild:getMember(parseMention(args))
+	local member
+	if args ~= "" then
+		if guild:getMember(parseMention(args)) then
+			member = guild:getMember(parseMention(args))
+		end
+	else
+		member = guild:getMember(message.author)
 	end
 	if member then
 		local roles = ""
@@ -1076,7 +1080,7 @@ function addNote(message, args)
 	            }
 	        }})
 	    end
-	    saveNotes(notes, 'notes.json')
+	    saveTable(notes, 'notes.json')
 	    return true
 	end
 end
@@ -1101,7 +1105,7 @@ function delNote(message, args)
 	        local n = notes[1][m.id]
 	        if args <= #n.notes then
 	            table.remove(n.notes, args)
-	            saveNotes(notes, 'notes.json')
+	            saveTable(notes, 'notes.json')
 	            return true
 	        end
 	    end
