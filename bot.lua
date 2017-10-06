@@ -18,22 +18,6 @@ local commands = CommandEmitter:new()
 local clock = discordia.Clock()
 clock:start()
 
---[[ Required for opening json files ]]
-local json = require('json')
-function readAll(file)
-    local f = io.open(file, "rb")
-    local content = f:read("*all")
-    f:close()
-    return content
-end
-local notes = json.parse(readAll('notes.json'))[1] or {}
-function saveTable(tbl, file)
-    local f = io.open(file, "w")
-    local str = json.stringify(tbl)
-    f:write(str)
-    f:close()
-end
-
 --[[ Crude way of getting self roles ]]
 --TODO
 --Replace this with a per-guild list
@@ -1074,29 +1058,11 @@ function addNote(message, args)
 				args = args:gsub(m.id,""):trim()
 			end
 	    end
-	    if not m then return end
-	    if notes then
-	        if notes[m.id] then
-	            table.insert(notes[m.id].notes, {note = args, moderator = a.username, time = message.timestamp})
-	        else
-				table.insert(notes, {[m.id] = {
-		            notes = {
-		                {note = args, moderator = a.username, time = message.timestamp}
-		            }
-		        }})
-			end
-			saveTable(notes, 'notes.json')
-		    return true
-	    else
-	        table.insert(notes, {[m.id] = {
-	            notes = {
-	                {note = args, moderator = a.username, time = message.timestamp}
-	            }
-	        }})
-			saveTable(notes, 'notes.json')
-			notes = json.parse(readAll('notes.json'))
-		    return true
-	    end
+	    if not m and args ~= "" then return end
+		if args == "" then return end
+	    local success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
+		if err then print(err) end
+		return success
 	end
 end
 commands:on('addnote', function(m,a) safeCall(addNote,m,a) end)
@@ -1116,18 +1082,10 @@ function delNote(message, args)
 	    end
 	    if not m then return end
 	    if args == "" then return end
-	    if not notes then return end
-	    if not notes[m.id] then return end
 	    args = tonumber(args)
-	    if args then
-	        local n = notes[m.id]
-	        if args <= #n.notes then
-	            table.remove(n.notes, args)
-	            saveTable(notes, 'notes.json')
-				notes = json.parse(readAll('notes.json'))
-	            return true
-	        end
-	    end
+		if not args then return end
+		local success = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
+		return success
 	end
 end
 commands:on('delnote', function(m,a) safeCall(delNote,m,a) end)
@@ -1146,18 +1104,20 @@ function viewNotes(message, args)
 	        end
 	    end
 	    if not m then return end
-	    if not notes[1] then return end
-	    local notelist = {}
-	    for _,v in pairs(notes[m.id].notes) do
-	        table.insert(notelist, {name = "Note Added by: "..v.moderator, value = v.note})
-	    end
-	    local status = message:reply {
-	        embed = {
-	            author = {name = m.name, icon_url = m.avatarURL},
-	            fields = notelist,
-	        }
-	    }
-	    return status
+		local notelist = {}
+	    local cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
+		local row = cur:fetch({},"a")
+		while row do
+			table.insert(notelist, {name = "Note Added by: "..row.moderator, value = row.note})
+			row = cur:fetch(row, "a")
+		end
+		local status = message:reply {
+			embed = {
+				tile = "Notes for "..m.username,
+				fields = notelist,
+			}
+		}
+		return status
 	end
 end
 commands:on('viewnotes', function(m,a) safeCall(viewNotes,m,a) end)
