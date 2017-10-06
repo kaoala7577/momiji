@@ -1085,15 +1085,17 @@ function addNote(message, args)
 		            }
 		        }})
 			end
+			saveTable(notes, 'notes.json')
+		    return true
 	    else
 	        table.insert(notes, {[m.id] = {
 	            notes = {
 	                {note = args, moderator = a.username, time = message.timestamp}
 	            }
 	        }})
+			saveTable(notes, 'notes.json')
+		    return true
 	    end
-	    saveTable(notes, 'notes.json')
-	    return true
 	end
 end
 commands:on('addnote', function(m,a) safeCall(addNote,m,a) end)
@@ -1142,7 +1144,7 @@ function viewNotes(message, args)
 	        end
 	    end
 	    if not m then return end
-	    if not notes[1][m.id] then return end
+	    if not notes[1] then return end
 	    local notelist = {}
 	    for _,v in pairs(notes[1][m.id].notes) do
 	        table.insert(notelist, {name = "Note Added by: "..v.moderator, value = v.note})
