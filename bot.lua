@@ -1066,7 +1066,9 @@ function addNote(message, args)
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
-	        end
+	        else
+				m = message.guild:getMember(args)
+			end
 	    end
 	    if not m then return end
 	    if notes[1] then
@@ -1094,6 +1096,8 @@ function delNote(message, args)
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
+			else
+				m = message.guild:getMember(args)
 	        end
 	    end
 	    if not m then return end
@@ -1121,6 +1125,8 @@ function viewNotes(message, args)
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
 	            args = args:gsub("<@.+>",""):trim()
+			else
+				m = message.guild:getMember(args)
 	        end
 	    end
 	    if not m then return end
