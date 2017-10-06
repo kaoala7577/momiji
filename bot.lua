@@ -1068,7 +1068,7 @@ end
 commands:on('addnote', function(m,a) safeCall(addNote,m,a) end)
 
 function delNote(message, args)
-	if authorize(message,true,true) then
+	if authorize(message,true,false) then
 	    local a = message.guild:getMember(message.author.id)
 	    local m
 	    if message.mentionedUsers then
@@ -1113,7 +1113,7 @@ function viewNotes(message, args)
 		end
 		local status = message:reply {
 			embed = {
-				tile = "Notes for "..m.username,
+				title = "Notes for "..m.username,
 				fields = notelist,
 			}
 		}
