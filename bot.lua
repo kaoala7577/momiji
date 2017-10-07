@@ -1171,7 +1171,7 @@ function runLua(message, args)
 	end
 	status, ret = runSandbox(sandbox, loadstring(args))
 	if not ret then ret = printresult else ret = ret.."\n"..printresult end
-	if ret then message:reply("```"..ret.."```") end
+	if ret ~= "" then message:reply("```"..ret.."```") end
 	return status
 end
 commands:on('lua', function(m,a) safeCall(runLua,m,a) end)
