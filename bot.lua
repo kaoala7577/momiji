@@ -1123,6 +1123,48 @@ function viewNotes(message, args)
 end
 commands:on('viewnotes', function(m,a) safeCall(viewNotes,m,a) end)
 
+function runLua(message, args)
+	if message.author ~= client.owner then return end
+	if not args:startswith("```") then return end
+	args = string.match(args, "```(.+)```"):gsub("lua", ""):trim()
+	printresult = ""
+	sandbox = {
+		discordia = discordia,
+		client = client,
+		enums = enums,
+		conn = conn,
+		message = message,
+		printresult = printresult,
+		print = function(...)
+			arg = {...}
+			for i,v in ipairs(arg) do
+				printresult = printresult..tostring(v).."\t"
+			end
+			printresult = printresult.."\n"
+		end,
+		ipairs = ipairs,
+		next = next,
+		pairs = pairs,
+		pcall = pcall,
+		tonumber = tonumber,
+		tostring = tostring,
+		type = type,
+		unpack = unpack,
+		string = string,
+		math = math,
+	}
+	function runSandbox(sandboxEnv, sandboxFunc, ...)
+		if not sandboxFunc then return end
+		setfenv(sandboxFunc,sandboxEnv)
+		return pcall(sandboxFunc, ...)
+	end
+	status, ret = runSandbox(sandbox, loadstring(args))
+	if not ret then ret = printresult else ret = ret.."\n"..printresult end
+	message:reply("```"..ret.."```")
+	return status
+end
+commands:on('lua', function(m,a) safeCall(runLua,m,a) end)
+
 --Logging functions
 --Member join message
 function memberJoin(member)
@@ -1214,7 +1256,7 @@ function messageDelete(message)
 end
 --Uncached message deletion
 function messageDeleteUncached(channel, messageID)
-	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
+	local logChannel = message.guild:getChannel(channel.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
 			embed = {
