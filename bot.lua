@@ -28,7 +28,7 @@ local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 
 --luasql.postgres returns individual objects as strings, this lets us convert those to lua tables
-local function sqlStringToTable(str)
+function sqlStringToTable(str)
 	if str:startswith('{') and str:endswith('}') then
 		str = string.gsub(str, "[{}]", "")
 		return str:split(',')
@@ -58,29 +58,29 @@ client:on('ready', function()
 end)
 
 --[[ Takes string that might be a user mention, returns the userID if it is ]]
-local function parseMention(mention)
+function parseMention(mention)
 	return string.match(mention, "%<%@%!(%d+)%>") or string.match(mention, "%<%@(%d+)%>") or mention
 end
 
 --[[ Takes a string that might be a channel mention, returns channelID if it is ]]
-local function parseChannel(mention)
+function parseChannel(mention)
 	return string.match(mention, "%<%#(%d+)%>") or mention
 end
 
 --[[ creates a Date object with the given ISO-format time if valid, otherwise returns the original string ]]
-local function parseTime(time)
+function parseTime(time)
 	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
 --[[ takes a date table in the format of os.date("*t"), returns human readable ]]
-local function humanReadableTime(table)
+function humanReadableTime(table)
 	if #tostring(table.min) == 1 then table.min = "0"..table.min end
 	if #tostring(table.hour) == 1 then table.hour = "0"..table.hour end
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
 --[[ used by the role functions, splits a user mention from the comma-separated role list ]]
-local function parseRoleList(message)
+function parseRoleList(message)
 	local member, roles
 	if #message.mentionedUsers == 1 then
 		member = message.guild:getMember(message.mentionedUsers:iter()())
@@ -95,7 +95,7 @@ local function parseRoleList(message)
 end
 
 --[[ authorizes a command for roles based on guild._settings.admin_roles and guild._settings.mod_roles ]]
-local function authorize(message, admins, mods)
+function authorize(message, admins, mods)
 	if not message or (message.channel.type ~= enums.channelType.text) then return end
 	local member = message.guild:getMember(message.author.id)
 	if admins then
@@ -112,7 +112,7 @@ local function authorize(message, admins, mods)
 end
 
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
-local function safeCall(func, message, args)
+function safeCall(func, message, args)
 	local status, ret = xpcall(func, debug.traceback, message, args)
 	if ret and not status then
 		local channel = message.guild:getChannel('364148499715063818')
@@ -134,7 +134,7 @@ local function safeCall(func, message, args)
 end
 
 --[[ splits a command into command and everything else. handles literally every command ]]
-local function commandParser(message)
+function commandParser(message)
 	if message.author.bot then return end
 	if message.channel.type == enums.channelType.text then
         local prefix = message.guild._settings.prefix
@@ -150,7 +150,7 @@ end
 client:on('messageCreate', function(m) commandParser(m) end)
 
 --[[ Silly test func, changes based on what I need to test ]]
-local function test(message, args)
+function test(message, args)
 	if args ~= "" then
 		if #message.mentionedUsers == 1 then
 			local success = message:reply(message.mentionedUsers:iter()().name)
@@ -161,7 +161,7 @@ end
 commands:on('test', function(m, a) safeCall(test, m, a) end)
 
 --stupid color changing function to learn how to hook callbacks to the clock
-local function changeColor(time)
+function changeColor(time)
 	local guild = client:getGuild('348660188951216129')
 	if guild and (math.fmod(time.min, 10) == 0) then
 		local role = guild:getRole('348665099550195713')
@@ -192,7 +192,7 @@ clock:on('min', function(time)
 end)
 
 --Change the bot username. Owner only
-local function changeUsername(message, args)
+function changeUsername(message, args)
 	if args ~= "" then
 		if message.author == client.owner then
 			local success = client:setUsername(args)
@@ -207,7 +207,7 @@ end
 commands:on('uname', function(m, a) safeCall(changeUsername, m, a) end)
 
 --Change the bot nickname. Guild owner only
-local function nick(message, args)
+function nick(message, args)
 	if args ~= "" then
 		if authorize(message, true, true) then
 			local success = message.guild:getMember(client.user):setNickname(args)
@@ -222,7 +222,7 @@ end
 commands:on('nick', function(m, a) safeCall(nick, m, a) end)
 
 --make Spam! Owner Only
-local function genSpam(message, args)
+function genSpam(message, args)
 	if args ~= "" then
 		if message.author == client.owner then
 			if tonumber(args) > 0 then
@@ -236,7 +236,7 @@ end
 commands:on('genspam', function(m, a) safeCall(genSpam, m, a) end)
 
 --Help page.... total shit
-local function helpMessage(message)
+function helpMessage(message)
 	local status = message.author:send([[**How to read this doc:**
 When reading the commands, arguments in angle brackets (`<>`) are mandatory
 while arguments in square brackets (`[]`) are optional.
@@ -288,7 +288,7 @@ client:on('messageCreate', function(message)
 end)
 
 --change prefix
-local function changePrefix(message, args)
+function changePrefix(message, args)
 	if args ~= "" then
 		if message.member == message.guild.owner then
 			local status, err = conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], args, message.guild.id))
@@ -304,7 +304,7 @@ end
 commands:on('prefix', function(m,a) safeCall(changePrefix, m, a) end)
 
 --ping
-local function ping(message)
+function ping(message)
 	local sw = discordia.Stopwatch()
 	sw:reset()
 	local response = message:reply("Pong!")
@@ -317,7 +317,7 @@ end
 commands:on('ping', function(m,a) safeCall(ping, m, a) end)
 
 --lists members without roles
-local function noRoles(message, args)
+function noRoles(message, args)
 	local authorized = authorize(message, true, false)
 	if authorized then
 		local predicate = function(member) return #member.roles == 0 end
@@ -344,7 +344,7 @@ end
 commands:on('noroles', function(m,a) safeCall(noRoles, m, a) end)
 
 --serverinfo
-local function serverInfo(message, args)
+function serverInfo(message, args)
 	local guild = message.guild
 	if client:getGuild(args) then
 		guild = client:getGuild(args)
@@ -424,7 +424,7 @@ commands:on('serverinfo', function(m, a) safeCall(serverInfo, m, a) end)
 commands:on('si', function(m, a) safeCall(serverInfo, m, a) end)
 
 --roleinfo
-local function roleInfo(message, args)
+function roleInfo(message, args)
 	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
 		local hex = string.match(role:getColor():toHex(), "%x+")
@@ -458,7 +458,7 @@ commands:on('ri', function(m, a) safeCall(roleInfo, m, a) end)
 
 --User functions
 --userinfo
-local function userInfo(message, args)
+function userInfo(message, args)
 	local guild = message.guild
 	local member
 	if args ~= "" then
@@ -522,7 +522,7 @@ commands:on('userinfo', function(m, a) safeCall(userInfo, m, a) end)
 commands:on('ui', function(m, a) safeCall(userInfo, m, a) end)
 
 --addRole: Mod Function only!
-local function addRole(message, args)
+function addRole(message, args)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
@@ -557,7 +557,7 @@ local function addRole(message, args)
 	end
 end
 --removeRole: Mod function only!
-local function removeRole(message, args)
+function removeRole(message, args)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
@@ -595,7 +595,7 @@ commands:on('ar', function(m,a) safeCall(addRole,m,a) end)
 commands:on('rr', function(m,a) safeCall(removeRole,m,a) end)
 
 --Register, same as ar but removes Not Verified
-local function register(message)
+function register(message)
 	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	local roles, member = parseRoleList(message)
 	local author = message.guild:getMember(message.author.id)
@@ -633,7 +633,7 @@ local function register(message)
 				function fn(r) return r.name == role end
 				member:addRole(member.guild.roles:find(fn))
 			end
-			local function makeRoleList(roles)
+			function makeRoleList(roles)
 				local roleList = ""
 				for _,r in ipairs(roles) do
 					roleList = roleList..r.."\n"
@@ -670,7 +670,7 @@ client:on('memberRegistered', function(member)
 end)
 
 --addSelfRole
-local function addSelfRole(message)
+function addSelfRole(message)
 	local roles = parseRoleList(message)
 	local member = message.guild:getMember(message.author)
 	local rolesToAdd = {}
@@ -702,7 +702,7 @@ local function addSelfRole(message)
 			member:addRole(member.guild.roles:find(fn))
 		else rolesFailed[#rolesFailed+1] = "You already have "..role end
 	end
-	local function makeRoleList(roles)
+	function makeRoleList(roles)
 		local roleList = ""
 		for _,r in ipairs(roles) do
 			roleList = roleList..r.."\n"
@@ -735,7 +735,7 @@ local function addSelfRole(message)
 	return status
 end
 --removeSelfRole
-local function removeSelfRole(message)
+function removeSelfRole(message)
 	local roles = parseRoleList(message)
 	local member = message.guild:getMember(message.author)
 	local rolesToRemove = {}
@@ -752,7 +752,7 @@ local function removeSelfRole(message)
 		function fn(r) return r.name == role end
 		member:removeRole(member.guild.roles:find(fn))
 	end
-	local function makeRoleList(roles)
+	function makeRoleList(roles)
 		local roleList = ""
 		for _,r in ipairs(roles) do
 			roleList = roleList..r.."\n"
@@ -778,7 +778,7 @@ commands:on('derole', function(m, a) safeCall(removeSelfRole, m, a) end)
 commands:on('rsr', function(m, a) safeCall(removeSelfRole, m, a) end)
 
 --roleList
-local function roleList(message)
+function roleList(message)
 	local roleList = {}
 	for k,v in pairs(selfRoles) do
 		for r,_ in pairs(v) do
@@ -810,7 +810,7 @@ end
 commands:on('roles', function(m,a) safeCall(roleList,m,a) end)
 
 --Welcome message on memberJoin
-local function welcomeMessage(member)
+function welcomeMessage(member)
 	local channel = member.guild:getChannel(member.guild._settings.welcome_channel)
 	if channel then
 		channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify and what pronouns you would like to use. These are required.")
@@ -829,7 +829,7 @@ end
 client:on('memberJoin', function(member) welcomeMessage(member) end)
 
 --Mute: Mod only
-local function mute(message, args)
+function mute(message, args)
 	local author = message.author
 	local authorized = authorize(message, true, true)
 	if authorized then
@@ -871,7 +871,7 @@ local function mute(message, args)
 	end
 end
 --Unmute, counterpart to above
-local function unmute(message)
+function unmute(message)
 	local author = message.author
 	local authorized = authorize(message, true, true)
 	if authorized then
@@ -908,7 +908,7 @@ commands:on('mute', function(m, a) safeCall(mute, m, a) end)
 commands:on('unmute', function(m, a) safeCall(unmute, m, a) end)
 
 --sets up mute in every text channel. currently broken due to 2.0
-local function setupMute(message)
+function setupMute(message)
 	if message.author == message.guild.owner then
 		local role = message.guild:getRole('name', 'Muted')
 		for channel in message.guild.textChannels do
@@ -919,7 +919,7 @@ end
 commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
 --bulk delete command
-local function bulkDelete(message, args)
+function bulkDelete(message, args)
 	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	local author = message.guild:getMember(message.author.id)
 	local authorized = authorize(message, true, false)
@@ -964,7 +964,7 @@ end
 commands:on('prune', function(m,a) safeCall(bulkDelete,m,a) end)
 
 --manually ensure all members are present in the db. should be deprecated
-local function populateMembers(message)
+function populateMembers(message)
 	if message.author == message.guild.owner.user then
 		local guild = message.guild
 		for member in guild.members:iter() do
@@ -976,7 +976,7 @@ end
 commands:on('populate', function(m, a) safeCall(populateMembers, m, a) end)
 
 --list all watchlisted members
-local function listWatchlist(message, args)
+function listWatchlist(message, args)
 	if authorize(message, true, true) then
 		local cur = conn:execute([[SELECT member_id FROM members WHERE watchlisted=true;]])
 		local row = cur:fetch({}, "a")
@@ -1007,7 +1007,7 @@ end
 commands:on('listwl', function(m,a) safeCall(listWatchlist,m,a) end)
 
 --toggles the watchlist state for a member
-local function watchlist(message, args)
+function watchlist(message, args)
 	if authorize(message, true, true) then
 		local member = message.guild:getMember(parseMention(args))
 		if member then
@@ -1026,7 +1026,7 @@ commands:on('watchlist', function(m,a) safeCall(watchlist, m, a) end)
 commands:on('wl', function(m,a) safeCall(watchlist, m, a) end)
 
 --toggles the under18 state for a member
-local function toggle18(message, args)
+function toggle18(message, args)
 	if authorize(message, true, true) then
 		local member = message.guild:getMember(parseMention(args))
 		if member then
@@ -1124,7 +1124,7 @@ commands:on('viewnotes', function(m,a) safeCall(viewNotes,m,a) end)
 
 --Logging functions
 --Member join message
-local function memberJoin(member)
+function memberJoin(member)
 	local channel = member.guild:getChannel(member.guild._settings.log_channel)
 	local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s', '{"%s"}');]], member.id, member.name))
 	if channel then
@@ -1141,7 +1141,7 @@ local function memberJoin(member)
 	end
 end
 --Member leave message
-local function memberLeave(member)
+function memberLeave(member)
 	local channel = member.guild:getChannel(member.guild._settings.log_channel)
 	local status, err = conn:execute(string.format([[DELETE FROM members WHERE member_id='%s';]], member.id))
 	if channel then
@@ -1160,7 +1160,7 @@ end
 client:on('memberJoin', function(member) memberJoin(member) end)
 client:on('memberLeave', function(member) memberLeave(member) end)
 --Ban message
-local function userBan(user, guild)
+function userBan(user, guild)
 	local member = guild:getMember(user) or user
 	local channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
@@ -1177,7 +1177,7 @@ local function userBan(user, guild)
 	end
 end
 --Unban message
-local function userUnban(user, guild)
+function userUnban(user, guild)
 	local member = guild:getMember(user) or user
 	local channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
@@ -1196,7 +1196,7 @@ end
 client:on('userBan', function(user, guild) userBan(user, guild) end)
 client:on('userUnban', function(user, guild) userUnban(user, guild) end)
 --Cached message deletion
-local function messageDelete(message)
+function messageDelete(message)
 	local member = message.guild:getMember(message.author.id)
 	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
@@ -1212,7 +1212,7 @@ local function messageDelete(message)
 	end
 end
 --Uncached message deletion
-local function messageDeleteUncached(channel, messageID)
+function messageDeleteUncached(channel, messageID)
 	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
