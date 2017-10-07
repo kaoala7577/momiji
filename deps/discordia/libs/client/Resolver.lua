@@ -33,6 +33,8 @@ local function int(obj)
 		end
 	elseif t == 'number' then
 		return format('%i', obj)
+	elseif isInstance(obj, classes.Date) then
+		return obj:toSnowflake()
 	end
 end
 
@@ -95,13 +97,9 @@ end
 
 function Resolver.emoji(obj)
 	if isInstance(obj, classes.Emoji) then
-		return obj.name .. ':' .. obj.id
+		return obj.hash
 	elseif isInstance(obj, classes.Reaction) then
-		if obj.emojiId then
-			return obj.emojiName .. ':' .. obj.emojiId
-		else
-			return obj.emojiName
-		end
+		return obj.emojiHash
 	end
 	return tostring(obj)
 end

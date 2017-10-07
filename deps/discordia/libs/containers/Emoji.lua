@@ -1,5 +1,6 @@
 local Snowflake = require('containers/abstract/Snowflake')
 local ArrayIterable = require('iterables/ArrayIterable')
+local json = require('json')
 
 local format = string.format
 
@@ -26,6 +27,29 @@ function Emoji:_loadMore(data)
 	end
 end
 
+function Emoji:_modify(payload)
+	local data, err = self.client._api:modifyGuildEmoji(self._parent._id, self._id, payload)
+	if data then
+		self:_load(data)
+		return true
+	else
+		return false, err
+	end
+end
+
+function Emoji:setName(name)
+	return self:_modify({name = name or json.null})
+end
+
+function Emoji:delete()
+	local data, err = self.client._api:deleteGuildEmoji(self._parent._id, self._id)
+	if data then
+		return true
+	else
+		return false, err
+	end
+end
+
 function get.name(self)
 	return self._name
 end
@@ -35,7 +59,7 @@ function get.guild(self)
 end
 
 function get.mentionString(self)
-	return format('<:%s:%s>', self._name, self._id)
+	return format('<:%s>', self.hash)
 end
 
 function get.url(self)
@@ -48,6 +72,10 @@ end
 
 function get.requireColons(self)
 	return self._require_colons
+end
+
+function get.hash(self)
+	return self._name .. ':' .. self._id
 end
 
 function get.roles(self)
