@@ -112,6 +112,16 @@ function authorize(message, admins, mods)
 	return false
 end
 
+local utils = {
+	days = days,
+	months = months,
+	sqlStringToTable = sqlStringToTable,
+	parseMention = parseMention,
+	parseTime = parseTime,
+	parseChannel = parseChannel,
+	humanReadableTime = humanReadableTime,
+}
+
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
 function safeCall(func, message, args)
 	local status, ret = xpcall(func, debug.traceback, message, args)
@@ -1134,6 +1144,7 @@ function runLua(message, args)
 		enums = enums,
 		conn = conn,
 		message = message,
+		utils = utils,
 		printresult = printresult,
 		print = function(...)
 			arg = {...}
