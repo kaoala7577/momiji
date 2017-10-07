@@ -39,6 +39,7 @@ end
 --[[ init functions: load per-guild settings and ensure that all members are cached in the members table ]]
 client:on('ready', function()
 	print('Logged in as '.. client.user.username)
+	client:setGame("Awoo!")
 	for guild in client.guilds:iter() do
 		local cur = conn:execute([[SELECT * FROM settings;]])
 		local row = cur:fetch({}, "a")
