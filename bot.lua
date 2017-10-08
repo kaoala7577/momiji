@@ -21,7 +21,20 @@ clock:start()
 --[[ Crude way of getting self roles ]]
 --TODO
 --Replace this with a per-guild list
-local selfRoles = require'rolelist'
+local json = require'json'
+function readAll(file)
+    local f = io.open(file, "rb")
+    local content = f:read("*all")
+    f:close()
+    return content
+end
+function saveJson(tbl, file)
+    local f = io.open(file, "w")
+    local str = json.stringify(tbl)
+    f:write(str)
+    f:close()
+end
+local selfRoles = json.parse(readAll('rolelist.json'))
 
 --Involved in date-time parsing
 local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
@@ -1166,6 +1179,8 @@ function runLua(message, args)
 		string = string,
 		table = table,
 		math = math,
+		io = io,
+		os = os,
 	}
 	function runSandbox(sandboxEnv, sandboxFunc, ...)
 		if not sandboxFunc then return end
