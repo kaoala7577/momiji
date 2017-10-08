@@ -1153,20 +1153,15 @@ function runLua(message, args)
 			end
 			printresult = printresult.."\n"
 		end,
-		ipairs = ipairs,
-		next = next,
-		pairs = pairs,
-		pcall = pcall,
-		tonumber = tonumber,
-		tostring = tostring,
-		type = type,
-		unpack = unpack,
-		string = string,
-		math = math,
 	}
+	for k,v in pairs(_G) do
+		if not sandbox[k] then
+			sandbox[k] = v
+		end
+	end
 	function runSandbox(sandboxEnv, sandboxFunc, ...)
 		if not sandboxFunc then return end
-		setfenv(sandboxFunc, _G)
+		setfenv(sandboxFunc, sandboxEnv)
 		return pcall(sandboxFunc, ...)
 	end
 	status, ret = runSandbox(sandbox, loadstring(args))
