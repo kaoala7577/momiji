@@ -1166,7 +1166,7 @@ function runLua(message, args)
 	}
 	function runSandbox(sandboxEnv, sandboxFunc, ...)
 		if not sandboxFunc then return end
-		setfenv(sandboxFunc,sandboxEnv)
+		setfenv(sandboxFunc, _G)
 		return pcall(sandboxFunc, ...)
 	end
 	status, ret = runSandbox(sandbox, loadstring(args))
