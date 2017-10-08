@@ -81,6 +81,7 @@ local rolelist = {
 	},
 	['Opt-In Roles'] = {
 		["Gamer"] = {},
+		["D&D - Isabelle"] = {"d&d isabelle", "dnd isabelle", "campaign isabelle"}
 		["Hot Topic"] = {"hot-topic", "hottopic"},
 		["Momiji Dev"] = {"momiji", "dev", "momijidev"},
 		["18+"] = {"18"},
