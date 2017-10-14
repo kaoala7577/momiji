@@ -459,8 +459,9 @@ cmds['userinfo'] = function(message, args)
 					{name = 'Nickname', value = member.name, inline = true},
 					{name = 'Status', value = member.status, inline = true},
 					{name = 'Joined', value = joinTime, inline = false},
-					{name = 'Created', value = createTime, inline = true},
-					{name = 'Registered', value = registerTime, inline = true},
+					{name = 'Created', value = createTime, inline = false},
+					{name = 'Registered', value = registerTime, inline = false},
+                    {name = 'Extras', value = "[Fullsize Avatar]("..member.avatarURL..")", inline = false},
 					{name = 'Roles ('..#member.roles..')', value = roles, inline = false},
 				},
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
@@ -468,15 +469,7 @@ cmds['userinfo'] = function(message, args)
 				timestamp = discordia.Date():toISO()
 			}
 		}
-		if status then
-			message.channel:send {
-				embed = {
-					description = "[Fullsize Avatar]("..member.avatarURL..")",
-					color = member:getColor().value
-				}
-			}
-			return true
-		end
+        return status
 	else
 		message.channel:send("Sorry, I couldn't find that user.")
 	end
@@ -485,7 +478,7 @@ cmds['ui'] = cmds['userinfo']
 
 cmds['modinfo'] = function(message, args)
     guild = message.guild
-	member
+	local member
 	if args ~= "" then
 		if guild:getMember(parseMention(args)) then
 			member = guild:getMember(parseMention(args))
@@ -1122,6 +1115,7 @@ cmds['lua'] = function(message, args)
 		client = client,
 		enums = enums,
 		conn = conn,
+        cmds = cmds,
 		message = message,
 		utils = utils,
 		printresult = printresult,
