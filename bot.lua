@@ -915,7 +915,7 @@ cmds['prune'] = function(message, args)
 			if xHun > 0 then
 				for i=1, xHun do
 					deletions = message.channel:getMessages(100)
-					success = message.channel:bulkDelete(deletions)
+					message.channel:bulkDelete(deletions)
 					numDel = numDel+#deletions
 				end
 			end
@@ -924,6 +924,7 @@ cmds['prune'] = function(message, args)
 				success = message.channel:bulkDelete(deletions)
 				numDel = numDel+#deletions
 			end
+            while not success do end
 			logChannel:send {
 				embed = {
 					description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
