@@ -4,6 +4,8 @@ discordia.extensions()
 local enums = discordia.enums
 local client = discordia.Client({cacheAllMembers = true})
 local token = require'token'
+local resolver = require'discordia/libs/client/Resolver'
+
 --[[ Required for luaSQL which loads per-guild settings and member data ]]
 local luasql = require'luasql.postgres'
 local env = luasql.postgres()
