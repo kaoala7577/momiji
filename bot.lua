@@ -582,7 +582,6 @@ end
 cmds['register'] = function(message)
 	channel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	roles, member = parseRoleList(message)
-	author = message.guild:getMember(message.author.id)
 	authorized = authorize(message, true, true)
 	if authorized and member then
 		rolesToAdd = {}
@@ -897,13 +896,20 @@ function setupMute(message)
 end
 --commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
+function cleanDelete(messages, guild)
+    class = discordia.class
+    if (class.isInstance(messages, classes.SecondaryCache) or class.isInstance(messages, classes.Message)) and class.isInstance(guild, classes.Guild) then
+        if #messages >= 100 then end
+    end
+end
+
 --bulk delete command
 cmds['prune'] = function(message, args)
 	logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
 	author = message.guild:getMember(message.author.id)
 	authorized = authorize(message, true, false)
 	if authorized then
-		messageDeletes = client:getListeners('messageDelete')
+        messageDeletes = client:getListeners('messageDelete')
 		messageDeletesUncached = client:getListeners('messageDeleteUncached')
 		client:removeAllListeners('messageDelete')
 		client:removeAllListeners('messageDeleteUncached')
