@@ -923,7 +923,9 @@ cmds['prune'] = function(message, args)
 				deletions = message.channel:getMessages(rem)
 				success = message.channel:bulkDelete(deletions)
 				numDel = numDel+#deletions
-			end
+			else
+                success = true
+            end
             while not success do end
 			logChannel:send {
 				embed = {
