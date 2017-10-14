@@ -1155,6 +1155,12 @@ cmds['lua'] = function(message, args)
 	return status
 end
 
+cmds['todo'] = function(message, args)
+    todo = readAll('TODO.md')
+    status = message:reply("```markdown\n"..todo.."```")
+    return status
+end
+
 --Logging functions
 --Member join message
 function memberJoin(member)
