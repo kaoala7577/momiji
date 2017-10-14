@@ -25,22 +25,18 @@ clock:start()
 --Replace this with a per-guild list
 local json = require'json'
 function readAll(file)
-    local f = io.open(file, "rb")
-    local content = f:read("*all")
+    f = io.open(file, "rb")
+    content = f:read("*all")
     f:close()
     return content
 end
 function saveJson(tbl, file)
-    local f = io.open(file, "w")
-    local str = json.stringify(tbl)
+    f = io.open(file, "w")
+    str = json.stringify(tbl)
     f:write(str)
     f:close()
 end
 local selfRoles = json.parse(readAll('rolelist.json'))
-
---Involved in date-time parsing
-local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
-local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 
 local cmds = {}
 
@@ -50,7 +46,6 @@ function sqlStringToTable(str)
 		str = string.gsub(str, "[{}]", "")
 		return str:split(',')
 	end
-	return
 end
 
 --[[ Takes string that might be a user mention, returns the userID if it is ]]
@@ -70,6 +65,8 @@ end
 
 --[[ takes a date table in the format of os.date("*t"), returns human readable ]]
 function humanReadableTime(table)
+    days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+    months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 	if #tostring(table.min) == 1 then table.min = "0"..table.min end
 	if #tostring(table.hour) == 1 then table.hour = "0"..table.hour end
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
@@ -77,7 +74,7 @@ end
 
 --[[ used by the role functions, splits a user mention from the comma-separated role list ]]
 function parseRoleList(message)
-	local member, roles
+	member, roles = nil
 	if #message.mentionedUsers == 1 then
 		member = message.guild:getMember(message.mentionedUsers:iter()())
 		roles = message.content:gsub("<@.+>", "")
@@ -93,7 +90,7 @@ end
 --[[ authorizes a command for roles based on guild._settings.admin_roles and guild._settings.mod_roles ]]
 function authorize(message, admins, mods)
 	if not message or (message.channel.type ~= enums.channelType.text) then return end
-	local member = message.guild:getMember(message.author.id)
+	member = message.guild:getMember(message.author.id)
 	if admins then
 		for _,r in pairs(message.guild._settings.admin_roles) do
 			if member:hasRole(message.guild:getRole(r)) then return true end
@@ -109,9 +106,9 @@ end
 
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
 function safeCall(func, message, args)
-	local status, ret = xpcall(func, debug.traceback, message, args)
+	status, ret = xpcall(func, debug.traceback, message, args)
 	if ret and not status then
-		local channel = message.guild:getChannel('364148499715063818')
+		channel = message.guild:getChannel('364148499715063818')
 		channel:send {
 			embed = {
 				description = ret,
@@ -135,8 +132,8 @@ function commandParser(message)
 	if message.channel.type == enums.channelType.text then
         local prefix = message.guild._settings.prefix
 		if message.content:match("^%"..prefix) then
-			local str = message.content:match("^%"..prefix.."(%g+)")
-			local args = message.content:gsub("^%"..prefix..str, ""):trim()
+			str = message.content:match("^%"..prefix.."(%g+)")
+			args = message.content:gsub("^%"..prefix..str, ""):trim()
             if table.search(table.keys(cmds), str:lower()) then
                 commands:emit(str:lower(), message, args)
             end
@@ -152,8 +149,8 @@ client:on('ready', function()
 	print('Logged in as '.. client.user.username)
 	client:setGame("Awoo!")
 	for guild in client.guilds:iter() do
-		local cur = conn:execute([[SELECT * FROM settings;]])
-		local row = cur:fetch({}, "a")
+		cur = conn:execute([[SELECT * FROM settings;]])
+		row = cur:fetch({}, "a")
 		while row do
 			if row.guild_id == guild.id then
 				guild._settings = row
@@ -170,10 +167,10 @@ end)
 
 --stupid color changing function to learn how to hook callbacks to the clock
 function changeColor(time)
-	local guild = client:getGuild('348660188951216129')
+	guild = client:getGuild('348660188951216129')
 	if guild and (math.fmod(time.min, 10) == 0) then
-		local role = guild:getRole('348665099550195713')
-		local success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		role = guild:getRole('348665099550195713')
+		success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 		role = guild:getRole('363398104491229184')
 		success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
@@ -182,13 +179,13 @@ clock:on('min', function(time) changeColor(time) end)
 
 --Attempt to auto-remove cooldown
 clock:on('min', function(time)
-	local guild = client:getGuild('348660188951216129')
+	guild = client:getGuild('348660188951216129')
 	if guild then
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
-				local reg = conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch()
+				reg = conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch()
 				if reg and reg ~= 'N/A' then
-					local date = parseTime(reg):toTable()
+					date = parseTime(reg):toTable()
 					if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
 						member:addRole('348693274917339139')
 						member:removeRole('348873284265312267')
@@ -202,7 +199,7 @@ end)
 --Update last_message in members table. not used yet
 client:on('messageCreate', function(message)
 	if message.channel.type == enums.channelType.text and message.author.bot ~= true then
-		local status, err = conn:execute(string.format([[UPDATE members SET last_message='%s' WHERE member_id='%s';]], discordia.Date():toISO(), message.member.id))
+		status, err = conn:execute(string.format([[UPDATE members SET last_message='%s' WHERE member_id='%s';]], discordia.Date():toISO(), message.member.id))
 	end
 end)
 
@@ -220,7 +217,7 @@ end
 cmds['uname'] = function(message, args)
 	if args ~= "" then
 		if message.author == client.owner then
-			local success = client:setUsername(args)
+			success = client:setUsername(args)
 			return status
 		else
 			message.author:send("Only the bot owner can do that.")
@@ -234,7 +231,7 @@ end
 cmds['nick'] = function(message, args)
 	if args ~= "" then
 		if authorize(message, true, true) then
-			local success = message.guild:getMember(client.user):setNickname(args)
+			success = message.guild:getMember(client.user):setNickname(args)
 			return success
 		else
 			message.author:send("Only moderators can do that.")
@@ -247,7 +244,7 @@ end
 
 --Help page.... total shit
 cmds['help'] = function(message)
-	local status = message.author:send([[**How to read this doc:**
+	status = message.author:send([[**How to read this doc:**
 When reading the commands, arguments in angle brackets (`<>`) are mandatory
 while arguments in square brackets (`[]`) are optional.
 **No brackets should be included in the commands**
@@ -292,10 +289,10 @@ end
 cmds['prefix'] = function(message, args)
 	if args ~= "" then
 		if message.member == message.guild.owner then
-			local status, err = conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], args, message.guild.id))
+			status, err = conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], args, message.guild.id))
 			if status then
-				local curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
-				local row = curr:fetch({}, "a")
+				curr = conn:execute(string.format([[SELECT * FROM settings WHERE guild_id='%s';]], message.guild.id))
+				row = curr:fetch({}, "a")
 				message.guild._settings.prefix = row.prefix
 				return status
 			end
@@ -305,26 +302,26 @@ end
 
 --ping
 cmds['ping'] = function(message)
-	local sw = discordia.Stopwatch()
+	sw = discordia.Stopwatch()
 	sw:reset()
-	local response = message:reply("Pong!")
+	response = message:reply("Pong!")
 	if response then
 		sw:stop()
-		local success = response:setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+		success = response:setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
 		return success
 	end
 end
 
 --lists members without roles
 cmds['noroles'] = function(message, args)
-	local authorized = authorize(message, true, false)
+	authorized = authorize(message, true, false)
 	if authorized then
-		local predicate = function(member) return #member.roles == 0 end
-		local list = {}
+		predicate = function(member) return #member.roles == 0 end
+		list = {}
 		for m in message.guild.members:findAll(predicate) do
 			list[#list+1] = m.mentionString
 		end
-		local listInLines = " "
+		listInLines = " "
 		for _,n in pairs(list) do
 			if listInLines == " " then
 				listInLines = n
@@ -332,7 +329,6 @@ cmds['noroles'] = function(message, args)
 				listInLines = listInLines.."\n"..n
 			end
 		end
-		local reply
 		if args ~= "" then
 			message:reply(listInLines.."\n"..args)
 		else
@@ -343,12 +339,12 @@ end
 
 --serverinfo
 cmds['serverinfo'] = function(message, args)
-	local guild = message.guild
+	guild = message.guild
 	if client:getGuild(args) then
 		guild = client:getGuild(args)
 	end
-	local humans, bots, online = 0,0,0
-	local invite
+	humans, bots, online = 0,0,0
+	invite = nil
 	for member in guild.members:iter() do
 		if member.bot then
 			bots = bots+1
@@ -398,17 +394,17 @@ cmds['si'] = cmds['serverinfo']
 
 --roleinfo
 cmds['roleinfo'] = function(message, args)
-	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
+	role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
-		local hex = string.match(role:getColor():toHex(), "%x+")
-		local count = 0
+		hex = string.match(role:getColor():toHex(), "%x+")
+		count = 0
 		for m in message.guild.members:iter() do
 			if m:hasRole(role) then count = count + 1 end
 		end
-		local hoisted, mentionable
+		hoisted, mentionable = nil
 		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
 		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-		local status = message.channel:send {
+		status = message.channel:send {
 			embed = {
 				thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
 				fields = {
@@ -430,8 +426,8 @@ cmds['ri'] = cmds['roleinfo']
 
 --userinfo
 cmds['userinfo'] = function(message, args)
-	local guild = message.guild
-	local member
+	guild = message.guild
+	member = nil
 	if args ~= "" then
 		if guild:getMember(parseMention(args)) then
 			member = guild:getMember(parseMention(args))
@@ -440,19 +436,19 @@ cmds['userinfo'] = function(message, args)
 		member = guild:getMember(message.author)
 	end
 	if member then
-		local roles = ""
+		roles = ""
 		for i in member.roles:iter() do
 			if roles == "" then roles = i.name else roles = roles..", "..i.name end
 		end
 		if roles == "" then roles = "None" end
-		local joinTime = humanReadableTime(parseTime(member.joinedAt):toTable())
-		local createTime = humanReadableTime(parseTime(member.timestamp):toTable())
-		local registerTime = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
+		joinTime = humanReadableTime(parseTime(member.joinedAt):toTable())
+		createTime = humanReadableTime(parseTime(member.timestamp):toTable())
+		registerTime = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
 		if registerTime ~= 'N/A' then
 			registerTime = registerTime:toTable()
 			registerTime = humanReadableTime(registerTime)
 		end
-		local status = message.channel:send {
+		status = message.channel:send {
 			embed = {
 				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
 				fields = {
@@ -480,7 +476,7 @@ cmds['ui'] = cmds['userinfo']
 
 cmds['modinfo'] = function(message, args)
     guild = message.guild
-	local member
+	member = nil
 	if args ~= "" then
 		if guild:getMember(parseMention(args)) then
 			member = guild:getMember(parseMention(args))
@@ -489,8 +485,8 @@ cmds['modinfo'] = function(message, args)
 		member = guild:getMember(message.author)
 	end
 	if member and authorize(message, true, true) then
-        local watchlisted = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
-        local under18 = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
+        watchlisted = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
+        under18 = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
         if watchlisted == 'f' then watchlisted = 'No' else watchlisted = 'Yes' end
         if under18 == 'f' then under18 = 'No' else under18 = 'Yes' end
         status = message:reply {
@@ -512,11 +508,11 @@ cmds['mi'] = cmds['modinfo']
 
 --addRole: Mod Function only!
 cmds['ar'] = function(message, args)
-	local roles, member = parseRoleList(message)
-	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, false)
+	roles, member = parseRoleList(message)
+	author = message.guild:getMember(message.author.id)
+	authorized = authorize(message, true, false)
 	if authorized and member then
-		local rolesToAdd = {}
+		rolesToAdd = {}
 		for _,role in pairs(roles) do
 			for r in message.guild.roles:iter() do
 				if string.lower(role) == string.lower(r.name) then
@@ -527,12 +523,12 @@ cmds['ar'] = function(message, args)
 		for _,role in ipairs(rolesToAdd) do
 			member:addRole(message.guild:getRole(role.id))
 		end
-		local roleList = ""
+		roleList = ""
 		for _,r in ipairs(rolesToAdd) do
 			roleList = roleList..r.name.."\n"
 		end
 		if #rolesToAdd > 0 then
-			local status = message.channel:send {
+			status = message.channel:send {
 				embed = {
 					author = {name = "Roles Added", icon_url = member.avatarURL},
 					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
@@ -548,11 +544,11 @@ end
 
 --removeRole: Mod function only!
 cmds['rr'] = function(message, args)
-	local roles, member = parseRoleList(message)
-	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, false)
+	roles, member = parseRoleList(message)
+	author = message.guild:getMember(message.author.id)
+	authorized = authorize(message, true, false)
 	if authorized and member then
-		local rolesToRemove = {}
+		rolesToRemove = {}
 		for _,role in pairs(roles) do
 			for r in message.guild.roles:iter() do
 				if string.lower(role) == string.lower(r.name) then
@@ -563,12 +559,12 @@ cmds['rr'] = function(message, args)
 		for _,role in ipairs(rolesToRemove) do
 			member:removeRole(member.guild:getRole(role.id))
 		end
-		local roleList = ""
+		roleList = ""
 		for _,r in ipairs(rolesToRemove) do
 			roleList = roleList..r.name.."\n"
 		end
 		if #rolesToRemove > 0 then
-			local status = message.channel:send {
+			status = message.channel:send {
 				embed = {
 					author = {name = "Roles Removed", icon_url = member.avatarURL},
 					description = "**Removed "..member.mentionString.." from the following roles** \n"..roleList,
@@ -584,13 +580,13 @@ end
 
 --Register, same as ar but removes Not Verified
 cmds['register'] = function(message)
-	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
-	local roles, member = parseRoleList(message)
-	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, true)
+	channel = message.guild:getChannel(message.guild._settings.modlog_channel)
+	roles, member = parseRoleList(message)
+	author = message.guild:getMember(message.author.id)
+	authorized = authorize(message, true, true)
 	if authorized and member then
-		local rolesToAdd = {}
-		local hasGender, hasPronouns
+		rolesToAdd = {}
+		hasGender, hasPronouns = nil
 		for _,role in pairs(roles) do
 			for k,l in pairs(selfRoles) do
 				for r,a in pairs(l) do
@@ -622,7 +618,7 @@ cmds['register'] = function(message)
 				member:addRole(member.guild.roles:find(fn))
 			end
 			function makeRoleList(roles)
-				local roleList = ""
+				roleList = ""
 				for _,r in ipairs(roles) do
 					roleList = roleList..r.."\n"
 				end
@@ -640,7 +636,7 @@ cmds['register'] = function(message)
 					}
 				}
 				client:emit('memberRegistered', member)
-				local status, err = conn:execute(string.format([[UPDATE members SET registered='%s' WHERE member_id='%s';]], discordia.Date():toISO(), member.id))
+				status, err = conn:execute(string.format([[UPDATE members SET registered='%s' WHERE member_id='%s';]], discordia.Date():toISO(), member.id))
 				return status
 			end
 		else
@@ -651,7 +647,7 @@ end
 cmds['reg'] = cmds['register']
 
 client:on('memberRegistered', function(member)
-	local channel = member.guild:getChannel('350764752898752513')
+	channel = member.guild:getChannel('350764752898752513')
 	if channel then
 		channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
 	end
@@ -659,10 +655,10 @@ end)
 
 --addSelfRole
 cmds['role'] = function(message)
-	local roles = parseRoleList(message)
-	local member = message.guild:getMember(message.author)
-	local rolesToAdd = {}
-	local rolesFailed = {}
+	roles = parseRoleList(message)
+	member = message.guild:getMember(message.author)
+	rolesToAdd = {}
+	rolesFailed = {}
 	for i,role in ipairs(roles) do
 		for k,l in pairs(selfRoles) do
 			for r,a in pairs(l) do
@@ -682,7 +678,7 @@ cmds['role'] = function(message)
 			end
 		end
 	end
-	local rolesAdded = {}
+	rolesAdded = {}
 	for _,role in ipairs(rolesToAdd) do
 		function fn(r) return r.name == role end
 		if not member:hasRole(member.guild.roles:find(fn)) then
@@ -691,13 +687,13 @@ cmds['role'] = function(message)
 		else rolesFailed[#rolesFailed+1] = "You already have "..role end
 	end
 	function makeRoleList(roles)
-		local roleList = ""
+		roleList = ""
 		for _,r in ipairs(roles) do
 			roleList = roleList..r.."\n"
 		end
 		return roleList
 	end
-	local status
+	status = nil
 	if #rolesAdded > 0 then
 		status = message.channel:send {
 			embed = {
@@ -725,9 +721,9 @@ end
 
 --removeSelfRole
 cmds['derole'] = function(message)
-	local roles = parseRoleList(message)
-	local member = message.guild:getMember(message.author)
-	local rolesToRemove = {}
+	roles = parseRoleList(message)
+	member = message.guild:getMember(message.author)
+	rolesToRemove = {}
 	for _,role in pairs(roles) do
 		for _,l in pairs(selfRoles) do
 			for r,a in pairs(l) do
@@ -742,14 +738,14 @@ cmds['derole'] = function(message)
 		member:removeRole(member.guild.roles:find(fn))
 	end
 	function makeRoleList(roles)
-		local roleList = ""
+		roleList = ""
 		for _,r in ipairs(roles) do
 			roleList = roleList..r.."\n"
 		end
 		return roleList
 	end
 	if #rolesToRemove > 0 then
-		local status = message.channel:send {
+		status = message.channel:send {
 			embed = {
 				author = {name = "Roles Removed", icon_url = member.avatarURL},
 				description = "**Removed "..member.mentionString.." from the following roles** \n"..makeRoleList(rolesToRemove),
@@ -764,7 +760,7 @@ end
 
 --roleList
 cmds['roles'] = function(message, args)
-	local roleList = {}
+	roleList = {}
 	for k,v in pairs(selfRoles) do
 		for r,_ in pairs(v) do
 			if not roleList[k] then
@@ -774,7 +770,7 @@ cmds['roles'] = function(message, args)
 			end
 		end
 	end
-	local status = message.channel:send {
+	status = message.channel:send {
 		embed = {
 			author = {name = "Self-Assignable Roles", icon_url = message.guild.iconURL},
 			fields = {
@@ -795,7 +791,7 @@ end
 
 --Welcome message on memberJoin
 function welcomeMessage(member)
-	local channel = member.guild:getChannel(member.guild._settings.welcome_channel)
+	channel = member.guild:getChannel(member.guild._settings.welcome_channel)
 	if channel then
 		channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.")
 		--[[channel:send {
@@ -814,12 +810,12 @@ client:on('memberJoin', function(member) welcomeMessage(member) end)
 
 --Mute: Mod only
 cmds['mute'] = function(message, args)
-	local author = message.author
-	local authorized = authorize(message, true, true)
+	author = message.author
+	authorized = authorize(message, true, true)
 	if authorized then
-		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
-		local success, member, channel
-		local reason = ""
+		logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
+		success, member, channel = nil
+		reason = ""
 		if #message.mentionedUsers == 1 then
 			channel = message.mentionedChannels:iter()()
 			member = message.guild:getMember(message.mentionedUsers:iter()())
@@ -857,11 +853,11 @@ end
 
 --Unmute, counterpart to above
 cmds['unmute'] = function(message, args)
-	local author = message.author
-	local authorized = authorize(message, true, true)
+	author = message.author
+	authorized = authorize(message, true, true)
 	if authorized then
-		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
-		local success, member, channel
+		logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
+		success, member, channel = nil
 		if #message.mentionedUsers == 1 then
 			channel = message.mentionedChannels:iter()()
 			member = message.guild:getMember(message.mentionedUsers:iter()())
@@ -893,7 +889,7 @@ end
 --sets up mute in every text channel. currently broken due to 2.0
 function setupMute(message)
 	if message.author == message.guild.owner then
-		local role = message.guild:getRole('name', 'Muted')
+		role = message.guild:getRole('name', 'Muted')
 		for channel in message.guild.textChannels do
 			channel:getPermissionOverwriteFor(role):denyPermissions('sends', 'addReactions')
 		end
@@ -903,19 +899,19 @@ end
 
 --bulk delete command
 cmds['prune'] = function(message, args)
-	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
-	local author = message.guild:getMember(message.author.id)
-	local authorized = authorize(message, true, false)
+	logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
+	author = message.guild:getMember(message.author.id)
+	authorized = authorize(message, true, false)
 	if authorized then
-		local messageDeletes = client:getListeners('messageDelete')
-		local messageDeletesUncached = client:getListeners('messageDeleteUncached')
+		messageDeletes = client:getListeners('messageDelete')
+		messageDeletesUncached = client:getListeners('messageDeleteUncached')
 		client:removeAllListeners('messageDelete')
 		client:removeAllListeners('messageDeleteUncached')
 		message:delete()
 		if tonumber(args) > 0 then
 			args = tonumber(args)
-			local xHun, rem = math.floor(args/100), math.fmod(args, 100)
-			local numDel = 0
+			xHun, rem = math.floor(args/100), math.fmod(args, 100)
+			numDel = 0
 			if xHun > 0 then
 				for i=1, xHun do
 					deletions = message.channel:getMessages(100)
@@ -949,9 +945,9 @@ cmds['purge'] = cmds['prune']
 --manually ensure all members are present in the db. should be deprecated
 cmds['populate'] = function(message)
 	if message.author == message.guild.owner.user then
-		local guild = message.guild
+		guild = message.guild
 		for member in guild.members:iter() do
-			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
+			status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
 		end
 		return status
 	end
@@ -960,18 +956,18 @@ end
 --list all watchlisted members
 cmds['listwl'] = function(message, args)
 	if authorize(message, true, true) then
-		local cur = conn:execute([[SELECT member_id FROM members WHERE watchlisted=true;]])
-		local row = cur:fetch({}, "a")
-		local success = row ~= nil or false
-		local members = {}
+		cur = conn:execute([[SELECT member_id FROM members WHERE watchlisted=true;]])
+		row = cur:fetch({}, "a")
+		success = row ~= nil or false
+		members = {}
 		while row do
 			table.insert(members, row.member_id)
 			row = cur:fetch(row, "a")
 		end
 		if members then
-			local list = "**Count: "..#members.."**"
+			list = "**Count: "..#members.."**"
 			for _,m in pairs(members) do
-				local member = message.guild:getMember(m)
+				member = message.guild:getMember(m)
 				if list ~= "" then list = list.."\n"..member.username.."#"..member.discriminator..":"..member.mentionString else list = member.username.."#"..member.discriminator..":"..member.mentionString end
 			end
 			message:reply {
@@ -990,10 +986,10 @@ end
 --toggles the watchlist state for a member
 cmds['watchlist'] = function(message, args)
 	if authorize(message, true, true) then
-		local member = message.guild:getMember(parseMention(args))
+		member = message.guild:getMember(parseMention(args))
 		if member then
-			local success
-			local currentVal = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
+			success = nil
+			currentVal = conn:execute(string.format([[SELECT watchlisted FROM members WHERE member_id='%s';]], member.id)):fetch()
 			if currentVal == 'f' then
 				success = conn:execute(string.format([[UPDATE members SET watchlisted=true WHERE member_id='%s';]], member.id))
 			else
@@ -1008,10 +1004,10 @@ cmds['wl'] = cmds['watchlist']
 --toggles the under18 state for a member
 cmds['toggle18'] = function(message, args)
 	if authorize(message, true, true) then
-		local member = message.guild:getMember(parseMention(args))
+		member = message.guild:getMember(parseMention(args))
 		if member then
-			local success
-			local currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
+			success = nil
+			currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()
 			if currentVal == 'f' then
 				success = conn:execute(string.format([[UPDATE members SET under18=true WHERE member_id='%s';]], member.id))
 			else
@@ -1026,8 +1022,8 @@ cmds['t18'] = cmds['toggle18']
 --[[ Note Functions ]]
 cmds['addnote'] = function(message, args)
 	if authorize(message,true,true) then
-	    local a = message.guild:getMember(message.author.id)
-	    local m
+	    a = message.guild:getMember(message.author.id)
+	    m = nil
 	    if message.mentionedUsers then
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
@@ -1039,7 +1035,7 @@ cmds['addnote'] = function(message, args)
 	    end
 	    if not m and args ~= "" then return end
 		if args == "" then return end
-	    local success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
+	    success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
 		if err then print(err) end
 		return success
 	end
@@ -1047,8 +1043,8 @@ end
 
 cmds['delnote'] = function(message, args)
 	if authorize(message,true,false) then
-	    local a = message.guild:getMember(message.author.id)
-	    local m
+	    a = message.guild:getMember(message.author.id)
+	    m = nil
 	    if message.mentionedUsers then
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
@@ -1062,15 +1058,15 @@ cmds['delnote'] = function(message, args)
 	    if args == "" then return end
 	    args = tonumber(args)
 		if not args then return end
-		local success = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
+		success = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
 		return success
 	end
 end
 
 cmds['viewnotes'] = function(message, args)
 	if authorize(message,true,true) then
-	    local a = message.guild:getMember(message.author.id)
-	    local m
+	    a = message.guild:getMember(message.author.id)
+	    m = nil
 	    if message.mentionedUsers then
 	        if #message.mentionedUsers == 1 then
 	            m = message.mentionedUsers:iter()()
@@ -1081,14 +1077,14 @@ cmds['viewnotes'] = function(message, args)
 	        end
 	    end
 	    if not m then return end
-		local notelist = {}
-	    local cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
-		local row = cur:fetch({},"a")
+		notelist = {}
+	    cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
+		row = cur:fetch({},"a")
 		while row do
 			table.insert(notelist, {name = "Note Added by: "..row.moderator, value = row.note})
 			row = cur:fetch(row, "a")
 		end
-		local status = message:reply {
+		status = message:reply {
 			embed = {
 				title = "Notes for "..m.username,
 				fields = notelist,
@@ -1164,8 +1160,8 @@ end
 --Logging functions
 --Member join message
 function memberJoin(member)
-	local channel = member.guild:getChannel(member.guild._settings.log_channel)
-	local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s', '{"%s"}');]], member.id, member.name))
+	channel = member.guild:getChannel(member.guild._settings.log_channel)
+	status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s', '{"%s"}');]], member.id, member.name))
 	if channel then
 		channel:send {
 			embed = {
@@ -1181,8 +1177,8 @@ function memberJoin(member)
 end
 --Member leave message
 function memberLeave(member)
-	local channel = member.guild:getChannel(member.guild._settings.log_channel)
-	local status, err = conn:execute(string.format([[DELETE FROM members WHERE member_id='%s';]], member.id))
+	channel = member.guild:getChannel(member.guild._settings.log_channel)
+	status, err = conn:execute(string.format([[DELETE FROM members WHERE member_id='%s';]], member.id))
 	if channel then
 		channel:send {
 			embed = {
@@ -1200,8 +1196,8 @@ client:on('memberJoin', function(member) memberJoin(member) end)
 client:on('memberLeave', function(member) memberLeave(member) end)
 --Ban message
 function userBan(user, guild)
-	local member = guild:getMember(user) or user
-	local channel = guild:getChannel(member.guild._settings.modlog_channel)
+	member = guild:getMember(user) or user
+	channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
 		channel:send {
 			embed = {
@@ -1217,8 +1213,8 @@ function userBan(user, guild)
 end
 --Unban message
 function userUnban(user, guild)
-	local member = guild:getMember(user) or user
-	local channel = guild:getChannel(member.guild._settings.modlog_channel)
+	member = guild:getMember(user) or user
+	channel = guild:getChannel(member.guild._settings.modlog_channel)
 	if channel and member then
 		channel:send {
 			embed = {
@@ -1236,8 +1232,8 @@ client:on('userBan', function(user, guild) userBan(user, guild) end)
 client:on('userUnban', function(user, guild) userUnban(user, guild) end)
 --Cached message deletion
 function messageDelete(message)
-	local member = message.guild:getMember(message.author.id)
-	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
+	member = message.guild:getMember(message.author.id)
+	logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
 		logChannel:send {
 			embed = {
@@ -1252,7 +1248,7 @@ function messageDelete(message)
 end
 --Uncached message deletion
 function messageDeleteUncached(channel, messageID)
-	local logChannel = message.guild:getChannel(channel.guild._settings.log_channel)
+	logChannel = message.guild:getChannel(channel.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
 			embed = {
