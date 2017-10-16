@@ -1159,15 +1159,26 @@ cmds['prune'] = {
 }
 
 --manually ensure all members are present in the db. should be deprecated
-cmds['populate'] = function(message)
-	if message.author == message.guild.owner.user then
-		local guild = message.guild
-		for member in guild.members:iter() do
-			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
-		end
-		return status
-	end
-end
+cmds['populate'] = {
+    action = function(message)
+    	if message.author == message.guild.owner.user then
+    		local guild = message.guild
+    		for member in guild.members:iter() do
+    			local status, err = conn:execute(string.format([[INSERT INTO members (member_id, nicknames) VALUES ('%s','{"%s"}');]], member.id, member.name))
+    		end
+    		return status
+    	end
+    end,
+    permissions = {
+        botOwner = false,
+        guildOwner = true,
+        admin = false,
+        mod = false,
+        everyone = false,
+    },
+    usage = "populate",
+    description = "Manually ensures all guild members are loaded into the members table",
+}
 
 --list all watchlisted members
 cmds['listwl'] = {
