@@ -242,6 +242,7 @@ end)
 
 --[[ Silly test func, changes based on what I need to test ]]
 cmds['test'] = {
+    id = "test",
     action = function(message, args)
     	if args ~= "" then
             logs = message.guild:getAuditLogs({type = tonumber(args), limit = 1})
@@ -259,10 +260,12 @@ cmds['test'] = {
     },
     usage = "test [args]",
     description = "Shitty test function",
+    category = "Bot Owner",
 }
 
 --Change the bot username. Owner only
 cmds['uname'] = {
+    id = "uname",
     action = function(message, args)
     	if args ~= "" then
 			local success = client:setUsername(args)
@@ -280,10 +283,12 @@ cmds['uname'] = {
     },
     usage = "uname <name>",
     description = "Changes the bot's username",
+    category = "Bot Owner",
 }
 
 --Change the bot nickname. Guild owner only
 cmds['nick'] = {
+    id = "nick",
     action = function(message, args)
     	if args ~= "" then
 			local success = message.guild:getMember(client.user):setNickname(args)
@@ -301,11 +306,13 @@ cmds['nick'] = {
     },
     usage = "nick <name>",
     description = "Change the nickname of the bot on your server",
+    category = "Guild Owner",
 }
 
 
 --Help page.... total shit
 cmds['help'] = {
+    id = "help",
     action = function(message)
 	local status = message.author:send([[**How to read this doc:**
 When reading the commands, arguments in angle brackets (`<>`) are mandatory
@@ -351,11 +358,13 @@ while arguments in square brackets (`[]`) are optional.
         everyone = true,
     },
     usage = "help",
-    description = "DM the help page"
+    description = "DM the help page",
+    category = "General",
 }
 
 --change prefix
 cmds['prefix'] = {
+    id = "prefix",
     action = function(message, args)
     	if args ~= "" then
 			local status, err = conn:execute(string.format([[UPDATE settings SET prefix='%s' WHERE guild_id='%s';]], args, message.guild.id))
@@ -376,10 +385,12 @@ cmds['prefix'] = {
     },
     usage = "prefix <prefix>",
     description = "Change the bot prefix for your server",
+    category = "Guild Owner",
 }
 
 --ping
 cmds['ping'] = {
+    id = "ping",
     action = function(message)
     	local response = message:reply("Pong!")
     	if response then
@@ -388,18 +399,16 @@ cmds['ping'] = {
     	end
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "ping",
     description = "Tests if the bot is alive and returns the message turnaround time",
+    category = "General",
 }
 
 --lists members without roles
 cmds['noroles'] = {
+    id = "noroles",
     action = function(message, args)
 		local predicate = function(member) return #member.roles == 0 end
 		local list = {}
@@ -431,10 +440,12 @@ cmds['noroles'] = {
     },
     usage = "noroles [message]",
     description = "Pings all members without any roles with an optional message",
+    category = "Admin",
 }
 
 --serverinfo
 cmds['serverinfo'] = {
+    id = "serverinfo",
     action = function(message, args)
     	local guild = message.guild
     	if client:getGuild(args) then
@@ -488,20 +499,19 @@ cmds['serverinfo'] = {
     	return status
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "serverinfo",
     description = "Displays information on the server",
+    category = "General",
 }
 cmds['si'] = cmds['serverinfo']
 cmds['si'].usage = "si"
+cmds['si'].id = "si"
 
 --roleinfo
 cmds['roleinfo'] = {
+    id = "roleinfo",
     action = function(message, args)
     	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
     	if role then
@@ -532,20 +542,19 @@ cmds['roleinfo'] = {
     	end
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "roleinfo <rolename>",
     description = "Displays information on the given role",
+    category = "General",
 }
 cmds['ri'] = cmds['roleinfo']
 cmds['ri'].usage = "ri <rolename>"
+cmds['ri'].id = "ri"
 
 --userinfo
 cmds['userinfo'] = {
+    id = "userinfo",
     action = function(message, args)
     	local guild = message.guild
     	local member
@@ -594,19 +603,18 @@ cmds['userinfo'] = {
     	end
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "userinfo [@user|userID]",
     description = "Displays information on the given user or yourself if none mentioned",
+    category = "General",
 }
 cmds['ui'] = cmds['userinfo']
 cmds['ui'].usage = "ui [@user|userID]"
+cmds['ui'].id = "ui"
 
 cmds['modinfo'] = {
+    id = "modinfo",
     action = function(message, args)
         guild = message.guild
     	local member
@@ -646,12 +654,15 @@ cmds['modinfo'] = {
     },
     usage = "modinfo <@user|userID>",
     description = "Displays mod-relevant data, such as watchlist status, on the given user",
+    category = "Mod",
 }
 cmds['mi'] = cmds['modinfo']
 cmds['mi'].usage = "mi <@user|userID>"
+cmds['mi'].id = "mi"
 
 --addRole: Mod Function only!
 cmds['ar'] = {
+    id = "ar",
     action = function(message, args)
     	local roles, member = parseRoleList(message)
     	local author = message.guild:getMember(message.author.id)
@@ -694,10 +705,12 @@ cmds['ar'] = {
     },
     usage = "ar <@user|userID> <role[, role, ...]>",
     description = "Adds the mentioned user to the listed role(s)",
+    category = "Admin",
 }
 
 --removeRole: Mod function only!
 cmds['rr'] = {
+    id = "rr",
     action = function(message, args)
     	local roles, member = parseRoleList(message)
     	local author = message.guild:getMember(message.author.id)
@@ -740,10 +753,12 @@ cmds['rr'] = {
     },
     usage = "rr <@user|userID> <role[, role, ...]>",
     description = "Removes the mentioned user from the listed role(s)",
+    category = "Admin"
 }
 
 --Register, same as ar but removes Not Verified
 cmds['register'] = {
+    id = "register",
     action = function(message)
     	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
     	local roles, member = parseRoleList(message)
@@ -817,12 +832,15 @@ cmds['register'] = {
     },
     usage = "register <@user|userID> <role[, role, ...]>",
     description = "Registers the mentioned user with the listed roles",
+    category = "Mod",
 }
 cmds['reg'] = cmds['register']
 cmds['reg'].usage = "reg <@user|userID> <role[, role, ...]>"
+cmds['reg'].id = "reg"
 
 --addSelfRole
 cmds['role'] = {
+    id = "role",
     action = function(message)
     	local roles = parseRoleList(message)
     	local member = message.guild:getMember(message.author)
@@ -888,18 +906,16 @@ cmds['role'] = {
     	return status
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "role <role[, role, ...]>",
     description = "Adds the listed role(s) to yourself from the self role list",
+    category = "General",
 }
 
 --removeSelfRole
 cmds['derole'] = {
+    id = "derole",
     action = function(message)
     	local roles = parseRoleList(message)
     	local member = message.guild:getMember(message.author)
@@ -938,18 +954,16 @@ cmds['derole'] = {
     	end
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "derole <role[, role, ...]>",
     description = "Removes the listed role(s) from yourself from the self role list",
+    category = "General",
 }
 
 --roleList
 cmds['roles'] = {
+    id = "roles",
     action = function(message, args)
     	local roleList = {}
     	for k,v in pairs(selfRoles) do
@@ -980,18 +994,16 @@ cmds['roles'] = {
     	return status
     end,
     permissions = {
-        botOwner = true,
-        guildOwner = true,
-        admin = true,
-        mod = true,
         everyone = true,
     },
     usage = "roles",
     description = "Displays the self role list",
+    category = "General",
 }
 
 --Mute: Mod only
 cmds['mute'] = {
+    id = "mute",
     action = function(message, args)
     	local author = message.author
 		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
@@ -1039,10 +1051,12 @@ cmds['mute'] = {
     },
     usage = "mute [#channel] <@user|userID>",
     description = "Mutes the mentioned user in the given channel, if provided, or server-wide",
+    category = "Mod",
 }
 
 --Unmute, counterpart to above
 cmds['unmute'] = {
+    id = "unmute",
     action = function(message, args)
         local author = message.author
 		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
@@ -1082,6 +1096,7 @@ cmds['unmute'] = {
     },
     usage = "unnmute [#channel] <@user|userID>",
     description = "Attempts to unmute the mentioned user in the given channel, if provided, or server-wide",
+    category = "Mod",
 }
 
 --sets up mute in every text channel. currently broken due to 2.0
@@ -1097,6 +1112,7 @@ end
 
 --bulk delete command
 cmds['prune'] = {
+    id = "prune",
     action = function(message, args)
     	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
     	local author = message.guild:getMember(message.author.id)
@@ -1145,10 +1161,12 @@ cmds['prune'] = {
     },
     usage = "prune <number>",
     description = "Deletes the specified number of messages from the current channel",
+    category = "Admin",
 }
 
 --manually ensure all members are present in the db. should be deprecated
 cmds['populate'] = {
+    id = "populate",
     action = function(message)
 		local guild = message.guild
 		for member in guild.members:iter() do
@@ -1165,10 +1183,12 @@ cmds['populate'] = {
     },
     usage = "populate",
     description = "Manually ensures all guild members are loaded into the members table",
+    category = "Guild Owner",
 }
 
 --list all watchlisted members
 cmds['listwl'] = {
+    id = "listwl",
     action = function(message, args)
 		local cur = conn:execute([[SELECT member_id FROM members WHERE watchlisted=true;]])
 		local row = cur:fetch({}, "a")
@@ -1204,10 +1224,12 @@ cmds['listwl'] = {
     },
     usage = "listwl",
     description = "Lists all watchlisted users",
+    category = "Mod",
 }
 
 --toggles the watchlist state for a member
-cmds['watchlist'] = {
+cmds['wl'] = {
+    id = "wl",
     action = function(message, args)
 		local member = message.guild:getMember(parseMention(args))
 		if member then
@@ -1228,14 +1250,14 @@ cmds['watchlist'] = {
         mod = true,
         everyone = false,
     },
-    usage = "watchlist <@user|userID>",
+    usage = "wl <@user|userID>",
     description = "Add or remove the mentioned user from the watchlist",
+    category = "Mod",
 }
-cmds['wl'] = cmds['watchlist']
-cmds['wl'].usage = "wl <@user|userID>"
 
 --toggles the under18 state for a member
-cmds['toggle18'] = {
+cmds['t18'] = {
+    id = "t18",
     action = function(message, args)
 		local member = message.guild:getMember(parseMention(args))
 		if member then
@@ -1256,14 +1278,14 @@ cmds['toggle18'] = {
         mod = true,
         everyone = false,
     },
-    usage = "toggle18 <@user|userID>",
+    usage = "t18 <@user|userID>",
     description = "Add or remove the Under 18 flag from the mentioned user",
+    category = "Mod",
 }
-cmds['t18'] = cmds['toggle18']
-cmds['t18'].usage = "t18 <@user|userID>"
 
 --[[ Note Functions ]]
-cmds['addnote'] = {
+cmds['note'] = {
+    id = "note",
     action = function(message, args)
 	    local a = message.guild:getMember(message.author.id)
 	    local m
@@ -1276,10 +1298,33 @@ cmds['addnote'] = {
 				args = args:gsub(m.id,""):trim()
 			end
 	    end
-	    if not m and args ~= "" then return end
-		if args == "" then return end
-	    local success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
-		if err then print(err) end
+	    if (args == "") or not m then return end
+        local success, err
+        if args:startswith("add") then
+            args = args:gsub("^add",""):trim()
+    	    success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
+        elseif args:startswith("del") then
+            args = args:gsub("^del",""):trim()
+            success, err = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
+        elseif args:startswith("view") then
+            args = args:gsub("^view",""):trim()
+            local notelist = {}
+    	    local cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
+    		local row = cur:fetch({},"a")
+    		while row do
+    			table.insert(notelist, {name = "Note Added by: "..row.moderator, value = row.note})
+    			row = cur:fetch(row, "a")
+    		end
+    		success = message:reply {
+    			embed = {
+    				title = "Notes for "..m.username,
+    				fields = notelist,
+    			}
+    		}
+        else
+            message:reply("Please specify add, del, or view")
+        end
+        if err then print(err) end
 		return success
     end,
     permissions = {
@@ -1289,82 +1334,13 @@ cmds['addnote'] = {
         mod = true,
         everyone = false,
     },
-    usage = "addnote <@user|userID> <note>",
-    description = "Add the note to the mentioned user",
-}
-
-cmds['delnote'] = {
-    action = function(message, args)
-	    local a = message.guild:getMember(message.author.id)
-	    local m
-	    if message.mentionedUsers then
-	        if #message.mentionedUsers == 1 then
-	            m = message.mentionedUsers:iter()()
-	            args = args:gsub("<@.+>",""):trim()
-			else
-				m = message.guild:getMember(args:match("%d+"))
-				args = args:gsub(m.id,""):trim()
-	        end
-	    end
-	    if not m then return end
-	    if args == "" then return end
-	    args = tonumber(args)
-		if not args then return end
-		local success = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
-		return success
-    end,
-    permissions = {
-        botOwner = false,
-        guildOwner = true,
-        admin = true,
-        mod = true,
-        everyone = false,
-    },
-    usage = "delnote <@user|userID> <index>",
-    description = "Delete the note at index for the mentioned user. Currently broken",
-}
-
-cmds['viewnotes'] = {
-    action = function(message, args)
-	    local a = message.guild:getMember(message.author.id)
-	    local m
-	    if message.mentionedUsers then
-	        if #message.mentionedUsers == 1 then
-	            m = message.mentionedUsers:iter()()
-	            args = args:gsub("<@.+>",""):trim()
-			else
-				m = message.guild:getMember(args:match("%d+"))
-				args = args:gsub(m.id,""):trim()
-	        end
-	    end
-	    if not m then return end
-		local notelist = {}
-	    local cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
-		local row = cur:fetch({},"a")
-		while row do
-			table.insert(notelist, {name = "Note Added by: "..row.moderator, value = row.note})
-			row = cur:fetch(row, "a")
-		end
-		local status = message:reply {
-			embed = {
-				title = "Notes for "..m.username,
-				fields = notelist,
-			}
-		}
-		return status
-    end,
-    permissions = {
-        botOwner = false,
-        guildOwner = true,
-        admin = true,
-        mod = true,
-        everyone = false,
-    },
-    usage = "viewnotes <@user|userID>",
-    description = "View all notes on the mentioned user",
+    usage = "note <add|del|view> <@user|userID> <note>",
+    description = "Add the note to, delete a note from, or view all notes for the mentioned user",
+    category = "Mod",
 }
 
 cmds['lua'] = {
+    id = "lua",
     action = function(message, args)
     	if not args:startswith("```") then return end
     	args = string.match(args, "```(.+)```"):gsub("lua", ""):trim()
@@ -1436,9 +1412,11 @@ cmds['lua'] = {
     },
     usage = "lua <code in a markdown codeblock>",
     description = "Run arbitrary lua code",
+    category = "Bot Owner",
 }
 
 cmds['todo'] = {
+    id = "todo",
     action = function(message, args)
         todo = readAll('TODO.md')
         status = message:reply("```markdown\n"..todo.."```")
@@ -1453,6 +1431,7 @@ cmds['todo'] = {
     },
     usage = "todo",
     description = "View the github TODO.md via discord",
+    category = "Bot Owner",
 }
 
 --Logging functions
