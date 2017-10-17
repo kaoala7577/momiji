@@ -381,12 +381,9 @@ cmds['prefix'] = {
 --ping
 cmds['ping'] = {
     action = function(message)
-    	local sw = discordia.Stopwatch()
-    	sw:reset()
     	local response = message:reply("Pong!")
     	if response then
-    		sw:stop()
-    		local success = response:setContent("Pong!".."`"..math.round(sw.milliseconds).." ms`")
+    		local success = response:setContent("Pong!".."`"..math.round((response.createdAt - message.createdAt)*1000).." ms`")
     		return success
     	end
     end,
