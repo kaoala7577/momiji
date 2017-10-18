@@ -7,13 +7,11 @@ local token = require'token'
 
 --[[ Required for luaSQL which loads per-guild settings and member data ]]
 local luasql = require'luasql.postgres'
-local env = luasql.postgres()
-local conn = env:connect('mydb')
+local conn = luasql.postgres():connect('mydb')
 
 --[[ Required for my custom command parsing ]]
 local core = require'core'
-local CommandEmitter = core.Emitter:extend()
-local commands = CommandEmitter:new()
+local commands = core.Emitter:new()
 
 --[[ Required for interval-based functions ]]
 local clock = discordia.Clock()
@@ -23,30 +21,15 @@ local utils = require("./utils")
 
 local json = require("json")
 
---shitty work-around
+--not sure how to avoid making this global
 _G.discordia = discordia
-_G.selfRoles = json.parse(utils.readAll('rolelist.json'))
 _G.conn = conn
 _G.client = client
 
-local cmds = {}
+--fucking replace this
+_G.selfRoles = json.parse(utils.readAll('rolelist.json'))
 
---[[ authorizes a command for roles based on guild._settings.admin_roles and guild._settings.mod_roles ]]
-function authorize(message, admins, mods)
-	if not message or (message.channel.type ~= enums.channelType.text) then return end
-	local member = message.guild:getMember(message.author.id)
-	if admins then
-		for _,r in pairs(message.guild._settings.admin_roles) do
-			if member:hasRole(message.guild:getRole(r)) then return true end
-		end
-	end
-	if mods then
-		for _,r in pairs(message.guild._settings.mod_roles) do
-			if member:hasRole(message.guild:getRole(r)) then return true end
-		end
-	end
-	return false
-end
+local cmds = {}
 
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
 function safeCall(func, message, args)
@@ -82,10 +65,18 @@ function commandParser(message)
             if table.search(table.keys(cmds), str) then
                 if cmds[str].permissions.everyone then
                     commands:emit(str, message, args)
-                elseif cmds[str].permissions.mods and authorize(message, false, true) then
-                    commands:emit(str, message, args)
-                elseif cmds[str].permissions.admin and authorize(message, true, false) then
-                    commands:emit(str, message, args)
+                elseif cmds[str].permissions.mods then
+					for _,r in pairs(message.guild._settings.admin_roles) do
+						if message.member:hasRole(message.guild:getRole(r)) then
+							commands:emit(str, message, args)
+						end
+					end
+                elseif cmds[str].permissions.admin then
+					for _,r in pairs(message.guild._settings.mod_roles) do
+						if message.member:hasRole(message.guild:getRole(r)) then
+							commands:emit(str, message, args)
+						end
+					end
                 elseif cmds[str].permissions.guildOwner and (message.member == message.guild.owner) then
                     commands:emit(str, message, args)
                 elseif cmds[str].permissions.botOwner and (message.author == client.owner) then
@@ -162,17 +153,17 @@ end)
 function welcomeMessage(member)
 	local channel = member.guild:getChannel(member.guild._settings.welcome_channel)
 	if channel then
-		channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.")
-		--[[channel:send {
+		--channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.")
+		channel:send {
 			embed = {
-				author = {name = "Member Joined", icon_url = member.avatarURL},
-				description = "Welcome "..member.name.." to "..member.guild.name.."! Please read through "..member.guild:getTextChannel('name', 'start-here-rules').mentionString.." and inform a member of staff how you identify and what pronouns you would like to use. These are required.",
+				title = "Welcome to "..member.guild.name.."!",
+				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
 				color = discordia.Color(0, 255, 0).value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}
 			}
-		}--]]
+		}
 	end
 end
 client:on('memberJoin', function(member) welcomeMessage(member) end)
@@ -502,7 +493,7 @@ function messageDelete(message)
 end
 --Uncached message deletion
 function messageDeleteUncached(channel, messageID)
-	local logChannel = message.guild:getChannel(channel.guild._settings.log_channel)
+	local logChannel = channel.guild:getChannel(channel.guild._settings.log_channel)
 	if logChannel then
 		logChannel:send {
 			embed = {
