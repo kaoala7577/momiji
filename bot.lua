@@ -1,17 +1,14 @@
 --[[ Required for discordia ]]
 local discordia = require('discordia')
-_G.discordia = discordia
 discordia.extensions()
 local enums = discordia.enums
 local client = discordia.Client({cacheAllMembers = true})
-_G.client = client
 local token = require'token'
 
 --[[ Required for luaSQL which loads per-guild settings and member data ]]
 local luasql = require'luasql.postgres'
 local env = luasql.postgres()
 local conn = env:connect('mydb')
-_G.conn = conn
 
 --[[ Required for my custom command parsing ]]
 local core = require'core'
@@ -24,10 +21,13 @@ clock:start()
 
 local utils = require("./utils")
 
---TODO
---Replace this with a per-guild list
 local json = require("json")
+
+--shitty work-around
+_G.discordia = discordia
 _G.selfRoles = json.parse(utils.readAll('rolelist.json'))
+_G.conn = conn
+_G.client = client
 
 local cmds = {}
 
