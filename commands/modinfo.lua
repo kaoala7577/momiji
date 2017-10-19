@@ -4,8 +4,8 @@ return {
         guild = message.guild
     	local member
     	if args ~= "" then
-    		if guild:getMember(parseMention(args)) then
-    			member = guild:getMember(parseMention(args))
+    		if guild:getMember(utils.parseMention(args)) then
+    			member = guild:getMember(utils.parseMention(args))
     		end
     	else
     		member = guild:getMember(message.author)

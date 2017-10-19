@@ -1,10 +1,8 @@
-local utils = require("../utils")
-
 return {
     id = "register",
     action = function(message)
     	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
-    	local roles, member = parseRoleList(message)
+    	local roles, member = utils.parseRoleList(message)
     	local author = message.guild:getMember(message.author.id)
     	if member then
     		local rolesToAdd = {}

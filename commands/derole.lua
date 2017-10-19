@@ -1,7 +1,7 @@
 return {
     id = "derole",
     action = function(message)
-    	local roles = parseRoleList(message)
+    	local roles = utils.parseRoleList(message)
     	local member = message.guild:getMember(message.author)
     	local rolesToRemove = {}
     	for _,role in pairs(roles) do

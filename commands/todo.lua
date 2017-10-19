@@ -1,7 +1,7 @@
 return {
     id = "todo",
     action = function(message, args)
-        todo = readAll('TODO.md')
+        todo = utils.readAll('TODO.md')
         status = message:reply("```markdown\n"..todo.."```")
         return status
     end,

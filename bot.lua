@@ -3,28 +3,29 @@ local discordia = require('discordia')
 discordia.extensions()
 local enums = discordia.enums
 local client = discordia.Client({cacheAllMembers = true})
-local token = require'token'
+local token = require('token')
 
 --[[ Required for luaSQL which loads per-guild settings and member data ]]
-local luasql = require'luasql.postgres'
+local luasql = require('luasql.postgres')
 local conn = luasql.postgres():connect('mydb')
 
 --[[ Required for my custom command parsing ]]
-local core = require'core'
+local core = require('core')
 local commands = core.Emitter:new()
 
 --[[ Required for interval-based functions ]]
 local clock = discordia.Clock()
 clock:start()
 
-local utils = require("./utils")
+local utils = require('./utils')
 
-local json = require("json")
-
+local json = require('json')
+local fs = require('fs')
 --not sure how to avoid making this global
 _G.discordia = discordia
 _G.conn = conn
 _G.client = client
+_G.utils = utils
 
 --fucking replace this
 _G.selfRoles = json.parse(utils.readAll('rolelist.json'))
@@ -57,36 +58,36 @@ end
 function commandParser(message)
 	if message.author.bot then return end
 	if message.channel.type == enums.channelType.text then
-        local prefix = message.guild._settings.prefix
+		local prefix = message.guild._settings.prefix
 		if message.content:match("^%"..prefix) then
 			local str = message.content:match("^%"..prefix.."(%g+)")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
-            str = str:lower()
-            if table.search(table.keys(cmds), str) then
-                if cmds[str].permissions.everyone then
-                    commands:emit(str, message, args)
-                elseif cmds[str].permissions.mods then
+			str = str:lower()
+			if table.search(table.keys(cmds), str) then
+				if cmds[str].permissions.everyone then
+					commands:emit(str, message, args)
+				elseif cmds[str].permissions.mods then
 					for _,r in pairs(message.guild._settings.admin_roles) do
 						if message.member:hasRole(message.guild:getRole(r)) then
 							commands:emit(str, message, args)
 						end
 					end
-                elseif cmds[str].permissions.admin then
+				elseif cmds[str].permissions.admin then
 					for _,r in pairs(message.guild._settings.mod_roles) do
 						if message.member:hasRole(message.guild:getRole(r)) then
 							commands:emit(str, message, args)
 						end
 					end
-                elseif cmds[str].permissions.guildOwner and (message.member == message.guild.owner) then
-                    commands:emit(str, message, args)
-                elseif cmds[str].permissions.botOwner and (message.author == client.owner) then
-                    commands:emit(str, message, args)
-                end
-            end
+				elseif cmds[str].permissions.guildOwner and (message.member == message.guild.owner) then
+					commands:emit(str, message, args)
+				elseif cmds[str].permissions.botOwner and (message.author == client.owner) then
+					commands:emit(str, message, args)
+				end
+			end
 		end
-    else
-        message:reply("I'm not currently set up to handle private messages")
-    end
+	else
+		message:reply("I'm not currently set up to handle private messages")
+	end
 end
 client:on('messageCreate', function(m) commandParser(m) end)
 
@@ -186,94 +187,44 @@ client:on('presenceUpdate', function(member)
 	end
 end)
 
---[[ Silly test func, changes based on what I need to test ]]
-cmds['test'] = require("commands/test")
+--[[ Commands ]]
 
---Change the bot username. Owner only
-cmds['uname'] = require("commands/uname")
+--Attempt to load all commands from commands
+for k, v in fs.scandirSync("./commands/") do
+	if v == 'file' and k:find(".lua") then
+		local name = k:gsub(".lua","")
+		cmds[name] = require('./commands/'..name)
+	end
+end
 
---Change the bot nickname. Guild owner only
-cmds['nick'] = require("commands/nick")
+--Set aliases here
+cmds['reg'] = cmds['register']
+cmds['reg'].usage = 'reg <@user|userID> <role[, role, ...]>'
+cmds['reg'].id = "reg"
 
---Help page.... total shit
-cmds['help'] = require("commands/help")
-
---change prefix
-cmds['prefix'] = require("commands/prefix")
-
---ping
-cmds['ping'] = require("commands/ping")
-
---lists members without roles
-cmds['noroles'] = require("commands/noroles")
-
---serverinfo
-cmds['serverinfo'] = require("commands/serverinfo")
 cmds['si'] = cmds['serverinfo']
 cmds['si'].usage = "si"
 cmds['si'].id = "si"
 
---roleinfo
-cmds['roleinfo'] = require("commands/roleinfo")
 cmds['ri'] = cmds['roleinfo']
 cmds['ri'].usage = "ri <rolename>"
 cmds['ri'].id = "ri"
 
---userinfo
-cmds['userinfo'] = require("commands/userinfo")
 cmds['ui'] = cmds['userinfo']
 cmds['ui'].usage = "ui [@user|userID]"
 cmds['ui'].id = "ui"
 
-cmds['modinfo'] = require("commands/modinfo")
 cmds['mi'] = cmds['modinfo']
 cmds['mi'].usage = "mi <@user|userID>"
 cmds['mi'].id = "mi"
 
---addRole: Mod Function only!
-cmds['ar'] = require("commands/ar")
+--Set additional commands here
 
---removeRole: Mod function only!
-cmds['rr'] = require("commands/rr")
-
---Register, same as ar but removes Not Verified
-cmds['register'] = require("commands/register")
-cmds['reg'] = cmds['register']
-cmds['reg'].usage = "reg <@user|userID> <role[, role, ...]>"
-cmds['reg'].id = "reg"
-
---addSelfRole
-cmds['role'] = require("commands/role")
-
---removeSelfRole
-cmds['derole'] = require("commands/derole")
-
---roleList
-cmds['roles'] = require("commands/roles")
-
---Mute: Mod only
-cmds['mute'] = require("commands/mute")
-
---Unmute, counterpart to above
-cmds['unmute'] = require("commands/unmute")
-
---sets up mute in every text channel. currently broken due to 2.0
-function setupMute(message)
-	if message.author == message.guild.owner then
-		local role = message.guild:getRole('name', 'Muted')
-		for channel in message.guild.textChannels do
-			channel:getPermissionOverwriteFor(role):denyPermissions('sends', 'addReactions')
-		end
-	end
-end
---commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
-
---bulk delete command
 cmds['prune'] = {
-    id = "prune",
-    action = function(message, args)
-    	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
-    	local author = message.guild:getMember(message.author.id)
+	id = "prune",
+	action = function(message, args)
+		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
+		local author = message.guild:getMember(message.author.id)
 		local messageDeletes = client:getListeners('messageDelete')
 		local messageDeletesUncached = client:getListeners('messageDeleteUncached')
 		client:removeAllListeners('messageDelete')
@@ -309,63 +260,51 @@ cmds['prune'] = {
 		for listener in messageDeletesUncached do
 			client:on('messageDeleteUncached', listener)
 		end
-    end,
-    permissions = {
-        botOwner = false,
-        guildOwner = true,
-        admin = true,
-        mod = false,
-        everyone = false,
-    },
-    usage = "prune <number>",
-    description = "Deletes the specified number of messages from the current channel",
-    category = "Admin",
+	end,
+	permissions = {
+		botOwner = false,
+		guildOwner = true,
+		admin = true,
+		mod = false,
+		everyone = false,
+	},
+	usage = "prune <number>",
+	description = "Deletes the specified number of messages from the current channel",
+	category = "Admin",
 }
 
---list all watchlisted members
-cmds['listwl'] = require("commands/listwl")
-
---toggles the watchlist state for a member
-cmds['wl'] = require("commands/wl")
-
---toggles the under18 state for a member
-cmds['t18'] = require("commands/t18")
-
---[[ Note Functions ]]
-cmds['note'] = require("commands/note")
-
 cmds['lua'] = {
-    id = "lua",
-    action = function(message, args)
-    	if not args:startswith("```") then return end
-    	args = string.match(args, "```(.+)```"):gsub("lua", ""):trim()
-    	printresult = ""
-    	sandbox = setmetatable({
-    		discordia = discordia,
-    		client = client,
-    		enums = enums,
-    		conn = conn,
-            cmds = cmds,
-    		message = message,
-    		utils = utils,
-    		printresult = printresult,
-    		print = function(...)
-    			arg = {...}
-    			for i,v in ipairs(arg) do
-    				printresult = printresult..tostring(v).."\t"
-    			end
-    			printresult = printresult.."\n"
-    		end,
-    		json = json},{
+	id = "lua",
+	action = function(message, args)
+		if not args:startswith("```") then return end
+		args = string.match(args, "```(.+)```"):gsub("lua", ""):trim()
+		printresult = ""
+		sandbox = setmetatable({
+			discordia = discordia,
+			client = client,
+			enums = enums,
+			conn = conn,
+			cmds = cmds,
+			message = message,
+			utils = utils,
+			printresult = printresult,
+			print = function(...)
+				arg = {...}
+				for i,v in ipairs(arg) do
+					printresult = printresult..tostring(v).."\t"
+				end
+				printresult = printresult.."\n"
+			end,
+			json = json},{
 			__index = _G
 			})
-    	function runSandbox(sandboxEnv, sandboxFunc, ...)
-    		if not sandboxFunc then return end
-    		setfenv(sandboxFunc,sandboxEnv)
-    		return pcall(sandboxFunc, ...)
-    	end
-    	status, ret = runSandbox(sandbox, loadstring(args))
-    	if not ret then ret = printresult else ret = ret.."\n"..printresult end
+		function runSandbox(sandboxEnv, sandboxFunc, ...)
+			if not sandboxFunc then return end
+			setfenv(sandboxFunc,sandboxEnv)
+			return pcall(sandboxFunc, ...)
+		end
+		status, ret = runSandbox(sandbox, loadstring(args))
+		if not ret then ret = printresult else ret = ret.."\n"..printresult end
 		if ret ~= "" then
 			if #ret < 1800 then
 				message:reply("```"..ret.."```")
@@ -376,21 +315,30 @@ cmds['lua'] = {
 				message:reply("```"..ret2.."```")
 			end
 		end
-    	return status
-    end,
-    permissions = {
-        botOwner = true,
-        guildOwner = false,
-        admin = false,
-        mod = false,
-        everyone = false,
-    },
-    usage = "lua <code in a markdown codeblock>",
-    description = "Run arbitrary lua code",
-    category = "Bot Owner",
+		return status
+	end,
+	permissions = {
+		botOwner = true,
+		guildOwner = false,
+		admin = false,
+		mod = false,
+		everyone = false,
+	},
+	usage = "lua <code in a markdown codeblock>",
+	description = "Run arbitrary lua code",
+	category = "Bot Owner",
 }
 
-cmds['todo'] = require("commands/todo")
+--sets up mute in every text channel. currently broken due to 2.0
+function setupMute(message)
+	if message.author == message.guild.owner then
+		local role = message.guild:getRole('name', 'Muted')
+		for channel in message.guild.textChannels do
+			channel:getPermissionOverwriteFor(role):denyPermissions('sends', 'addReactions')
+		end
+	end
+end
+--commands:on('setupmute', function(m, a) safeCall(setupMute, m, a) end)
 
 --Logging functions
 --Member join message
@@ -429,6 +377,7 @@ function memberLeave(member)
 end
 client:on('memberJoin', function(member) memberJoin(member) end)
 client:on('memberLeave', function(member) memberLeave(member) end)
+
 --Ban message
 function userBan(user, guild)
 	local member = guild:getMember(user) or user
@@ -465,6 +414,7 @@ function userUnban(user, guild)
 end
 client:on('userBan', function(user, guild) userBan(user, guild) end)
 client:on('userUnban', function(user, guild) userUnban(user, guild) end)
+
 --Cached message deletion
 function messageDelete(message)
 	local member = message.guild:getMember(message.author.id)
@@ -501,10 +451,11 @@ client:on('messageDeleteUncached', function(channel, messageID) messageDeleteUnc
 
 --populate the commands
 for key, tbl in pairs(cmds) do
-    if type(tbl) == "table" then
-        commands:on(key, function(m,a) safeCall(tbl.action,m,a) end)
-    else
-        print("Invalid command format", key)
-    end
+	if type(tbl) == "table" then
+		commands:on(key, function(m,a) safeCall(tbl.action,m,a) end)
+	else
+		print("Invalid command format", key)
+	end
 end
+
 client:run(token)

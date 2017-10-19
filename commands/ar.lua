@@ -1,9 +1,7 @@
-local utils = require("../utils")
-
 return {
     id = "ar",
     action = function(message, args)
-    	local roles, member = parseRoleList(message)
+    	local roles, member = utils.parseRoleList(message)
     	local author = message.guild:getMember(message.author.id)
     	if member then
     		local rolesToAdd = {}

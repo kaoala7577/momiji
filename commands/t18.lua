@@ -1,7 +1,7 @@
 return {
     id = "t18",
     action = function(message, args)
-		local member = message.guild:getMember(parseMention(args))
+		local member = message.guild:getMember(utils.parseMention(args))
 		if member then
 			local success
 			local currentVal = conn:execute(string.format([[SELECT under18 FROM members WHERE member_id='%s';]], member.id)):fetch()

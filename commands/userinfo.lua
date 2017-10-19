@@ -1,13 +1,11 @@
-local utils = require("../utils")
-
 return {
     id = "userinfo",
     action = function(message, args)
     	local guild = message.guild
     	local member
     	if args ~= "" then
-    		if guild:getMember(parseMention(args)) then
-    			member = guild:getMember(parseMention(args))
+    		if guild:getMember(utils.parseMention(args)) then
+    			member = guild:getMember(utils.parseMention(args))
     		end
     	else
     		member = guild:getMember(message.author)
@@ -18,12 +16,12 @@ return {
     			if roles == "" then roles = i.name else roles = roles..", "..i.name end
     		end
     		if roles == "" then roles = "None" end
-    		local joinTime = humanReadableTime(parseTime(member.joinedAt):toTable())
-    		local createTime = humanReadableTime(parseTime(member.timestamp):toTable())
-    		local registerTime = parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
+    		local joinTime = utils.humanReadableTime(utils.parseTime(member.joinedAt):toTable())
+    		local createTime = utils.humanReadableTime(utils.parseTime(member.timestamp):toTable())
+    		local registerTime = utils.parseTime(conn:execute(string.format([[SELECT registered FROM members WHERE member_id='%s';]], member.id)):fetch())
     		if registerTime ~= 'N/A' then
     			registerTime = registerTime:toTable()
-    			registerTime = humanReadableTime(registerTime)
+    			registerTime = utils.humanReadableTime(registerTime)
     		end
     		local status = message.channel:send {
     			embed = {

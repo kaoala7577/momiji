@@ -1,5 +1,3 @@
-local utils = require("../utils")
-
 return {
     id = "serverinfo",
     action = function(message, args)
@@ -24,7 +22,7 @@ return {
     			invite = inv
     		end
     	end
-    	timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+    	timestamp = utils.humanReadableTime(utils.parseTime(guild.timestamp):toTable())
         fields = {
             {name = 'ID', value = guild.id, inline = true},
             {name = 'Name', value = guild.name, inline = true},
