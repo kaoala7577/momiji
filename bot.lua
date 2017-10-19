@@ -340,16 +340,7 @@ cmds['lua'] = {
     	if not args:startswith("```") then return end
     	args = string.match(args, "```(.+)```"):gsub("lua", ""):trim()
     	printresult = ""
-        utils = {
-        	days = days,
-        	months = months,
-        	sqlStringToTable = sqlStringToTable,
-        	parseMention = parseMention,
-        	parseTime = parseTime,
-        	parseChannel = parseChannel,
-        	humanReadableTime = humanReadableTime,
-        }
-    	sandbox = {
+    	sandbox = setmetatable({
     		discordia = discordia,
     		client = client,
     		enums = enums,
@@ -365,22 +356,9 @@ cmds['lua'] = {
     			end
     			printresult = printresult.."\n"
     		end,
-    		json = require'json',
-    		require = require,
-    		ipairs = ipairs,
-    		pairs = pairs,
-    		pcall = pcall,
-    		tonumber = tonumber,
-    		tostring = tostring,
-    		type = type,
-    		unpack = unpack,
-    		select = select,
-    		string = string,
-    		table = table,
-    		math = math,
-    		io = io,
-    		os = os,
-    	}
+    		json = json},{
+			__index = _G
+			})
     	function runSandbox(sandboxEnv, sandboxFunc, ...)
     		if not sandboxFunc then return end
     		setfenv(sandboxFunc,sandboxEnv)
@@ -388,14 +366,16 @@ cmds['lua'] = {
     	end
     	status, ret = runSandbox(sandbox, loadstring(args))
     	if not ret then ret = printresult else ret = ret.."\n"..printresult end
-    	if ret ~= "" and #ret < 1800 then
-            message:reply("```"..ret.."```")
-        elseif ret ~= "" then
-            ret1 = ret:sub(0,1800)
-            ret2 = ret:sub(1801)
-            message:reply("```"..ret1.."```")
-            message:reply("```"..ret2.."```")
-        end
+		if ret ~= "" then
+			if #ret < 1800 then
+				message:reply("```"..ret.."```")
+			elseif #ret < 3800 then
+				ret1 = ret:sub(0,1800)
+				ret2 = ret:sub(1801)
+				message:reply("```"..ret1.."```")
+				message:reply("```"..ret2.."```")
+			end
+		end
     	return status
     end,
     permissions = {
