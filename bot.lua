@@ -159,7 +159,7 @@ function welcomeMessage(member)
 				title = "Welcome to "..member.guild.name.."!",
 				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
-				color = discordia.Color(0, 255, 0).value,
+				color = discordia.Color.fromRGB(0, 255, 0).value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}
 			}
@@ -173,6 +173,16 @@ client:on('memberRegistered', function(member)
 	local channel = member.guild:getChannel('350764752898752513')
 	if channel then
 		channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
+	end
+end)
+
+--Streaming role
+client:on('presenceUpdate', function(member)
+	role = '370395740406546432'
+	if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
+		member:addRole(role)
+	elseif member:hasRole(role) then
+		member:removeRole(role)
 	end
 end)
 
