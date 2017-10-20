@@ -229,8 +229,10 @@ cmds['clr'] = {
 	action = function(message, args)
 		if args == 'owner' then
 			colorChange.owner = not colorChange.owner
+			return true
 		elseif args == 'first' then
 			colorChange.first = not colorChange.first
+			return true
 		end
 	end,
 	permissions = {
