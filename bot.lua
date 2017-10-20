@@ -65,7 +65,7 @@ function commandParser(message)
 			if table.search(table.keys(cmds), str) then
 				if cmds[str].permissions.everyone then
 					commands:emit(str, message, args)
-				elseif cmds[str].permissions.mods then
+				elseif cmds[str].permissions.mod then
 					for _,r in pairs(message.guild._settings.admin_roles) do
 						if message.member:hasRole(message.guild:getRole(r)) then
 							commands:emit(str, message, args)
