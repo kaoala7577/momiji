@@ -66,13 +66,13 @@ function commandParser(message)
 				if cmds[str].permissions.everyone then
 					commands:emit(str, message, args)
 				elseif cmds[str].permissions.mod then
-					for _,r in pairs(message.guild._settings.admin_roles) do
+					for _,r in pairs(message.guild._settings.mod_roles) do
 						if message.member:hasRole(message.guild:getRole(r)) then
 							commands:emit(str, message, args)
 						end
 					end
 				elseif cmds[str].permissions.admin then
-					for _,r in pairs(message.guild._settings.mod_roles) do
+					for _,r in pairs(message.guild._settings.admin_roles) do
 						if message.member:hasRole(message.guild:getRole(r)) then
 							commands:emit(str, message, args)
 						end
