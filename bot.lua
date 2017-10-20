@@ -29,6 +29,7 @@ _G.utils = utils
 --fucking replace this
 _G.selfRoles = json.parse(utils.readAll('rolelist.json'))
 
+local colorChange = {owner = true, first = true}
 local cmds = {}
 
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
@@ -115,10 +116,15 @@ end)
 function changeColor(time)
 	local guild = client:getGuild('348660188951216129')
 	if guild and (math.fmod(time.min, 10) == 0) then
-		local role = guild:getRole('348665099550195713')
-		local success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
-		role = guild:getRole('363398104491229184')
-		success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		local role, success
+		if colorChange.owner then
+			role = guild:getRole('348665099550195713')
+			success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		end
+		if colorChange.first then
+			role = guild:getRole('363398104491229184')
+			success = role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		end
 	end
 end
 clock:on('min', function(time) changeColor(time) end)
@@ -218,6 +224,27 @@ cmds['mi'].usage = "mi <@user|userID>"
 cmds['mi'].id = "mi"
 
 --Set additional commands here
+cmds['clr'] = {
+	id = 'clr',
+	action = function(message, args)
+		if args == 'owner' then
+			colorChange.owner = not colorChange.owner
+		elseif args == 'first' then
+			colorChange.first = not colorChange.first
+		end
+	end,
+	permissions = {
+		botOwner = true,
+		guildOwner = true,
+		admin = false,
+		mod = false,
+		everyone = false,
+	},
+	usage = "clr <owner|first>",
+	description = "Toggles the color changer",
+	category = "Guild Owner",
+}
+
 
 cmds['prune'] = {
 	id = "prune",
