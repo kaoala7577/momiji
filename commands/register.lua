@@ -1,9 +1,9 @@
 return {
     id = "register",
-    action = function(message)
+    action = function(message, args)
     	local channel = message.guild:getChannel(message.guild._settings.modlog_channel)
     	local roles, member = utils.parseRoleList(message)
-    	local author = message.guild:getMember(message.author.id)
+    	local author = message.member
     	if member then
     		local rolesToAdd = {}
     		local hasGender, hasPronouns

@@ -10,8 +10,7 @@ local luasql = require('luasql.postgres')
 local conn = luasql.postgres():connect('mydb')
 
 --[[ Required for my custom command parsing ]]
-local core = require('core')
-local commands = core.Emitter:new()
+local commands = discordia.Emitter()
 
 --[[ Required for interval-based functions ]]
 local clock = discordia.Clock()
@@ -284,6 +283,7 @@ cmds['lua'] = {
 			client = client,
 			enums = enums,
 			conn = conn,
+			commands = commands,
 			cmds = cmds,
 			message = message,
 			utils = utils,
