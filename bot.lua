@@ -166,8 +166,6 @@ function welcomeMessage(member)
 				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
 				color = discordia.Color.fromRGB(0, 255, 0).value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text = "ID: "..member.id}
 			}
 		}
 	end
