@@ -149,7 +149,7 @@ clock:on('min', function(time)
 end)
 
 clock:on('min', function(time)
-	if time.wday == 6 and time.hour == 23 and time.min = 59 then
+	if time.wday == 6 and time.hour == 23 and time.min == 59 then
 		local guild = client:getGuild('348660188951216129')
 		local logChannel = guild:getChannel(message.guild._settings.modlog_channel)
 		local channels = {guild:getChanne('348694677538603008'), guild:getChannel('371768023549345793')}
