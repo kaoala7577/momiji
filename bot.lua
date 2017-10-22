@@ -148,6 +148,33 @@ clock:on('min', function(time)
 	end
 end)
 
+clock:on('min', function(time)
+	if time.wday == 6 and time.hour == 23 and time.min = 59 then
+		local guild = client:getGuild('348660188951216129')
+		local logChannel = guild:getChannel(message.guild._settings.modlog_channel)
+		local channels = {guild:getChanne('348694677538603008'), guild:getChannel('371768023549345793')}
+		local messageDeletes = utils.removeListeners(client, 'messageDelete')
+		local messageDeletesUncached = utils.removeListeners(client, 'messageDeleteUncached')
+		local numDel = 0
+		for _,v in pairs(channels) do
+			for i=1, 500 do
+				toDelete = v:getMessages(100)
+				if #toDelete > 0 then deleted = v:bulkDelete(toDelete) end
+				numDel = numDel + #toDelete
+			end
+			logChannel:send {
+				embed = {
+					description = "Moderator "..client.user.mentionString.." deleted "..numDel.." messages in "..channel.mentionString,
+					color = discordia.Color.fromRGB(255, 0, 0).value,
+					timestamp = discordia.Date():toISO()
+				}
+			}
+		end
+		utils.registerListeners(client, 'messageDelete', messageDeletes)
+		utils.registerListeners(client, 'messageDeleteUncached', messageDeletesUncached)
+	end
+end)
+
 --Update last_message in members table. not used yet
 client:on('messageCreate', function(message)
 	if message.channel.type == enums.channelType.text and message.author.bot ~= true then
@@ -250,11 +277,8 @@ cmds['prune'] = {
 	id = "prune",
 	action = function(message, args)
 		local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
-		local author = message.guild:getMember(message.author.id)
-		local messageDeletes = client:getListeners('messageDelete')
-		local messageDeletesUncached = client:getListeners('messageDeleteUncached')
-		client:removeAllListeners('messageDelete')
-		client:removeAllListeners('messageDeleteUncached')
+		local messageDeletes = utils.removeListeners(client, 'messageDelete')
+		local messageDeletesUncached = utils.removeListeners(client, 'messageDeleteUncached')
 		message:delete()
 		if tonumber(args) > 0 then
 			args = tonumber(args)
@@ -262,30 +286,26 @@ cmds['prune'] = {
 			local numDel = 0
 			if xHun > 0 then
 				for i=1, xHun do
-					deletions = message.channel:getMessages(100)
-					success = message.channel:bulkDelete(deletions)
-					numDel = numDel+#deletions
+					toDelete = message.channel:getMessages(100)
+					if #toDelete > 0 then deleted = message.channel:bulkDelete(toDelete) end
+					numDel = numDel + #toDelete
 				end
 			end
 			if rem > 0 then
-				deletions = message.channel:getMessages(rem)
-				success = message.channel:bulkDelete(deletions)
-				numDel = numDel+#deletions
+				toDelete = message.channel:getMessages(rem)
+				if #toDelete > 0 then deleted = message.channel:bulkDelete(toDelete) end
+				numDel = numDel + #toDelete
 			end
 			logChannel:send {
 				embed = {
-					description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
+					description = "Moderator "..message.author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
 					color = discordia.Color.fromRGB(255, 0, 0).value,
 					timestamp = discordia.Date():toISO()
 				}
 			}
 		end
-		for listener in messageDeletes do
-			client:on('messageDelete', listener)
-		end
-		for listener in messageDeletesUncached do
-			client:on('messageDeleteUncached', listener)
-		end
+		utils.registerListeners(client, 'messageDelete', messageDeletes)
+		utils.registerListeners(client, 'messageDeleteUncached', messageDeletesUncached)
 	end,
 	permissions = {
 		botOwner = false,

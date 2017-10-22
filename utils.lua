@@ -12,6 +12,22 @@ function saveJson(tbl, file)
     f:close()
 end
 
+function removeListeners(e, name)
+    if discordia.class.isInstance(e, discordia.class.classes.Emitter) and name then
+        l = e:getListeners(name)
+        e:removeAllListeners(name)
+        return l
+    end
+end
+
+function registerListeners(e, name, funcs)
+    if discordia.class.isInstance(e, discordia.class.classes.Emitter) and name and funcs then
+        for func in funcs do
+            e:on(name, func)
+        end
+    end
+end
+
 --[[ luasql.postgres returns individual objects as strings, this lets us convert those to lua tables ]]
 function sqlStringToTable(str)
 	if str:startswith('{') and str:endswith('}') then
@@ -68,4 +84,6 @@ return {
     parseTime = parseTime,
     humanReadableTime = humanReadableTime,
     parseRoleList = parseRoleList,
+    removeListeners = removeListeners,
+    registerListeners = registerListeners,
 }
