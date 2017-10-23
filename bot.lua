@@ -156,9 +156,14 @@ clock:on('min', function(time)
 		local messageDeletes = utils.removeListeners(client, 'messageDelete')
 		local messageDeletesUncached = utils.removeListeners(client, 'messageDeleteUncached')
 		local numDel = 0
+		function fn(m) return not m.pinned end
 		for _,v in pairs(channels) do
-			for i=1, 500 do
-				toDelete = v:getMessages(100)
+			numDel = 0
+			while #v.messages.pinned ~= #v:getPinnedMessages() do
+				toDelete = {}
+				for m in v:getMessages(100):findAll(fn) do
+					table.insert(toDelete, m.id)
+				end
 				if #toDelete > 0 then deleted = v:bulkDelete(toDelete) end
 				numDel = numDel + #toDelete
 			end
