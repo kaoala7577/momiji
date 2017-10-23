@@ -16,7 +16,7 @@ local commands = discordia.Emitter()
 local clock = discordia.Clock()
 clock:start()
 
-local utils = require('./utils')
+local helpers = require('./helpers')
 
 local json = require('json')
 local fs = require('fs')
@@ -24,7 +24,7 @@ local fs = require('fs')
 _G.discordia = discordia
 _G.conn = conn
 _G.client = client
-_G.utils = utils
+_G.utils = helpers
 
 --fucking replace this
 _G.selfRoles = json.parse(utils.readAll('rolelist.json'))
@@ -33,8 +33,8 @@ local colorChange = {owner = true, first = true}
 local cmds = {}
 
 --[[ command wrapper for callbacks. prevents the bot from crashing if a command fails ]]
-function safeCall(func, message, args)
-	local status, ret = xpcall(func, debug.traceback, message, args)
+function safeCall(func, message, args, ...)
+	local status, ret = xpcall(func, debug.traceback, message, args, ...)
 	if ret and not status then
 		local channel = client:getChannel('364148499715063818')
 		channel:send {
@@ -504,7 +504,7 @@ client:on('messageDeleteUncached', function(channel, messageID) messageDeleteUnc
 --populate the commands
 for key, tbl in pairs(cmds) do
 	if type(tbl) == "table" then
-		commands:on(key, function(m,a) safeCall(tbl.action,m,a) end)
+		commands:on(key, function(m,a) safeCall(tbl.action,m,a,cmds) end)
 	else
 		print("Invalid command format", key)
 	end
