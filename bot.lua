@@ -54,6 +54,20 @@ function safeCall(func, message, args, ...)
 	message:addReaction(react)
 end
 
+function funcWrapper(func, ...)
+	local status, ret = xpcall(func, debug.traceback, ...)
+	if ret and not status then
+		local channel = client:getChannel('364148499715063818')
+		channel:send {
+			embed = {
+				description = ret,
+				timestamp = discordia.Date():toISO(),
+				color = discordia.Color.fromRGB(255, 0 ,0).value,
+			}
+		}
+	end
+end
+
 --[[ splits a command into command and everything else. handles literally every command ]]
 function commandParser(message)
 	if message.author.bot then return end
@@ -427,8 +441,8 @@ function memberLeave(member)
 		}
 	end
 end
-client:on('memberJoin', function(member) memberJoin(member) end)
-client:on('memberLeave', function(member) memberLeave(member) end)
+client:on('memberJoin', function(member) funcWrapper(memberJoin,member) end)
+client:on('memberLeave', function(member) funcWrapper(memberLeave,member) end)
 
 --Ban message
 function userBan(user, guild)
@@ -464,12 +478,12 @@ function userUnban(user, guild)
 		}
 	end
 end
-client:on('userBan', function(user, guild) userBan(user, guild) end)
-client:on('userUnban', function(user, guild) userUnban(user, guild) end)
+client:on('userBan', function(user, guild) funcWrapper(userBan,user,guild) end)
+client:on('userUnban', function(user, guild) funcWrapper(userUnban,user,guild) end)
 
 --Cached message deletion
 function messageDelete(message)
-	local member = message.guild:getMember(message.author.id)
+	local member = message.member
 	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
 		logChannel:send {
@@ -498,8 +512,8 @@ function messageDeleteUncached(channel, messageID)
 		}
 	end
 end
-client:on('messageDelete', function(message) messageDelete(message) end)
-client:on('messageDeleteUncached', function(channel, messageID) messageDeleteUncached(channel, messageID) end)
+client:on('messageDelete', function(message) funcWrapper(messageDelete,message) end)
+client:on('messageDeleteUncached', function(channel, messageID) funcWrapper(messageDeleteUncached,channel,messageID) end)
 
 --populate the commands
 for key, tbl in pairs(cmds) do
