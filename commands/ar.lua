@@ -37,7 +37,7 @@ return {
         botOwner = false,
         guildOwner = true,
         admin = true,
-        mod = false,
+        mod = true,
         everyone = false,
     },
     usage = "ar <@user|userID> <role[, role, ...]>",

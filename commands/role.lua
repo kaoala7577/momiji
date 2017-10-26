@@ -2,12 +2,11 @@ return {
 	id = "role",
 	action = function(message)
 		local roles = utils.parseRoleList(message)
-		local member = message.guild:getMember(message.author)
-		local rolesToAdd = {}
-		local rolesFailed = {}
-		for i,role in ipairs(roles) do
-			for k,l in pairs(selfRoles) do
-				for r,a in pairs(l) do
+		local member = message.member
+		local rolesToAdd, rolesFailed = {}, {}
+		for k,l in pairs(selfRoles) do
+			for r,a in pairs(l) do
+				for _,role in ipairs(roles) do
 					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 						if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
 							if (r == 'Gamer') or (r == '18+') or (r == 'Momiji Dev') or (r == 'D&D') then
