@@ -26,6 +26,22 @@ while arguments in square brackets (`[]`) are optional.
 A pipe character `|` means "or," so `a|b` means a **or** b.
 No brackets should be included in the commands]])
             for _,v in ipairs(sorted) do status = message.author:send(v) end
+        elseif cmds[args] then
+            perms = ""
+            for k,v in pairs(cmds[args].permissions) do
+                if v then perms = perms..k.."\n" end
+            end
+            status = message:reply {
+                embed = {
+                    title = cmds[args].id:sub(0,1):upper()..cmds[args].id:sub(2),
+                    description = cmds[args].description,
+                    fields = {
+                        {name = "Usage", value = cmds[args].usage},
+                        {name = "Category", value = cmds[args].category},
+                        {name = "Permissions", value = perms},
+                    },
+                }
+            }
         end
     	return status
     end,
