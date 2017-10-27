@@ -77,7 +77,7 @@ function commandParser(message)
 			local str = message.content:match("^%"..prefix.."(%g+)")
 			local args = message.content:gsub("^%"..prefix..str, ""):trim()
 			str = str:lower()
-			if table.search(table.keys(cmds), str) then
+			if cmds[str] then
 				if cmds[str].permissions.everyone then
 					commands:emit(str, message, args)
 				elseif cmds[str].permissions.mod then
@@ -486,10 +486,16 @@ function messageDelete(message)
 	local member = message.member
 	local logChannel = message.guild:getChannel(message.guild._settings.log_channel)
 	if logChannel and member then
+		body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
+		if message.attachments then
+			for i,t in ipairs(message.attachments) do
+				body = body.."\n[Attachment "..i.."]("..t.url..")"
+			end
+		end
 		logChannel:send {
 			embed = {
 				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
-				description = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content,
+				description = body,
 				color = discordia.Color.fromRGB(255, 0, 0).value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}

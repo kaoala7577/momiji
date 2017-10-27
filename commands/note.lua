@@ -16,22 +16,23 @@ return {
         local success, err
         if args:startswith("add") then
             args = args:gsub("^add",""):trim()
-    	    success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp) VALUES ('%s', '%s', '%s', '%s');]], m.id, args, a.username, discordia.Date():toISO()))
+    	    success, err = conn:execute(string.format([[INSERT INTO notes (user_id, note, moderator, timestamp, index) VALUES ('%s', '%s', '%s', '%s', (SELECT COUNT(*) FROM notes WHERE user_id='%s')+1);]], m.id, args, a.username, discordia.Date():toISO(), m.id))
         elseif args:startswith("del") then
             args = args:gsub("^del",""):trim()
-            success, err = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s';]], m.id))
+            success, err = conn:execute(string.format([[DELETE FROM notes WHERE user_id='%s' AND index='%s';]], m.id, tonumber(args)))
+            conn:execute(string.format([[UPDATE notes SET index = index-1 WHERE index >= '%s';]], tonumber(args)))
         elseif args:startswith("view") then
             args = args:gsub("^view",""):trim()
             local notelist = {}
     	    local cur = conn:execute(string.format([[SELECT * FROM notes WHERE user_id='%s';]], m.id))
     		local row = cur:fetch({},"a")
     		while row do
-    			table.insert(notelist, {name = "Note Added by: "..row.moderator, value = row.note})
+    			table.insert(notelist, {name = row.index.." : added by "..row.moderator, value = row.note})
     			row = cur:fetch(row, "a")
     		end
     		success = message:reply {
     			embed = {
-    				title = "Notes for "..m.username,
+    				footer = {text = "Notes for "..m.username},
     				fields = notelist,
     			}
     		}
