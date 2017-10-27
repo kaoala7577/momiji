@@ -82,13 +82,13 @@ function commandParser(message)
 					commands:emit(str, message, args)
 				elseif cmds[str].permissions.mod then
 					for _,r in pairs(message.guild._settings.mod_roles) do
-						if message.member:hasRole(message.guild:getRole(r)) then
+						if message.member:hasRole(r) then
 							commands:emit(str, message, args)
 						end
 					end
 				elseif cmds[str].permissions.admin then
 					for _,r in pairs(message.guild._settings.admin_roles) do
-						if message.member:hasRole(message.guild:getRole(r)) then
+						if message.member:hasRole(r) then
 							commands:emit(str, message, args)
 						end
 					end
@@ -108,7 +108,7 @@ client:on('messageCreate', function(m) commandParser(m) end)
 --[[ init functions: load per-guild settings and ensure that all members are cached in the members table ]]
 client:on('ready', function()
 	print('Logged in as '.. client.user.username)
-	client:setGame("Awoo!")
+	client:setGame(".help | Awoo!")
 	for guild in client.guilds:iter() do
 		local cur = conn:execute([[SELECT * FROM settings;]])
 		local row = cur:fetch({}, "a")
