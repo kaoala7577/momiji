@@ -174,7 +174,7 @@ clock:on('min', function(time)
 		for _,v in pairs(channels) do
 			numDel = 0
 			pins = v:getPinnedMessages()
-			while #v.messages ~= pins do
+			while #v.messages ~= #pins do
 				toDelete = {}
 				for m in v:getMessages(100):findAll(fn) do
 					table.insert(toDelete, m.id)
