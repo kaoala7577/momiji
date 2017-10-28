@@ -73,30 +73,35 @@ function commandParser(message)
 	if message.author.bot then return end
 	if message.channel.type == enums.channelType.text then
 		local prefix = message.guild._settings.prefix
-		if message.content:match("^%"..prefix) then
-			local str = message.content:match("^%"..prefix.."(%g+)")
-			local args = message.content:gsub("^%"..prefix..str, ""):trim()
-			str = str:lower()
-			if cmds[str] then
-				if cmds[str].permissions.everyone then
-					commands:emit(str, message, args)
-				elseif cmds[str].permissions.mod then
-					for _,r in pairs(message.guild._settings.mod_roles) do
-						if message.member:hasRole(r) then
-							commands:emit(str, message, args)
-						end
+		if message.content:find(prefix, 1, true) ~= 1 then return end
+
+		local str = message.content:match("^%"..prefix.."(%g+)")
+		local args = message.content:gsub("^%"..prefix..str, ""):trim()
+		str = str:lower()
+		if cmds[str] then
+			if cmds[str].permissions.everyone then
+				commands:emit(str, message, args)
+				return true
+			elseif cmds[str].permissions.mod then
+				for _,r in pairs(message.guild._settings.mod_roles) do
+					if message.member:hasRole(r) then
+						commands:emit(str, message, args)
+						return true
 					end
-				elseif cmds[str].permissions.admin then
-					for _,r in pairs(message.guild._settings.admin_roles) do
-						if message.member:hasRole(r) then
-							commands:emit(str, message, args)
-						end
-					end
-				elseif cmds[str].permissions.guildOwner and (message.member == message.guild.owner) then
-					commands:emit(str, message, args)
-				elseif cmds[str].permissions.botOwner and (message.author == client.owner) then
-					commands:emit(str, message, args)
 				end
+			elseif cmds[str].permissions.admin then
+				for _,r in pairs(message.guild._settings.admin_roles) do
+					if message.member:hasRole(r) then
+						commands:emit(str, message, args)
+						return true
+					end
+				end
+			elseif cmds[str].permissions.guildOwner and (message.member == message.guild.owner) then
+				commands:emit(str, message, args)
+				return true
+			elseif cmds[str].permissions.botOwner and (message.author == client.owner) then
+				commands:emit(str, message, args)
+				return true
 			end
 		end
 	else

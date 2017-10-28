@@ -3,10 +3,8 @@ return {
     action = function(message, args)
     	local logChannel = message.guild:getChannel(message.guild._settings.modlog_channel)
     	local author = message.guild:getMember(message.author.id)
-		local messageDeletes = client:getListeners('messageDelete')
-		local messageDeletesUncached = client:getListeners('messageDeleteUncached')
-		client:removeAllListeners('messageDelete')
-		client:removeAllListeners('messageDeleteUncached')
+        local messageDeletes = utils.removeListeners(client, 'messageDelete')
+		local messageDeletesUncached = utils.removeListeners(client, 'messageDeleteUncached')
 		message:delete()
 		if tonumber(args) > 0 then
 			args = tonumber(args)
@@ -32,12 +30,8 @@ return {
 				}
 			}
 		end
-		for listener in messageDeletes do
-			client:on('messageDelete', listener)
-		end
-		for listener in messageDeletesUncached do
-			client:on('messageDeleteUncached', listener)
-		end
+        utils.registerListeners(client, 'messageDelete', messageDeletes)
+		utils.registerListeners(client, 'messageDeleteUncached', messageDeletesUncached)
     end,
     permissions = {
         botOwner = false,
