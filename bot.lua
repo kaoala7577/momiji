@@ -141,10 +141,10 @@ function changeColor(time)
 		end
 	end
 end
-clock:on('min', function(time) changeColor(time) end)
+clock:on('min', function(time) funcWrapper(changeColor,time) end)
 
 --Attempt to auto-remove cooldown
-clock:on('min', function(time)
+function removeCooldown(time)
 	local guild = client:getGuild('348660188951216129')
 	if guild then
 		for member in guild.members:iter() do
@@ -160,9 +160,10 @@ clock:on('min', function(time)
 			end
 		end
 	end
-end)
+end
+clock:on('min', function(time) funcWrapper(removeCooldown,time) end)
 
-clock:on('min', function(time)
+function autoPrune(time)
 	if time.wday == 6 and time.hour == 23 and time.min == 59 then
 		local guild = client:getGuild('348660188951216129')
 		local logChannel = guild:getChannel(message.guild._settings.modlog_channel)
@@ -193,14 +194,16 @@ clock:on('min', function(time)
 		utils.registerListeners(client, 'messageDelete', messageDeletes)
 		utils.registerListeners(client, 'messageDeleteUncached', messageDeletesUncached)
 	end
-end)
+end
+clock:on('min', function(time) funcWrapper(autoPrune,time) end)
 
 --Update last_message in members table. not used yet
-client:on('messageCreate', function(message)
+function lastMessage(message)
 	if message.channel.type == enums.channelType.text and message.author.bot ~= true then
 		local status, err = conn:execute(string.format([[UPDATE members SET last_message='%s' WHERE member_id='%s';]], discordia.Date():toISO(), message.member.id))
 	end
-end)
+end
+client:on('messageCreate', function(m) funcWrapper(lastMessage,m) end)
 
 --Welcome message on memberJoin
 function welcomeMessage(member)
@@ -217,25 +220,27 @@ function welcomeMessage(member)
 		}
 	end
 end
-client:on('memberJoin', function(member) welcomeMessage(member) end)
+client:on('memberJoin', function(member) funcWrapper(welcomeMessage,member) end)
 
 --Post-register welcome
-client:on('memberRegistered', function(member)
+function postRegisterGreeting(member)
 	local channel = member.guild:getChannel('350764752898752513')
 	if channel then
 		channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
 	end
-end)
+end
+client:on('memberRegistered', function(m) funcWrapper(postRegisterGreeting,m) end)
 
 --Streaming role
-client:on('presenceUpdate', function(member)
+function nowLive(member)
 	role = '370395740406546432'
 	if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
 		member:addRole(role)
 	elseif member:hasRole(role) then
 		member:removeRole(role)
 	end
-end)
+end
+client:on('presenceUpdate', function(m) funcWrapper(nowLive,m) end)
 
 --[[ Commands ]]
 
