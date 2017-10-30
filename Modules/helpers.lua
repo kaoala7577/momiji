@@ -14,6 +14,28 @@ helpers.saveJson = function(tbl, file)
     f:close()
 end
 
+--Returns: bool, expected, number, got
+helpers.checkArgs = function(types, vals)
+    for i,v in ipairs(types) do
+		if type(v)=='table' then
+			local t1=true
+			if type(vals[i])~=v[1] then
+				t1=false
+			end
+			if t1==false then
+				if type(vals[i])~=v[2] then
+					return false,v,i,type(vals[i])
+				end
+			end
+		else
+			if type(vals[i])~=v then
+				return false,v,i,type(vals[i])
+			end
+		end
+	end
+	return true,'',#vals
+end
+
 helpers.removeListeners = function(e, name)
     if discordia.class.isInstance(e, discordia.class.classes.Emitter) and name then
         l = e:getListeners(name)
