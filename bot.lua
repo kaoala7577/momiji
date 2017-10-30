@@ -30,9 +30,9 @@ function loadModule(name)
 		return false
 	end
 end
-coroutine.wrap(function()
-	client:loadDatabase(require("./Modules/Database"))
-end)()
+-- coroutine.wrap(function()
+-- 	client:loadDatabase(require("./Modules/Database"))
+-- end)()
 coroutine.wrap(function()
 	loadModule('Utilities')
 	loadModule('Functions')
@@ -45,6 +45,7 @@ coroutine.wrap(function()
 	--client:on('guildCreate',Events.guildCreate)
 	--client:on('guildDelete',Events.guildDelete)
 	--client:once('ready',Events.ready)
+	client:loadDatabase(require("./Modules/Database"))
 	client:run(token)
 end)()
 

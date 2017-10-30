@@ -1,19 +1,12 @@
---UTILITIES.LUA--
---Forked from the Discordia 1.5 project by SinisterRectus (https://www.github.com/SinisterRectus)--
-local random = math.random
-local insert, remove, sort, concat = table.insert, table.remove, table.sort, table.concat
-local gmatch, match, byte, char = string.gmatch, string.match, string.byte, string.char
-local format, rep, find, sub = string.format, string.rep, string.find, string.sub
-local min, max = math.min, math.max
+-- Fork of extensions.lua from Discordia 2.x
+
+local sort, concat = table.sort, table.concat
+local insert, remove = table.insert, table.remove
+local byte, char = string.byte, string.char
+local gmatch, match = string.gmatch, string.match
+local rep, find, sub = string.rep, string.find, string.sub
+local min, max, random = math.min, math.max, math.random
 local ceil, floor = math.ceil, math.floor
-
--- globals --
-
-function _G.printf(fmt, ...)
-	return print(format(fmt, ...))
-end
-
--- table --
 
 function table.count(tbl)
 	local n = 0
@@ -26,15 +19,25 @@ end
 function table.deepcount(tbl)
 	local n = 0
 	for _, v in pairs(tbl) do
-		n = type(v) == 'table' and n + table.deepcount(v) or n + 1
+		n = type(v) == 'table' and n + table.deepcount(tbl) or n + 1
 	end
 	return n
 end
 
-function table.find(tbl, value)
+function table.copy(tbl)
+	local ret = {}
 	for k, v in pairs(tbl) do
-		if v == value then return k end
+		ret[k] = v
 	end
+	return ret
+end
+
+function table.deepcopy(tbl)
+	local ret = {}
+	for k, v in pairs(tbl) do
+		ret[k] = type(v) == 'table' and table.deepcopy(v) or v
+	end
+	return ret
 end
 
 function table.reverse(tbl)
@@ -51,43 +54,20 @@ function table.reversed(tbl)
 	return ret
 end
 
-function table.copy(tbl)
-	local new = {}
-	for k, v in pairs(tbl) do
-		new[k] = v
-	end
-	return new
-end
-
-function table.deepcopy(tbl)
-	local new = {}
-	for k, v in pairs(tbl) do
-		new[k] = type(v) == 'table' and table.deepcopy(v) or v
-	end
-	return new
-end
-
 function table.keys(tbl)
-	local keys = {}
+	local ret = {}
 	for k in pairs(tbl) do
-		insert(keys, k)
+		insert(ret, k)
 	end
-	return keys
+	return ret
 end
 
 function table.values(tbl)
-	local values = {}
+	local ret = {}
 	for _, v in pairs(tbl) do
-		insert(values, v)
+		insert(ret, v)
 	end
-	return values
-end
-
-function table.hash(tbl, key)
-	for i, v in ipairs(tbl) do
-		tbl[v[key]] = v
-		tbl[i] = nil
-	end
+	return ret
 end
 
 function table.randomipair(tbl)
@@ -115,16 +95,13 @@ function table.sorted(tbl, fn)
 	return ret
 end
 
-function table.transposed(tbl)
-	local ret = {}
-	for _, row in ipairs(tbl) do
-		for i, element in ipairs(row) do
-			local column = ret[i] or {}
-			insert(column, element)
-			ret[i] = column
+function table.search(tbl, value)
+	for k, v in pairs(tbl) do
+		if v == value then
+			return k
 		end
 	end
-	return ret
+	return nil
 end
 
 function table.slice(tbl, start, stop, step)
@@ -135,62 +112,42 @@ function table.slice(tbl, start, stop, step)
 	return ret
 end
 
--- string --
-
 function string.split(str, delim)
-	if delim and delim ~= '' then
-		local words = {}
-		for word in gmatch(str .. delim, '(.-)' .. delim) do
-			insert(words, word)
-		end
-		return words
-	else
-		local chars = {}
-		for char in gmatch(str, '.') do
-			insert(chars, char)
-		end
-		return chars
+	local ret = {}
+	if not str then
+		return ret
 	end
-end
-
-function string.split2(str, delim)
-	if (not str) or (not delim) or str == "" or delim == "" then
-		return {}
-	else
-		local current = 1
-		local result = { }
-		while true do
-			local start, finish = find(str, delim, current)
-			if start and finish then
-				insert(result, sub(str, current, start-1))
-				current = finish + 1
-			else
-				break
-			end
+	if not delim or delim == '' then
+		for c in gmatch(str, '.') do
+			insert(ret, c)
 		end
-		insert(result, sub(str, current))
-		return result
+		return ret
 	end
+	local n = 1
+	while true do
+		local i, j = find(str, delim, n)
+		if not i then break end
+		insert(ret, sub(str, n, i - 1))
+		n = j + 1
+	end
+	insert(ret, sub(str, n))
+	return ret
 end
 
 function string.trim(str)
 	return match(str, '^%s*(.-)%s*$')
 end
 
-function string.padleft(str, len, pattern)
+function string.pad(str, len, align, pattern)
 	pattern = pattern or ' '
-	return rep(pattern, len - #str) .. str
-end
-
-function string.padright(str, len, pattern)
-	pattern = pattern or ' '
-	return str .. rep(pattern, len - #str)
-end
-
-function string.padcenter(str, len, pattern)
-	pattern = pattern or ' '
-	local pad = 0.5 * (len - #str)
-	return rep(pattern, floor(pad)) .. str .. rep(pattern, ceil(pad))
+	if align == 'right' then
+		return rep(pattern, (len - #str) / #pattern) .. str
+	elseif align == 'center' then
+		local pad = 0.5 * (len - #str) / #pattern
+		return rep(pattern, floor(pad)) .. str .. rep(pattern, ceil(pad))
+	else -- left
+		return str .. rep(pattern, (len - #str) / #pattern)
+	end
 end
 
 function string.startswith(str, pattern, plain)
@@ -235,18 +192,15 @@ function string.levenshtein(str1, str2)
 
 end
 
-function string.random(len, minValue, maxValue)
+function string.random(len, mn, mx)
 	local ret = {}
-	minValue = minValue or 0
-	maxValue = maxValue or 255
+	mn = mn or 0
+	mx = mx or 255
 	for _ = 1, len do
-		insert(ret, char(random(minValue, maxValue)))
+		insert(ret, char(random(mn, mx)))
 	end
 	return concat(ret)
 end
-
--- math --
-
 function math.clamp(n, minValue, maxValue)
 	return min(max(n, minValue), maxValue)
 end

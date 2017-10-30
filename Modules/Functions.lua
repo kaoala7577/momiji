@@ -23,9 +23,20 @@ function getRank(member, server)
     if not member then return 0 end
     local rank = 0
     if server then
-        --TODO: Mod Roles: rank 1
-        --      Admin Role: rank 2
-        --      Guild Owner: rank 3
+        settings = member.client:getDB():Get(member, "Settings")
+        for _,v in ipairs(settings['mod_roles']) do
+            if member:hasRole(v) then
+                rank = 1
+            end
+        end
+        for _,v in ipairs(settings['admin_roles']) do
+            if member:hasRole(v) then
+                rank = 2
+            end
+        end
+        if member.id == member.guild.owner.id then
+            rank = 3
+        end
     end
     if member.id == member.client.owner.id then
         rank = 4

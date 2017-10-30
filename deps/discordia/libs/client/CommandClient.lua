@@ -7,7 +7,6 @@ function CommandClient:__init(options)
     options = options or {}
     Client.__init(self, options)
     self._commands = {}
-    self._errorLog = self:getChannel('364148499715063818')
     self:on('messageCreate', function(m) self:onMessageCreate(m) end)
 end
 
@@ -27,6 +26,7 @@ end
 
 function CommandClient:onMessageCreate(msg)
     local private
+    local errorLog = self:getChannel('364148499715063818')
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if sender.bot then return end
@@ -51,15 +51,16 @@ function CommandClient:onMessageCreate(msg)
                     local args
                     if tab.multi then
                         args = string.split(rest, ',')
+                        for i,v in ipairs(args) do args[i]=v:trim() end
                     else
                         args = rest
                     end
                     local a,b = pcall(tab.action, msg, args)
                     if not a then
-                        self._errorLog:send {embed = {
+                        errorLog:send {embed = {
             				description = b,
-            				timestamp = discordia.Date():toISO(),
-            				color = discordia.Color.fromRGB(255, 0 ,0).value,
+            				timestamp = require('utils/Date')():toISO(),
+            				color = require('utils/Color').fromRGB(255, 0 ,0).value,
             			}}
                         msg:addReaction('❌')
                     else
