@@ -130,6 +130,7 @@ end)
 client:addCommand('Add Self Role', 'Add a role to yourself from the self role list', {'role', 'asr'}, 0, true, true, function(message, args)
     local member = message.member
     local selfRoles = message.client:getDB():Get(message, "Roles")
+    if not selfRoles then return end
     local roles = args
     local rolesToAdd, rolesFailed = {}, {}
     for k,l in pairs(selfRoles) do
@@ -194,6 +195,7 @@ client:addCommand('Remove Self Role', 'Remove a role from the self role list fro
     local roles = args
     local member = message.member
     local selfRoles = message.client:getDB():Get(message, "Roles")
+    if not selfRoles then return end
     local rolesToRemove = {}
     for _,l in pairs(selfRoles) do
         for r,a in pairs(l) do
@@ -231,6 +233,7 @@ end)
 client:addCommand('List Self Roles', 'List all roles in the self role list', 'roles', 0, false, true, function(message, args)
     local roleList, cats = {},{}
     local selfRoles = message.client:getDB():Get(message, "Roles")
+    if not selfRoles then return end
     for k,v in pairs(selfRoles) do
         for r,_ in pairs(v) do
             if not roleList[k] then
