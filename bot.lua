@@ -2,6 +2,7 @@ token = require('token')
 discordia = require('discordia')
 enums = discordia.enums
 client = discordia.CommandClient()
+logger = discordia.Logger(4, '%F %T', 'discordia.log')
 fs = require('fs')
 json = require('json')
 uptime = discordia.Stopwatch()
@@ -12,29 +13,20 @@ function loadModule(name)
 	if data then
 		local a,b=loadstring(data,name)
 		if not a then
-			print("<SYNTAX> ERROR LOADING "..name.."\nERROR:"..b)
-			if sendLog then
-				sendLog(hooks[FFB('Errors')],"MODULE SYNTAX",string.format("MODULE NAME: %s\nERROR: %s",name,tostring(b)))
-			end
+			logger:log(2, "<SYNTAX> Error loading %s (%s)", name, b)
 			return false
 		else
 			setfenv(a,getfenv())
 			local c,d=pcall(a)
 			if not c then
-				print("<RUNTIME> ERROR LOADING "..name.."\nERROR:"..d)
-				if sendLog then
-					sendLog(hooks[FFB('Errors')],"MODULE RUNTIME",string.format("MODULE NAME: %s\nERROR: %s",name,tostring(d)))
-				end
+				logger:log(2, "<RUNTIME> Error loading %s (%s)", name, d)
 				return false
 			else
 				client:info('Module online: '..name)
 			end
 		end
 	else
-		print("<LOADING> ERROR LOADING "..name.."\nERROR:"..tostring(data),tostring(others))
-		if sendLog then
-			sendLog(hooks[FFB('Errors')],"MODULE LOADING",string.format("MODULE NAME: %s\nERROR: %s",name,tostring(data)..'\n'..tostring(others)))
-		end
+		logger:log(2, "<LOADING> Error loading %s (%s)", name, tostring(others))
 		return false
 	end
 end

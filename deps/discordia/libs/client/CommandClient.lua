@@ -7,8 +7,7 @@ function CommandClient:__init(options)
     options = options or {}
     Client.__init(self, options)
     self._commands = {}
-    self._settings = {}
-    self._ignore = {}
+    self._errorLog = self:getChannel('364148499715063818')
     self:on('messageCreate', function(m) self:onMessageCreate(m) end)
 end
 
@@ -32,9 +31,11 @@ function CommandClient:onMessageCreate(msg)
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if sender.bot then return end
     if not private then
+        --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = self:getDB():Get(msg)
         self._settings = data.Settings
         self._ignore = data.Ignore
+        self._roles = data.Roles
     end
     local command, rest = self:resolveCommand(msg.content, private)
     if not command then return end --If the prefix isn't there, don't bother with anything else
@@ -55,11 +56,19 @@ function CommandClient:onMessageCreate(msg)
                     end
                     local a,b = pcall(tab.action, msg, args)
                     if not a then
-                        --TODO: command failed, run error stoof
+                        self._errorLog:send {embed = {
+            				description = b,
+            				timestamp = discordia.Date():toISO(),
+            				color = discordia.Color.fromRGB(255, 0 ,0).value,
+            			}}
+                        msg:addReaction('❌')
+                    else
+                        msg:addReaction('✅')
                     end
                     --TODO: Command Logging
                 else
-                    --TODO: respond to failed commands by permissions
+                    msg:addReaction('❌')
+                    msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
                 end
             end
         end

@@ -97,7 +97,7 @@ function Database:Get(guild,index)
 	end
 end
 
-function Database:Update(guild,query,index,value)
+function Database:Update(guild,index,value)
 	if not guild then error"No ID/Guild/Message provided" end
 	local id,guild=resolveGuild(guild)
 	if Database.Cache[id] then
