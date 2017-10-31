@@ -127,7 +127,7 @@ client:addCommand('User Info', "Get information on a user", {'userinfo','ui'}, 0
     end
 end)
 
-client:addCommand('Add Self Role', 'Add a role to yourself from the self role list', {'role', 'asr'}, 0, true, true, function(message, args)
+client:addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, 0, true, true, function(message, args)
     local member = message.member
     local selfRoles = message.client:getDB():Get(message, "Roles")
     if not selfRoles then return end
@@ -191,7 +191,7 @@ client:addCommand('Add Self Role', 'Add a role to yourself from the self role li
     end
 end)
 
-client:addCommand('Remove Self Role', 'Remove a role from the self role list from yourself', {'derole','rsr'}, 0, true, true, function(message, args)
+client:addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, 0, true, true, function(message, args)
     local roles = args
     local member = message.member
     local selfRoles = message.client:getDB():Get(message, "Roles")
@@ -250,6 +250,146 @@ client:addCommand('List Self Roles', 'List all roles in the self role list', 'ro
             fields = cats,
         }
     }
+end)
+
+client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', 1, true, true, function(message, args)
+    local member
+    if #message.mentionedUsers == 1 then member = message.guild:getMember(message.mentionedUsers:iter()()) end
+    for i,v in ipairs(args) do
+        args[i] = string.gsub(args[i], "<@.*>", ""):trim()
+    end
+    if member then
+		local rolesToAdd = {}
+		for _,role in pairs(args) do
+			for r in message.guild.roles:iter() do
+				if string.lower(role) == string.lower(r.name) then
+					rolesToAdd[#rolesToAdd+1] = r
+				end
+			end
+		end
+		for _,role in ipairs(rolesToAdd) do
+			member:addRole(message.guild:getRole(role.id))
+		end
+		local roleList = ""
+		for _,r in ipairs(rolesToAdd) do
+			roleList = roleList..r.name.."\n"
+		end
+		if #rolesToAdd > 0 then
+			message.channel:send {
+				embed = {
+					author = {name = "Roles Added", icon_url = member.avatarURL},
+					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
+					color = member:getColor().value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}
+			}
+		end
+	end
+end)
+
+client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', 1, true, true, function(message, args)
+    local member
+    if #message.mentionedUsers == 1 then member = message.guild:getMember(message.mentionedUsers:iter()()) end
+    for i,v in ipairs(args) do
+        args[i] = string.gsub(args[i], "<@.*>", ""):trim()
+    end
+    if member then
+        local rolesToRemove = {}
+        for _,role in pairs(args) do
+            for r in message.guild.roles:iter() do
+                if string.lower(role) == string.lower(r.name) then
+                    rolesToRemove[#rolesToRemove+1] = r
+                end
+            end
+        end
+        for _,role in ipairs(rolesToRemove) do
+            member:removeRole(member.guild:getRole(role.id))
+        end
+        local roleList = ""
+        for _,r in ipairs(rolesToRemove) do
+            roleList = roleList..r.name.."\n"
+        end
+        if #rolesToRemove > 0 then
+            message.channel:send {
+                embed = {
+                    author = {name = "Roles Removed", icon_url = member.avatarURL},
+                    description = "**Removed "..member.mentionString.." from the following roles** \n"..roleList,
+                    color = member:getColor().value,
+                    timestamp = discordia.Date():toISO(),
+                    footer = {text = "ID: "..member.id}
+                }
+            }
+        end
+    end
+end)
+
+client:addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, 1, true, true, function(message, args)
+    local settings, selfRoles, users = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Roles"), client:getDB():Get(message, "Users")
+    local channel = message.guild:getChannel(settings.mod_log_channel)
+    local member
+    if #message.mentionedUsers == 1 then member = message.guild:getMember(message.mentionedUsers:iter()()) end
+    for i,v in ipairs(args) do
+        args[i] = string.gsub(args[i], "<@.*>", ""):trim()
+    end
+    if member then
+        local rolesToAdd = {}
+        local hasGender, hasPronouns
+        for k,l in pairs(selfRoles) do
+            for r,a in pairs(l) do
+                for _,role in pairs(args) do
+                    if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
+                        if (r == 'Gamer') or (r == '18+') or not (k == 'Opt-In Roles') then
+                            rolesToAdd[#rolesToAdd+1] = r
+                        end
+                    end
+                end
+            end
+        end
+        for k,l in pairs(selfRoles) do
+            for _,j in pairs(rolesToAdd) do
+                if (k == 'Gender Identity') then
+                    for r,_ in pairs(l) do
+                        if r == j then hasGender = true end
+                    end
+                end
+                if (k == 'Pronouns') then
+                    for r,_ in pairs(l) do
+                        if r == j then hasPronouns = true end
+                    end
+                end
+            end
+        end
+        if hasGender and hasPronouns then
+            local roleList = ""
+            for _,role in pairs(rolesToAdd) do
+                function fn(r) return r.name == role end
+                member:addRole(member.guild.roles:find(fn))
+                roleList = roleList..role.."\n"
+            end
+            member:addRole('348873284265312267')
+            if #rolesToAdd > 0 then
+                channel:send {
+                    embed = {
+                        author = {name = "Registered", icon_url = member.avatarURL},
+                        description = "**Registered "..member.mentionString.." with the following roles** \n"..roleList,
+                        color = member:getColor().value,
+                        timestamp = discordia.Date():toISO(),
+                        footer = {text = "ID: "..member.id}
+                    }
+                }
+                client:emit('memberRegistered', member)
+                if users==nil or users[member.id]==nil then
+                    users[member.id] = { registered=discordia.Date():toISO(), }
+                else
+                    users[member.id].registered = discordia.Date():toISO()
+                end
+                client:getDB():Update(message, "Users", users)
+            end
+        else
+            message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
+        end
+    end
 end)
 
 client:addCommand('Config', 'Update configuration for the current guild', 'config', 3, false, true, function(message, args)
@@ -333,4 +473,8 @@ client:addCommand('Lua', "Execute arbitrary lua code", "lua", 4, false, false, f
         end
     end
     print = oldPrint
+end)
+
+client:addCommand('Reload', 'Reload a module', 'reload', 4, false, false, function(message, args)
+    loadModule(args)
 end)

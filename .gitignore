@@ -1,4 +1,6 @@
 discordia.log
 gateway.json
 token.lua
+helpers.lua
 rethinkdb_data/
+commands/

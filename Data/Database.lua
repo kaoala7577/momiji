@@ -33,6 +33,7 @@ Database.Default = {
     Ignore = {},
     Cases = {},
     Timers = {},
+    Users = {},
 }
 
 function resolveGuild(guild)
