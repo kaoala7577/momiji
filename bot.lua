@@ -35,9 +35,10 @@ coroutine.wrap(function()
 	loadModule('Utilities')
 	loadModule('Functions')
 	loadModule('Commands')
-	--loadModule('Events')
+	loadModule('Events')
 	--loadModule('Timed')
 	--loadModule('API')
+	client:on('memberJoin', Events.memberJoin)
 	--client:on('messageCreate',Events.messageCreate)
 	--client:on('messageUpdate',Events.messageUpdate)
 	--client:on('guildCreate',Events.guildCreate)
@@ -151,16 +152,16 @@ end)()
 -- function welcomeMessage(member)
 -- 	local channel = member.guild:getChannel(member.guild._settings.welcome_channel)
 -- 	if channel then
--- 		--channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.")
--- 		channel:send {
--- 			embed = {
--- 				title = "Welcome to "..member.guild.name.."!",
--- 				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
--- 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
--- 				color = discordia.Color.fromRGB(0, 255, 0).value,
+-- 		channel:send("Hello "..member.name..". Welcome to "..member.guild.name.."! Please read through ".."<#348660188951216130>".." and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.")
+-- 			channel:send {
+-- 				embed = {
+-- 					title = "Welcome to "..member.guild.name.."!",
+--			 		description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
+-- 					thumbnail = {url = member.avatarURL, height = 200, width = 200},
+-- 					color = discordia.Color.fromRGB(0, 255, 0).value,
+-- 				}
 -- 			}
--- 		}
--- 	end
+-- 		end
 -- end
 -- client:on('memberJoin', function(member) funcWrapper(welcomeMessage,member) end)
 --

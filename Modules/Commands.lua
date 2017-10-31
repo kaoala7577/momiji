@@ -361,10 +361,11 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
             end
         end
         if hasGender and hasPronouns then
-            local roleList = ""
+            local roleList, under18 = "", true
             for _,role in pairs(rolesToAdd) do
                 function fn(r) return r.name == role end
                 member:addRole(member.guild.roles:find(fn))
+                if role = "18+" then under18 = false end
                 roleList = roleList..role.."\n"
             end
             member:addRole('348873284265312267')
@@ -380,7 +381,7 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
                 }
                 client:emit('memberRegistered', member)
                 if users==nil or users[member.id]==nil then
-                    users[member.id] = { registered=discordia.Date():toISO(), }
+                    users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, under18=under18, last_message="" }
                 else
                     users[member.id].registered = discordia.Date():toISO()
                 end
@@ -390,6 +391,54 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
             message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
         end
     end
+end)
+
+client:addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', 1, false, true, function(message, args)
+    local a = message.member
+    local m
+    if message.mentionedUsers then
+        if #message.mentionedUsers == 1 then
+            m = message.mentionedUsers:iter()()
+            args = args:gsub("<@.+>",""):trim()
+        else
+            m = message.guild:getMember(args:match("%d+"))
+            args = args:gsub(m.id,""):trim()
+        end
+    end
+    if (args == "") or not m then return end
+    local notes = client:getDB():Get(message, "Notes")
+    if args:startswith("add") then
+        args = args:gsub("^add",""):trim()
+        if notes==nil or notes[m.id]==nil then
+            notes[m.id] = {
+                {note=args, moderator=a.username, timestamp=discordia.Date():toISO()}
+            }
+        else
+            notes[m.id][#notes[m.id]+1] = {note=args, moderator=a.username, timestamp=discordia.Date():toISO()}
+        end
+    elseif args:startswith("del") then
+        args = tonumber(args:gsub("^del",""):trim())
+        if notes[m.id] then
+            table.remove(notes[m.id], args)
+        end
+    elseif args:startswith("view") then
+        args = args:gsub("^view",""):trim()
+        local notelist = {}
+        if notes[m.id] then
+            for i,v in ipairs(notes[m.id]) do
+                table.insert(notelist, {name = i.." : added by "..v.moderator, value = v.note})
+            end
+        end
+        message:reply {
+            embed = {
+                footer = {text = "Notes for "..m.username},
+                fields = notelist,
+            }
+        }
+    else
+        message:reply("Please specify add, del, or view")
+    end
+    client:getDB():Update(message, "Notes", notes)
 end)
 
 client:addCommand('Config', 'Update configuration for the current guild', 'config', 3, false, true, function(message, args)
@@ -434,6 +483,8 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
             settings['welcome'] = false
         elseif args[2] == 'set' then
             settings['welcome_channel'] = args[3] and args[3] or ''
+        elseif args[2] == 'message' then
+            settings['welcome_message'] = table.join(table.slice(args, 3, #args, 1), ' ')
         end
     elseif args[1] == 'introduction' then
         if args[2] == 'enable' then
@@ -442,6 +493,8 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
             settings['introduction'] = false
         elseif args[2] == 'set' then
             settings['introduction_channel'] = args[3] and args[3] or ''
+        elseif args[2] == 'message' then
+            settings['introduction_message'] = table.join(table.slice(args, 3, #args, 1), ' ')
         end
     end
     client:getDB():Update(message, "Settings", settings)
@@ -463,6 +516,7 @@ client:addCommand('Lua', "Execute arbitrary lua code", "lua", 4, false, false, f
         setfenv(a,getfenv())
         local status, ret = pcall(a)
         if not ret then ret = printresult else ret = ret.."\n"..printresult end
+        --TODO: Expand pagination
         if ret ~= "" and #ret < 1800 then
             message:reply("```"..ret.."```")
         elseif ret ~= "" then
