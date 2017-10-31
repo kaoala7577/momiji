@@ -61,10 +61,7 @@ function parseMention(mention)
 end
 
 function getIdFromString(str)
-	local fs=str:find('<')
-	local fe=str:find('>')
-	if not fs or not fe then return end
-	return str:sub(fs+2,fe-1)
+	return str:match("<[@#]!*(.*)>")
 end
 
 function resolveGuild(guild)
@@ -85,7 +82,8 @@ function resolveGuild(guild)
 end
 
 function resolveChannel(guild,name)
-	local this=getIdFromString(name)
+	local this=getIdFromString(name) or name
+    local c
 	if this then
 		c=guild:getChannel(this)
 	else
@@ -94,4 +92,17 @@ function resolveChannel(guild,name)
 		end)
 	end
 	return c
+end
+
+function resolveMember(guild,name)
+	local this=getIdFromString(name) or name
+    local m
+	if this then
+		m=guild:getMember(this)
+	else
+		m=guild.textChannels:find(function(mem)
+			return mem.name==name
+		end)
+	end
+	return m
 end
