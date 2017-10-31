@@ -5,6 +5,10 @@ client:addCommand('Ping', 'Ping!', 'ping', 0, false, false, function(message, ar
     end
 end)
 
+client:addCommand('Time', 'Get the current time', 'time', 0, false, false, function(message, args)
+    message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
+end)
+
 --TODO: Fetch Members first
 client:addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 0, false, true, function(message, args)
     local guild = message.guild
