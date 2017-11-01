@@ -10,14 +10,14 @@ function CommandClient:__init(options)
     self:on('messageCreate', function(m) self:onMessageCreate(m) end)
 end
 
-function CommandClient:addCommand(name, desc, cmds, rank, multiArg, serverOnly, func)
-    local b,e,n,g = checkArgs({'string', 'string', {'table','string'}, 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds,rank,multiArg,serverOnly,func})
+function CommandClient:addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
+    local b,e,n,g = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
     if not b then
         --TODO: error throw
         print(name.." failed")
         return
     end
-    self._commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
+    self._commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
 end
 
 function CommandClient:getCommands()
@@ -29,7 +29,7 @@ function CommandClient:onMessageCreate(msg)
     local errorLog = self:getChannel('364148499715063818')
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-    if sender.bot then return end
+    if msg.author.bot then return end
     if not private then
         --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = self:getDB():Get(msg)
@@ -62,13 +62,13 @@ function CommandClient:onMessageCreate(msg)
             				timestamp = require('utils/Date')():toISO(),
             				color = require('utils/Color').fromRGB(255, 0 ,0).value,
             			}}
-                        msg:addReaction('❌')
+                        if tab.name ~= "Prune" then msg:addReaction('❌') end
                     else
-                        msg:addReaction('✅')
+                        if tab.name ~= "Prune" then msg:addReaction('✅') end
                     end
                     --TODO: Command Logging
                 else
-                    msg:addReaction('❌')
+                    if tab.name ~= "Prune" then msg:addReaction('❌') end
                     msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
                 end
             end

@@ -1,8 +1,6 @@
 --[[ RethinkDB databse interaction forked from DannehSC/electricity-2.0 ]]
 
-local options = {
-    db = 'momiji',
-}
+local options = require('./options.lua')
 local rethink=require('luvit-reql')
 local conn=rethink:connect(options)
 local ts,fmt=tostring,string.format
@@ -50,7 +48,7 @@ function resolveGuild(guild)
 		end
 	else
 		id=ts(guild)
-		--guild=client:getGuild(id)
+		guild=client:getGuild(id)
 	end
 	return id,guild
 end
@@ -146,4 +144,4 @@ function Database:GetCached(guild)
 	end
 end
 
-return Database
+client:loadDatabase(Database)

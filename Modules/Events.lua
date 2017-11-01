@@ -16,3 +16,7 @@ function Events.memberJoin(member)
         end
     end
 end
+
+function Events.ready()
+    client:setGame("m!help | Awoo!")
+end
