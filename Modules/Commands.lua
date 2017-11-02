@@ -753,7 +753,7 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         elseif args[2] == 'set' then
             settings['welcome_channel'] = args[3] and args[3] or ''
         elseif args[2] == 'message' then
-            settings['welcome_message'] = table.join(table.slice(args, 3, #args, 1), ' ')
+            settings['welcome_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
         end
     elseif args[1] == 'introduction' then
         if args[2] == 'enable' then
@@ -763,7 +763,7 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         elseif args[2] == 'set' then
             settings['introduction_channel'] = args[3] and args[3] or ''
         elseif args[2] == 'message' then
-            settings['introduction_message'] = table.join(table.slice(args, 3, #args, 1), ' ')
+            settings['introduction_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
         end
     end
     client:getDB():Update(message, "Settings", settings)
