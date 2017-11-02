@@ -700,7 +700,7 @@ end)
 client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
     local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
     if not role then
-        role = guild:createRole("Muted")
+        role = message.guild:createRole("Muted")
     end
     for c in message.guild.textChannels:iter() do
         c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
