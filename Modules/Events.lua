@@ -62,7 +62,7 @@ function Events.memberRegistered(member)
         if member.guild.i == '348660188951216129' then
             channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
         else
-            channel:send(setting.introduction_message)
+            channel:send(settings.introduction_message)
         end
 	end
 end

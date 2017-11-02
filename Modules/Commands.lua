@@ -319,9 +319,9 @@ end)
 client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     local member
     for i,v in ipairs(args) do
-        pat = string.match(v, "[<@!]*(%d+)>*.*")
+        pat = string.match(v, "<?@?!?(%d+)>?.*")
         if pat then
-            member = resolveMember(message.guild, pat)
+            member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
         end
@@ -359,9 +359,9 @@ end)
 client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     local member
     for i,v in ipairs(args) do
-        pat = string.match(v, "[<@!]*(%d+)>*.*")
+        pat = string.match(v, "<?@?!?(%d+)>?.*")
         if pat then
-            member = resolveMember(message.guild, pat)
+            member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
         end
@@ -397,16 +397,14 @@ client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<
 end)
 
 client:addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
-    print('1')
     if message.guild.id ~= "348660188951216129" then return end
-    print('2')
     local settings, selfRoles, users = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Roles"), client:getDB():Get(message, "Users")
     local channel = message.guild:getChannel(settings.mod_log_channel)
     local member
     for i,v in ipairs(args) do
-        pat = string.match(v, "<@!?(%d+)>.*")
+        pat = string.match(v, "<?@?!?(%d+)>?.*")
         if pat then
-            member = resolveMember(message.guild, pat)
+            member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
         end
@@ -551,9 +549,9 @@ client:addCommand('Watchlist', "Add/remove someone from the watchlist or view ev
     args = args:split(' ')
     local member
     for i,v in ipairs(args) do
-        pat = string.match(v, "[<@!]*(%d+)>*.*")
+        pat = string.match(v, "<?@?!?(%d+)>?.*")
         if pat then
-            member = resolveMember(message.guild, pat)
+            member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
         end
@@ -607,7 +605,7 @@ client:addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, tr
     local member
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
-        member = resolveMember(message.guild, pat)
+        member = resolveMember(message.guild, pat) or member
         args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
     end
     if member then
@@ -639,7 +637,7 @@ client:addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, fal
     local member
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
-        member = resolveMember(message.guild, pat)
+        member = resolveMember(message.guild, pat) or member
         args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
     end
     if member then
