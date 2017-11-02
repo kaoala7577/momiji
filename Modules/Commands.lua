@@ -404,7 +404,7 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
     local channel = message.guild:getChannel(settings.mod_log_channel)
     local member
     for i,v in ipairs(args) do
-        pat = string.match(v, "[<@!]*(%d+)>*.*")
+        pat = string.match(v, "<@!?(%d+)>.*")
         if pat then
             member = resolveMember(message.guild, pat)
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
