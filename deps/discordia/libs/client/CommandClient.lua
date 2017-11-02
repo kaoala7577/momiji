@@ -83,8 +83,12 @@ function CommandClient:onMessageCreate(msg)
 end
 
 function CommandClient:resolveCommand(str, p)
-    if p then prefix = "" else prefix=self._settings.prefix end
-    if not string.match(str,"^%"..prefix)then return end
+    if p then
+        prefix = ""
+    else
+        prefix=self._settings.prefix
+        if not string.match(str,"^%"..prefix) then return end
+    end
     local command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
     return command, rest
 end
