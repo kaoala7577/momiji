@@ -58,7 +58,7 @@ end
 function Events.memberRegistered(member)
     local settings = client:getDB():Get(member, "Settings")
     local channel = member.guild:getChannel(settings.introduction_channel)
-    if channel and setting.introduction then
+    if channel and settings.introduction then
         if member.guild.i == '348660188951216129' then
             channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
         else

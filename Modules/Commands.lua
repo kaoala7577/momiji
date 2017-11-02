@@ -397,7 +397,9 @@ client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<
 end)
 
 client:addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
+    print('1')
     if message.guild.id ~= "348660188951216129" then return end
+    print('2')
     local settings, selfRoles, users = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Roles"), client:getDB():Get(message, "Users")
     local channel = message.guild:getChannel(settings.mod_log_channel)
     local member
