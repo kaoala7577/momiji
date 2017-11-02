@@ -36,6 +36,12 @@ function CommandClient:onMessageCreate(msg)
         self._settings = data.Settings
         self._ignore = data.Ignore
         self._roles = data.Roles
+        if data.Users==nil or data.Users[msg.author.id]==nil then
+            data.Users[msg.author.id] = { registered="", watchlisted=false, under18=false, last_message=require('utils/Date')():toISO() }
+        else
+            data.Users[msg.author.id].registered = require('utils/Date')():toISO()
+        end
+        self:getDB():Update(msg, "Users", data.Users)
     end
     local command, rest = self:resolveCommand(msg.content, private)
     if not command then return end --If the prefix isn't there, don't bother with anything else

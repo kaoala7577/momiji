@@ -771,6 +771,7 @@ end)
 
 client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
     args = string.gsub(args, "`", ""):gsub("lua", ""):trim()
+    msg = message
     printresult = ""
     local oldPrint = print
     print = function(...)
@@ -800,4 +801,15 @@ end)
 
 client:addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
     if args ~= "" then loadModule(args) end
+    if args == 'Events' then
+        client:on('memberJoin', Events.memberJoin)
+    	client:on('memberLeave', Events.memberLeave)
+    	client:on('messageDelete',Events.messageDelete)
+    	client:on('messageDeleteUncached',Events.messageDeleteUncached)
+    	client:on('userBan',Events.userBan)
+    	client:on('userUnban',Events.userUnban)
+    	client:on('presenceUpdate', Events.presenceUpdate)
+    	client:on('memberRegistered', Events.memberRegistered)
+    	client:once('ready',Events.ready)
+    end
 end)
