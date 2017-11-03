@@ -61,11 +61,7 @@ function Events.memberRegistered(member)
     if settings['introduction_message'] ~= "" and settings['introduction_channel'] and settings['introduction'] then
         --TODO: make a system so all guilds can use embeds
         channel = member.guild:getChannel(settings['introduction_channel'])
-        if member.guild.id == '348660188951216129' then
-            channel:send("Welcome to Transcend, "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
-        else
-            channel:send(formatMessageSimple(settings['welcome_message'], member))
-        end
+        channel:send(formatMessageSimple(settings['welcome_message'], member))
     end
 end
 
