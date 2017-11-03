@@ -13,7 +13,7 @@ function Events.memberJoin(member)
 				color = discordia.Color.fromRGB(0, 255, 0).value,
 			}}
         else
-            channel:send(settings['welcome_message'])
+            channel:send(formatMessageSimple(settings['welcome_message'], member))
         end
     end
     --Join message
@@ -64,7 +64,7 @@ function Events.memberRegistered(member)
         if member.guild.id == '348660188951216129' then
             channel:send("Welcome to Transcend, "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
         else
-            channel:send(settings['welcome_message'])
+            channel:send(formatMessageSimple(settings['welcome_message'], member))
         end
     end
 end

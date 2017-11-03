@@ -56,10 +56,6 @@ function parseTime(time)
 	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
-function parseMention(mention)
-	return string.match(mention, "%<%@%!(%d+)%>") or string.match(mention, "%<%@(%d+)%>") or mention
-end
-
 function getIdFromString(str)
 	return str:match("<[@#]!*(.*)>")
 end
@@ -105,4 +101,15 @@ function resolveMember(guild,name)
 		end)
 	end
 	return m
+end
+
+function formatMessageSimple(str, member)
+    for word in string.gmatch(str, "{%S+}") do
+        if word:lower()=='{user}' then
+            str = str:gsub(word, member.mentionString)
+        elseif word:lower()=='{guild}' then
+            str = str:gsub(word, member.guild.name)
+        end
+    end
+    return str
 end
