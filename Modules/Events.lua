@@ -4,15 +4,16 @@ function Events.memberJoin(member)
     local settings = client:getDB():Get(member, "Settings")
     if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
         --TODO: make a system so all guilds can use embeds
+        channel = member.guild:getChannel(settings['welcome_channel'])
         if member.guild.id == '348660188951216129' then
-            member.guild:getChannel(settings['welcome_channel']):send{embed = {
+            channel:send{embed = {
 				title = "Welcome to "..member.guild.name.."!",
 				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
 				color = discordia.Color.fromRGB(0, 255, 0).value,
 			}}
         else
-            member.guild:getChannel(settings['welcome_channel']):send(settings['welcome_message'])
+            channel:send(settings['welcome_message'])
         end
     end
     --Join message
@@ -57,14 +58,15 @@ end
 
 function Events.memberRegistered(member)
     local settings = client:getDB():Get(member, "Settings")
-    local channel = member.guild:getChannel(settings.introduction_channel)
-    if channel and settings.introduction then
-        if member.guild.i == '348660188951216129' then
-            channel:send("Welcome to "..member.guild.name..", "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
+    if settings['introduction_message'] ~= "" and settings['introduction_channel'] and settings['introduction'] then
+        --TODO: make a system so all guilds can use embeds
+        channel = member.guild:getChannel(settings['introduction_channel'])
+        if member.guild.id == '348660188951216129' then
+            channel:send("Welcome to Transcend, "..member.mentionString..". If you're comfortable doing so, please share a bit about yourself!")
         else
-            channel:send(settings.introduction_message)
+            channel:send(settings['welcome_message'])
         end
-	end
+    end
 end
 
 function Events.userBan(user, guild)
