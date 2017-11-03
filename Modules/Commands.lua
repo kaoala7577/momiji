@@ -714,57 +714,65 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
     args = args:split(' ')
     for i,v in pairs(args) do args[i] = v:trim() end
     settings = client:getDB():Get(message, "Settings")
+    local switches = {
+        roles = {'admin', 'mod'},
+        channels = {'audit', 'modlog', 'welcome', 'introduction'},
+    }
     --TODO: Think of a way to tidy this up
+    for _,v in pairs(switches.roles) do
+        if args[1]==v then
+            if args[2] == 'add' then
+                settings[v..'_roles'][#settings[v..'_roles']+1] = args[3] and args[3] or nil
+            elseif args[2] == 'remove' then
+                for i,j in ipairs(settings[v..'_roles']) do
+                    if j==args[3] then
+                        table.remove(settings[v..'_roles'],i)
+                    end
+                end
+            elseif args[2] == 'list' then
+                list = ""
+                for i,j in ipairs(settings[v..'_roles']) do
+                    role = message.guild:getRole(j)
+                    if role then
+                        if list=="" then
+                            list=role.name
+                        else
+                            list=list..role.name.."\n"
+                        end
+                    end
+                end
+                if list~="" then message:reply(list) end
+            end
+        end
+    end
+    for _,v in pairs(switches.channels) do
+        if args[1]==v then
+            if args[2] == 'enable' then
+                settings[v] = true
+            elseif args[2] == 'disable' then
+                settings[v] = false
+            elseif args[2] == 'set' then
+                settings[v..'_channel'] = args[3] and args[3] or ''
+            elseif args[2] == 'message' and (v=='welcome' or v=='introduction') then
+                settings[v..'_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
+            end
+        end
+    end
     if args[1] == 'prefix' then
         settings['prefix'] = args[2] and args[2] or settings['prefix']
-    elseif args[1] == 'admin' then
-        if args[2] == 'add' then
-            settings['admin_roles'][#settings['admin_roles']+1] = args[3] and args[3] or nil
-        elseif args[2] == 'remove' then
-            settings['admin_roles'][args[3]] = nil
+    elseif args[1] == 'help' then
+        fields,roles,chans = {},"",""
+        for _,v in pairs(switches.roles) do
+            if roles == "" then roles=v else roles=roles..", "..v end
         end
-    elseif args[1] == 'mod' then
-        if args[2] == 'add' then
-            settings['mod_roles'][#settings['mod_roles']+1] = args[3] and args[3] or nil
-        elseif args[2] == 'remove' then
-            settings['mod_roles'][args[3]] = nil
+        table.insert(fields, {name = roles, value = "Subcommands:\nadd <roleID>\nremove <roleID>\nlist"})
+        for _,v in pairs(switches.channels) do
+            if chans == "" then chans=v else chans=chans..", "..v end
         end
-    elseif args[1] == 'audit' then
-        if args[2] == 'enable' then
-            settings['audit_log'] = true
-        elseif args[2] == 'disable' then
-            settings['audit_log'] = false
-        elseif args[2] == 'set' then
-            settings['audit_log_channel'] = args[3] and args[3] or ''
-        end
-    elseif args[1] == 'modlog' then
-        if args[2] == 'enable' then
-            settings['mod_log'] = true
-        elseif args[2] == 'disable' then
-            settings['mod_log'] = false
-        elseif args[2] == 'set' then
-            settings['mod_log_channel'] = args[3] and args[3] or ''
-        end
-    elseif args[1] == 'welcome' then
-        if args[2] == 'enable' then
-            settings['welcome'] = true
-        elseif args[2] == 'disable' then
-            settings['welcome'] = false
-        elseif args[2] == 'set' then
-            settings['welcome_channel'] = args[3] and args[3] or ''
-        elseif args[2] == 'message' then
-            settings['welcome_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
-        end
-    elseif args[1] == 'introduction' then
-        if args[2] == 'enable' then
-            settings['introduction'] = true
-        elseif args[2] == 'disable' then
-            settings['introduction'] = false
-        elseif args[2] == 'set' then
-            settings['introduction_channel'] = args[3] and args[3] or ''
-        elseif args[2] == 'message' then
-            settings['introduction_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
-        end
+        table.insert(fields, {name = chans, value = "Subcommands:\nenable\ndisable\nset <channelID>\nmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
+        message:reply{embed={
+            fields = fields,
+        }}
     end
     client:getDB():Update(message, "Settings", settings)
 end)
