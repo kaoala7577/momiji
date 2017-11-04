@@ -141,6 +141,6 @@ end
 function Events.ready()
     print("Ready!")
     client:setGame("m!help | Awoo!")
-    client:setErrLog = client:getChannel('376422808852627457')
-    client:setComLog = client:getChannel('376422940570419200')
+    client:setErrLog(client:getChannel('376422808852627457'))
+    client:setComLog(client:getChannel('376422940570419200'))
 end
