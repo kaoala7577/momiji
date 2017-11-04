@@ -26,7 +26,7 @@ end
 
 function CommandClient:onMessageCreate(msg)
     local private
-    local errorLog = self:getChannel('364148499715063818')
+    local errorLog = self:getChannel('376422808852627457')
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if msg.author.bot then return end
