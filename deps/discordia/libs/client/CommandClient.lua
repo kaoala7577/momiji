@@ -80,7 +80,7 @@ function CommandClient:onMessageCreate(msg)
                                 {name="Guild",value=msg.guild.name,inline=true},
                                 {name="Author",value=msg.author.fullname,inline=true},
                             },
-                            description='```'..msg.content..'```'
+                            description='```'..msg.content..'```',
                             timestamp=require('utils/Date')():toISO(),
                         }}
                     end
