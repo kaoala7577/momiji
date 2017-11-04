@@ -79,8 +79,8 @@ function CommandClient:onMessageCreate(msg)
                                 {name="Command",value=tab.name,inline=true},
                                 {name="Guild",value=msg.guild.name,inline=true},
                                 {name="Author",value=msg.author.fullname,inline=true},
+                                {name="Message Content",value="```"..msg.content.."```"},
                             },
-                            description='```'..msg.content..'```',
                             timestamp=require('utils/Date')():toISO(),
                         }}
                     end
