@@ -241,22 +241,15 @@ client:addCommand('Add Self Role', 'Add role(s) to yourself from the self role l
     for _,role in ipairs(rolesToAdd) do
         function fn(r) return r.name == role end
         if not member:hasRole(member.guild.roles:find(fn)) then
-            rolesAdded[#rolesAdded+1] = role
-            member:addRole(member.guild.roles:find(fn))
+            success = member:addRole(member.guild.roles:find(fn))
+            if success then rolesAdded[#rolesAdded+1] = role end
         else rolesFailed[#rolesFailed+1] = "You already have "..role end
-    end
-    function makeRoleList(roles)
-        local roleList = ""
-        for _,r in ipairs(roles) do
-            roleList = roleList..r.."\n"
-        end
-        return roleList
     end
     if #rolesAdded > 0 then
         message.channel:send {
             embed = {
                 author = {name = "Roles Added", icon_url = member.avatarURL},
-                description = "**Added "..member.mentionString.." to the following roles** \n"..makeRoleList(rolesAdded),
+                description = "**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesAdded,"\n"),
                 color = member:getColor().value,
                 timestamp = discordia.Date():toISO(),
                 footer = {text = "ID: "..member.id}
@@ -267,7 +260,7 @@ client:addCommand('Add Self Role', 'Add role(s) to yourself from the self role l
         message.channel:send {
             embed = {
                 author = {name = "Roles Failed to be Added", icon_url = member.avatarURL},
-                description = "**Failed to add the following roles to** "..member.mentionString.."\n"..makeRoleList(rolesFailed),
+                description = "**Failed to add the following roles to** "..member.mentionString.."\n"..table.concat(rolesFailed,"\n"),
                 color = member:getColor().value,
                 timestamp = discordia.Date():toISO(),
                 footer = {text = "ID: "..member.id}
@@ -294,8 +287,8 @@ client:addCommand('Remove Self Role', 'Remove role(s) from the self role list fr
     local roleList = ""
     for _,role in ipairs(rolesToRemove) do
         function fn(r) return r.name == role end
-        member:removeRole(member.guild.roles:find(fn))
-        roleList = roleList..role.."\n"
+        success = member:removeRole(member.guild.roles:find(fn))
+        if success then roleList = roleList..role.."\n" end
     end
     if #rolesToRemove > 0 then
         message.channel:send {
@@ -347,22 +340,16 @@ client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|use
 		for _,role in pairs(args) do
 			for r in message.guild.roles:iter() do
 				if string.lower(role) == string.lower(r.name) then
-					rolesToAdd[#rolesToAdd+1] = r
+                    success = member:addRole(message.guild:getRole(r.id))
+					if success then rolesToAdd[#rolesToAdd+1] = r end
 				end
 			end
-		end
-		for _,role in ipairs(rolesToAdd) do
-			member:addRole(message.guild:getRole(role.id))
-		end
-		local roleList = ""
-		for _,r in ipairs(rolesToAdd) do
-			roleList = roleList..r.name.."\n"
 		end
 		if #rolesToAdd > 0 then
 			message.channel:send {
 				embed = {
 					author = {name = "Roles Added", icon_url = member.avatarURL},
-					description = "**Added "..member.mentionString.." to the following roles** \n"..roleList,
+					description = "**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesToAdd,"\n"),
 					color = member:getColor().value,
 					timestamp = discordia.Date():toISO(),
 					footer = {text = "ID: "..member.id}
@@ -682,8 +669,8 @@ end)
 client:addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
     local settings = client:getDB():Get(message, "Settings")
     local author = message.member or message.guild:getMember(message.author.id)
-    client:removeAllListeners(client, 'messageDelete')
-    client:removeAllListeners(client, 'messageDeleteUncached')
+    client:removeAllListeners('messageDelete')
+    client:removeAllListeners('messageDeleteUncached')
     message:delete()
     if tonumber(args) > 0 then
         args = tonumber(args)
@@ -713,25 +700,17 @@ client:addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false
     client:on('messageDeleteUncached', Events.messageDeleteUncached)
 end)
 
-client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
-    local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
-    if not role then
-        role = message.guild:createRole("Muted")
-    end
-    for c in message.guild.textChannels:iter() do
-        c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
-    end
-    for c in message.guild.voiceChannels:iter() do
-        c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
-    end
-end)
-
 client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
-    roles = client:getDB():Get(message, "Roles")
-    --TODO: Make this do shit
+    local roles = client:getDB():Get(message, "Roles")
     function fn(r) return r.name == args[1] end
     r = message.guild.roles:find(fn)
     if r then
+        for k,v in pairs(roles) do
+            if v[args[1]] then
+                message:reply(args[1].." already exists in "..k)
+                return
+            end
+        end
         cat = args[2] and args[2] or "Default"
         if roles[cat] then
             if not roles[cat][r.name] then roles[cat][r.name] = {} end
@@ -758,6 +737,25 @@ client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}
 end)
 
 --TODO: Make Delrank
+client:addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
+    local roles = client:getDB():Get(message, "Roles")
+    function fn(r) return r.name == args end
+    r = message.guild.roles:find(fn)
+    if r then
+        for cat,v in pairs(roles) do
+            if v[args] then
+                v[args]=nil
+            end
+            if next(v)==nil then
+                roles[cat]=nil
+            end
+        end
+    else
+        message:reply(args.." is not a role.")
+    end
+    client:getDB():Update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
+    client:getDB():Update(message, "Roles", roles)
+end)
 
 client:addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
@@ -837,6 +835,19 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         }}
     end
     client:getDB():Update(message, "Settings", settings)
+end)
+
+client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
+    local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
+    if not role then
+        role = message.guild:createRole("Muted")
+    end
+    for c in message.guild.textChannels:iter() do
+        c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
+    end
+    for c in message.guild.voiceChannels:iter() do
+        c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
+    end
 end)
 
 client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
