@@ -75,7 +75,7 @@ function CommandClient:onMessageCreate(msg)
                     end
                     if self._comLog then
                         self._comLog:send{embed={
-                            field={
+                            fields={
                                 {name="Command",value=tab.name,inline=true},
                                 {name="Guild",value=msg.guild.name,inline=true},
                                 {name="Author",value=msg.author.fullname,inline=true},
