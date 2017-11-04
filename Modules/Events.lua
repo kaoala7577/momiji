@@ -67,7 +67,7 @@ function Events.memberRegistered(member)
     if settings['introduction_message'] ~= "" and settings['introduction_channel'] and settings['introduction'] then
         --TODO: make a system so all guilds can use embeds
         channel = member.guild:getChannel(settings['introduction_channel'])
-        channel:send(formatMessageSimple(settings['welcome_message'], member))
+        channel:send(formatMessageSimple(settings['introduction_message'], member))
     end
 end
 
