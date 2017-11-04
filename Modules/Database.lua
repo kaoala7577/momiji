@@ -27,6 +27,8 @@ Database.Default = {
         introduction = false,
         introduction_channel = "default---channel",
         introduction_message = "",
+		autorole = false,
+		autoroles = {},
     },
     Roles = {},
     Notes = {},

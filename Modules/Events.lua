@@ -28,6 +28,12 @@ function Events.memberJoin(member)
             footer = {text = "ID: "..member.id}
         }}
     end
+    --Auto role
+    if settings.autorole then
+        for _,r in ipairs(settings.autoroles) do
+            member:addRole(r)
+        end
+    end
 end
 
 function Events.memberLeave(member)

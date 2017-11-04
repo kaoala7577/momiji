@@ -818,9 +818,24 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
     end
     if args[1] == 'prefix' then
         settings['prefix'] = args[2] and args[2] or settings['prefix']
+    elseif args[1] == 'autorole' then
+        if args[2] == 'enable' then
+            settings['autorole'] = true
+        elseif args[2] == 'disable' then
+            settings['autorole'] = true
+        elseif args[2] == 'add' then
+            if args[3] then settings['autoroles'][#settings['autoroles']+1] = args[3] end
+        elseif args[2] == 'remove' then
+            for i,v in ipairs(settings['autoroles']) do
+                if v==args[3] then
+                    table.remove(settings['autoroles'],i)
+                end
+            end
+        end
     elseif args[1] == 'help' then
         fields,roles,chans = {
-            {name="prefix", value="Usage: config prefix <newPrefix>"}
+            {name="prefix", value="Usage: config prefix <newPrefix>"},
+            {name="autorole", value="Subcommands:\nenable\ndisable\nadd <roleID>\nremove <roleID>"},
         },"",""
         for _,v in pairs(switches.roles) do
             if roles == "" then roles=v else roles=roles..", "..v end
