@@ -39,7 +39,7 @@ function CommandClient:onMessageCreate(msg)
         if data.Users==nil or data.Users[msg.author.id]==nil then
             data.Users[msg.author.id] = { registered="", watchlisted=false, under18=false, last_message=require('utils/Date')():toISO() }
         else
-            data.Users[msg.author.id].registered = require('utils/Date')():toISO()
+            data.Users[msg.author.id].last_message = require('utils/Date')():toISO()
         end
         self:getDB():Update(msg, "Users", data.Users)
     end

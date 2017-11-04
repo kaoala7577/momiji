@@ -606,6 +606,10 @@ end)
 client:addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
     local settings, cases = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Cases")
     local member
+    if not settings.mute_setup then
+        message:reply("Mute cannot be used until `setup` has been run.")
+        return
+    end
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
         member = resolveMember(message.guild, pat) or member
@@ -637,6 +641,10 @@ end)
 
 client:addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
     local settings, cases = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Cases")
+    if not settings.mute_setup then
+        message:reply("Unmute cannot be used until `setup` has been run.")
+        return
+    end
     local member
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
@@ -859,6 +867,7 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
 end)
 
 client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
+    settings = client:getDB():Get(message, "Settings")
     local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
     if not role then
         role = message.guild:createRole("Muted")
@@ -869,6 +878,8 @@ client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, fun
     for c in message.guild.voiceChannels:iter() do
         c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
     end
+    settings.mute_setup = true
+    client:getDB():Update(message, "Settings", settings)
 end)
 
 client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)

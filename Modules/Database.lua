@@ -29,6 +29,7 @@ Database.Default = {
         introduction_message = "",
 		autorole = false,
 		autoroles = {},
+		mute_setup = false,
     },
     Roles = {},
     Notes = {},
