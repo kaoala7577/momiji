@@ -5,6 +5,22 @@ client:addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message
     end
 end)
 
+client:addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message, args)
+    message:reply{embed={
+        author = {name=client.user.name, icon_url=client.user.avatarURL},
+        thumbnail = {url=client.user.avatarURL},
+        timestamp = discordia.Date():toISO(),
+        description = "I'm a moderation bot created in the [Lua](http://www.lua.org/) scripting language using the [Discordia](https://github.com/SinisterRectus/Discordia) framework.",
+        fields = {
+            {name="Guilds",value=#client.guilds,inline=true},
+            {name="Shards",value=client.shardCount,inline=true},
+            {name="Owner",value=client.owner.fullname,inline=true},
+            {name="Support Server",value="[Momiji's House](https://discord.gg/YYdpsNc)",inline=true},
+            {name="Invite me!",value="[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)",inline=true},
+        },
+    }}
+end)
+
 client:addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message, args)
     message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
@@ -710,7 +726,7 @@ client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, fun
     end
 end)
 
-client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName> [category] [aliases]', 2, true, true, function(message, args)
+client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
     roles = client:getDB():Get(message, "Roles")
     --TODO: Make this do shit
     function fn(r) return r.name == args[1] end
@@ -740,6 +756,8 @@ client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}
     end
     client:getDB():Update(message, "Roles", roles)
 end)
+
+--TODO: Make Delrank
 
 client:addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
