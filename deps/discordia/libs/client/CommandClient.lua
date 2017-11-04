@@ -65,6 +65,7 @@ function CommandClient:onMessageCreate(msg)
                         if self._errLog then
                             self._errLog:send {embed = {
                 				description = b,
+                                footer = {text=msg.id},
                 				timestamp = require('utils/Date')():toISO(),
                 				color = require('utils/Color').fromRGB(255, 0 ,0).value,
                 			}}
@@ -81,6 +82,7 @@ function CommandClient:onMessageCreate(msg)
                                 {name="Author",value=msg.author.fullname,inline=true},
                                 {name="Message Content",value="```"..msg.content.."```"},
                             },
+                            footer = {text=msg.id},
                             timestamp=require('utils/Date')():toISO(),
                         }}
                     end
