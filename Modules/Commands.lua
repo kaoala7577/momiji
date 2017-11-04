@@ -341,7 +341,7 @@ client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|use
 			for r in message.guild.roles:iter() do
 				if string.lower(role) == string.lower(r.name) then
                     success = member:addRole(message.guild:getRole(r.id))
-					if success then rolesToAdd[#rolesToAdd+1] = r end
+					if success then rolesToAdd[#rolesToAdd+1] = r.name end
 				end
 			end
 		end
@@ -374,22 +374,16 @@ client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<
         for _,role in pairs(args) do
             for r in message.guild.roles:iter() do
                 if string.lower(role) == string.lower(r.name) then
-                    rolesToRemove[#rolesToRemove+1] = r
+                    success = member:removeRole(r)
+                    if success then rolesToRemove[#rolesToRemove+1] = r.name end
                 end
             end
-        end
-        for _,role in ipairs(rolesToRemove) do
-            member:removeRole(member.guild:getRole(role.id))
-        end
-        local roleList = ""
-        for _,r in ipairs(rolesToRemove) do
-            roleList = roleList..r.name.."\n"
         end
         if #rolesToRemove > 0 then
             message.channel:send {
                 embed = {
                     author = {name = "Roles Removed", icon_url = member.avatarURL},
-                    description = "**Removed "..member.mentionString.." from the following roles** \n"..roleList,
+                    description = "**Removed "..member.mentionString.." from the following roles** \n"..table.concat(rolesToRemove,"\n"),
                     color = member:getColor().value,
                     timestamp = discordia.Date():toISO(),
                     footer = {text = "ID: "..member.id}
