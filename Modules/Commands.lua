@@ -5,7 +5,7 @@ client:addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message
     end
 end)
 
-client:addCommand('Time', 'Get the current time', 'time', 0, false, false, function(message, args)
+client:addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message, args)
     message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
 
@@ -71,9 +71,9 @@ client:addCommand('Help', 'Display help information', 'help', '[command]', 0, fa
     end
 end)
 
---TODO: Fetch Members first
 client:addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
     local guild = message.guild
+    guild:requestMembers()
     if client:getGuild(args) then
         guild = client:getGuild(args)
     end
@@ -710,7 +710,38 @@ client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, fun
     end
 end)
 
-client:addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 3, false, true, function(message, args)
+client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName> [category] [aliases]', 2, true, true, function(message, args)
+    roles = client:getDB():Get(message, "Roles")
+    --TODO: Make this do shit
+    function fn(r) return r.name == args[1] end
+    r = message.guild.roles:find(fn)
+    if r then
+        cat = args[2] and args[2] or "Default"
+        if roles[cat] then
+            if not roles[cat][r.name] then roles[cat][r.name] = {} end
+        else
+            roles[cat] = {
+                [r.name] = {}
+            }
+        end
+        aliases = table.slice(args, 3, #args, 1)
+        if aliases ~= {} then
+            for i,v in ipairs(aliases) do
+                table.insert(roles[cat][r.name], v)
+            end
+        end
+        if table.concat(aliases,', ')=='' then
+            message:reply("Added "..r.name.." to "..cat)
+        else
+            message:reply("Added "..r.name.." to "..cat.." wtih aliases "..table.concat(aliases,', '))
+        end
+    else
+        message:reply(args[1].." is not a role. Please make it first.")
+    end
+    client:getDB():Update(message, "Roles", roles)
+end)
+
+client:addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
     for i,v in pairs(args) do args[i] = v:trim() end
     settings = client:getDB():Get(message, "Settings")
@@ -718,7 +749,6 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         roles = {'admin', 'mod'},
         channels = {'audit', 'modlog', 'welcome', 'introduction'},
     }
-    --TODO: Think of a way to tidy this up
     for _,v in pairs(switches.roles) do
         if args[1]==v then
             if args[2] == 'add' then
@@ -748,9 +778,21 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
     for _,v in pairs(switches.channels) do
         if args[1]==v then
             if args[2] == 'enable' then
-                settings[v] = true
+                if v=='audit' then
+                    settings.audit_log = true
+                elseif v=='modlog' then
+                    settings.mod_log = true
+                else
+                    settings[v] = true
+                end
             elseif args[2] == 'disable' then
-                settings[v] = false
+                if v=='audit' then
+                    settings.audit_log = false
+                elseif v=='modlog' then
+                    settings.mod_log = false
+                else
+                    settings[v] = false
+                end
             elseif args[2] == 'set' then
                 settings[v..'_channel'] = args[3] and args[3] or ''
             elseif args[2] == 'message' and (v=='welcome' or v=='introduction') then
@@ -761,7 +803,9 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
     if args[1] == 'prefix' then
         settings['prefix'] = args[2] and args[2] or settings['prefix']
     elseif args[1] == 'help' then
-        fields,roles,chans = {},"",""
+        fields,roles,chans = {
+            {name="prefix", value="Usage: config prefix <newPrefix>"}
+        },"",""
         for _,v in pairs(switches.roles) do
             if roles == "" then roles=v else roles=roles..", "..v end
         end
@@ -794,14 +838,13 @@ client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false
         setfenv(a,getfenv())
         local status, ret = pcall(a)
         if not ret then ret = printresult else ret = ret.."\n"..printresult end
-        --TODO: Expand pagination
-        if ret ~= "" and #ret < 1800 then
-            message:reply("```"..ret.."```")
-        elseif ret ~= "" then
-            ret1 = ret:sub(0,1800)
-            ret2 = ret:sub(1801)
-            message:reply("```"..ret1.."```")
-            message:reply("```"..ret2.."```")
+        result, len = {}, 1900
+        count = math.floor(#ret/len)>0 and math.floor(#ret/len) or 1
+        for i=1,count do
+            result[i] = string.sub(ret, (len*(i-1)), (len*(i)))
+        end
+        for _,v in pairs(result) do
+            message:reply("```"..v.."```")
         end
     end
     print = oldPrint
@@ -809,15 +852,4 @@ end)
 
 client:addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
     if args ~= "" then loadModule(args) end
-    if args == 'Events' then
-        client:on('memberJoin', Events.memberJoin)
-    	client:on('memberLeave', Events.memberLeave)
-    	client:on('messageDelete',Events.messageDelete)
-    	client:on('messageDeleteUncached',Events.messageDeleteUncached)
-    	client:on('userBan',Events.userBan)
-    	client:on('userUnban',Events.userUnban)
-    	client:on('presenceUpdate', Events.presenceUpdate)
-    	client:on('memberRegistered', Events.memberRegistered)
-    	client:once('ready',Events.ready)
-    end
 end)
