@@ -26,7 +26,6 @@ end
 
 function CommandClient:onMessageCreate(msg)
     local private
-    local errorLog = self:getChannel('376422808852627457')
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if msg.author.bot then return end
@@ -63,16 +62,27 @@ function CommandClient:onMessageCreate(msg)
                     end
                     local a,b = pcall(tab.action, msg, args)
                     if not a then
-                        errorLog:send {embed = {
-            				description = b,
-            				timestamp = require('utils/Date')():toISO(),
-            				color = require('utils/Color').fromRGB(255, 0 ,0).value,
-            			}}
+                        if self._errLog then
+                            self._errLog:send {embed = {
+                				description = b,
+                				timestamp = require('utils/Date')():toISO(),
+                				color = require('utils/Color').fromRGB(255, 0 ,0).value,
+                			}}
+                        end
                         if tab.name ~= "Prune" then msg:addReaction('❌') end
                     else
                         if tab.name ~= "Prune" then msg:addReaction('✅') end
                     end
-                    --TODO: Command Logging
+                    if self._comLog then
+                        self._comLog:send{embed={
+                            field={
+                                {name="Command",value=tab.name,inline=true},
+                                {name="Guild",value=msg.guild.name,inline=true},
+                                {name="Author",value=msg.author.fullname,inline=true},
+                            },
+                            timestamp=require('utils/Date')():toISO(),
+                        }}
+                    end
                 else
                     if tab.name ~= "Prune" then msg:addReaction('❌') end
                     msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
@@ -99,6 +109,14 @@ end
 
 function CommandClient:getDB()
     return self._database
+end
+
+function CommandClient:setErrLog(c)
+    self._errLog = c
+end
+
+function CommandClient:setComLog(c)
+    self._comLog = c
 end
 
 return CommandClient
