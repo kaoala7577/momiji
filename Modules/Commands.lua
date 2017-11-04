@@ -848,6 +848,12 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         message:reply{embed={
             fields = fields,
         }}
+    else
+        list = ""
+        for k,v in pairs(settings) do
+            list = list.."**"..k.."**: "..tostring(v).."\n"
+        end
+        message:reply(list)
     end
     client:getDB():Update(message, "Settings", settings)
 end)
