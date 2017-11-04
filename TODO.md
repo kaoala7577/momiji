@@ -1,5 +1,4 @@
 # High Priority
-* Commands to populate the role list
 * Timed Mutes
 * Advanced pruning
 # Low Priority
