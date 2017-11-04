@@ -89,46 +89,47 @@ end)
 
 client:addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
     local guild = message.guild
-    guild:requestMembers()
-    if client:getGuild(args) then
-        guild = client:getGuild(args)
-    end
-    local humans, bots, online = 0,0,0
-    for member in guild.members:iter() do
-        if member.bot then
-            bots = bots+1
-        else
-            humans = humans+1
+    if guild:requestMembers() then
+        if client:getGuild(args) then
+            guild = client:getGuild(args)
         end
-        if not (member.status == 'offline') then
-            online = online+1
+        local humans, bots, online = 0,0,0
+        for member in guild.members:iter() do
+            if member.bot then
+                bots = bots+1
+            else
+                humans = humans+1
+            end
+            if not (member.status == 'offline') then
+                online = online+1
+            end
         end
-    end
-    timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
-    fields = {
-        {name = 'ID', value = guild.id, inline = true},
-        {name = 'Name', value = guild.name, inline = true},
-        {name = 'Owner', value = guild.owner.mentionString, inline = true},
-        {name = 'Region', value = guild.region, inline = true},
-        {name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
-        {name = 'Text Channels', value = #guild.textChannels, inline = true},
-        {name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
-        {name = 'Members', value = #guild.members, inline = true},
-        {name = 'Humans', value = humans, inline = true},
-        {name = 'Bots', value = bots, inline = true},
-        {name = 'Online', value = online, inline = true},
-        {name = 'Roles', value = #guild.roles, inline = true},
-        {name = 'Emojis', value = #guild.emojis, inline = true},
-    }
-    message:reply {
-        embed = {
-            author = {name = guild.name, icon_url = guild.iconURL},
-            fields = fields,
-            thumbnail = {url = guild.iconURL, height = 200, width = 200},
-            color = discordia.Color.fromRGB(244, 198, 200).value,
-            footer = { text = "Server Created : "..timestamp }
+        timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+        fields = {
+            {name = 'ID', value = guild.id, inline = true},
+            {name = 'Name', value = guild.name, inline = true},
+            {name = 'Owner', value = guild.owner.mentionString, inline = true},
+            {name = 'Region', value = guild.region, inline = true},
+            {name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
+            {name = 'Text Channels', value = #guild.textChannels, inline = true},
+            {name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
+            {name = 'Members', value = #guild.members, inline = true},
+            {name = 'Humans', value = humans, inline = true},
+            {name = 'Bots', value = bots, inline = true},
+            {name = 'Online', value = online, inline = true},
+            {name = 'Roles', value = #guild.roles, inline = true},
+            {name = 'Emojis', value = #guild.emojis, inline = true},
         }
-    }
+        message:reply {
+            embed = {
+                author = {name = guild.name, icon_url = guild.iconURL},
+                fields = fields,
+                thumbnail = {url = guild.iconURL, height = 200, width = 200},
+                color = discordia.Color.fromRGB(244, 198, 200).value,
+                footer = { text = "Server Created : "..timestamp }
+            }
+        }
+    end
 end)
 
 client:addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
