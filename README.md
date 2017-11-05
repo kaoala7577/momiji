@@ -3,10 +3,12 @@
 Momiji is a general purpose Discord bot focused on supplying flexible commands for moderation and role management.
 She also come packed with logging functionality and a multitude of informative commands.
 
-In her current state, I won't be releasing her, but you're more than welcome to pull the code from here and tinker with it.
-She's written in Lua using the [Discordia library](https://github.com/SinisterRectus/Discordia) and all of her settings are stored in a PostgreSQL database.
+She's written in Lua using the [Discordia library](https://github.com/SinisterRectus/Discordia) and all of her settings are stored using RethinkDB.
 
-Currently, she is not ready for anyone looking to simple clone the repo and set her up with your own token.
-* I **do not** have routines set up to configure an empty database, I will do this soon. (i.e. You have to read the code and find out what the Database expects)
+In her current state, I cannot guarantee stability, but I use her with no major issues.
+[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)
+[Support Server](https://discord.gg/YYdpsNc)
+
+Currently, she's functional in a few guilds.
 * I make no guarantees that my code here will work as expected for anyone else. Use at your own risk.
 * Anyone is free to open issues and I'll look into things as best I can.
