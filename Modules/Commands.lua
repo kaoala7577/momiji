@@ -397,7 +397,7 @@ end)
 client:addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     if message.guild.id ~= "348660188951216129" then return end
     local settings, selfRoles, users = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Roles"), client:getDB():Get(message, "Users")
-    local channel = message.guild:getChannel(settings.mod_log_channel)
+    local channel = client:getChannel(settings.modlog_channel)
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
@@ -620,8 +620,8 @@ client:addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, tr
         else
             cases[member.id][#cases[member.id]+1] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
         end
-        if settings.mod_log then
-            message.guild:getChannel(settings.mod_log_channel):send{embed={
+        if settings.modlog then
+            message.guild:getChannel(settings.modlog_channel):send{embed={
                 title = "Member Muted",
                 fields = {
                     {name = "User", value = member.mentionString, inline = true},
@@ -656,8 +656,8 @@ client:addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, fal
         else
             cases[member.id][#cases[member.id]+1] = {type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
         end
-        if settings.mod_log then
-            message.guild:getChannel(settings.mod_log_channel):send{embed={
+        if settings.modlog then
+            message.guild:getChannel(settings.modlog_channel):send{embed={
                 title = "Member Unmuted",
                 fields = {
                     {name = "User", value = member.mentionString, inline = true},
@@ -691,8 +691,8 @@ client:addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false
             success = message.channel:bulkDelete(deletions)
             numDel = numDel+#deletions
         end
-        if settings.mod_log then
-            message.guild:getChannel(settings.mod_log_channel):send {embed={
+        if settings.modlog then
+            message.guild:getChannel(settings.modlog_channel):send {embed={
                 description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
                 color = discordia.Color.fromRGB(255, 0, 0).value,
                 timestamp = discordia.Date():toISO()
@@ -797,21 +797,9 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
     for _,v in pairs(switches.channels) do
         if args[1]==v then
             if args[2] == 'enable' then
-                if v=='audit' then
-                    settings.audit_log = true
-                elseif v=='modlog' then
-                    settings.mod_log = true
-                else
-                    settings[v] = true
-                end
+                settings[v] = true
             elseif args[2] == 'disable' then
-                if v=='audit' then
-                    settings.audit_log = false
-                elseif v=='modlog' then
-                    settings.mod_log = false
-                else
-                    settings[v] = false
-                end
+                settings[v] = false
             elseif args[2] == 'set' then
                 settings[v..'_channel'] = args[3] and args[3] or ''
             elseif args[2] == 'message' and (v=='welcome' or v=='introduction') then
@@ -851,7 +839,7 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         message:reply{embed={
             fields = fields,
         }}
-    else
+    elseif args[1]=="" then
         list = ""
         for k,v in pairs(settings) do
             list = list.."**"..k.."**: "..tostring(v).."\n"

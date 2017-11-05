@@ -17,10 +17,10 @@ Database.Default = {
         prefix = "m!",
         admin_roles = {},
         mod_roles = {},
-        audit_log = false,
-        audit_log_channel = "default---channel",
-        mod_log = false,
-        mod_log_channel = "default---channel",
+        audit = false,
+        audit_channel = "default---channel",
+        modlog = false,
+        modlog_channel = "default---channel",
         welcome = false,
         welcome_channel = "default---channel",
         welcome_message = "",
@@ -81,7 +81,7 @@ function Database:Get(guild,index)
 				Database.Cache[id]=d
 				Database.Cache[id]['id']=id
 				for i,v in pairs(Database.Default)do
-					if not d[i]then
+					if not d[i] then
 						d[i]=v
 						u=true
 					end
@@ -92,6 +92,11 @@ function Database:Get(guild,index)
 						u=true
 					end
 				end
+				-- for i,v in pairs(d.Settings) do
+				-- 	if not Database.Default.Settings[i] then
+				-- 		d.Settings[i] = nil
+				-- 	end
+				-- end
 			end
 			if u then
 				Database:Update(id)

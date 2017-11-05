@@ -17,8 +17,8 @@ function Events.memberJoin(member)
         end
     end
     --Join message
-    local channel = member.guild:getChannel(settings.audit_log_channel)
-    if settings.audit_log and channel then
+    local channel = member.guild:getChannel(settings.audit_channel)
+    if settings.audit and channel then
         channel:send {embed={
             author = {name = "Member Joined", icon_url = member.avatarURL},
             description = member.mentionString.." "..member.username.."#"..member.discriminator,
@@ -38,8 +38,8 @@ end
 
 function Events.memberLeave(member)
     local settings = client:getDB():Get(member, "Settings")
-    local channel = member.guild:getChannel(settings.audit_log_channel)
-    if settings.audit_log and channel then
+    local channel = member.guild:getChannel(settings.audit_channel)
+    if settings.audit and channel then
         channel:send {embed={
             author = {name = "Member Left", icon_url = member.avatarURL},
             description = member.mentionString.." "..member.username.."#"..member.discriminator,
@@ -106,8 +106,8 @@ end
 function Events.messageDelete(message)
     local member = message.member or message.guild:getMember(message.author.id)
     local settings = client:getDB():Get(message, "Settings")
-	local channel = message.guild:getChannel(settings.audit_log_channel)
-	if channel and member and settings.audit_log then
+	local channel = message.guild:getChannel(settings.audit_channel)
+	if channel and member and settings.audit then
 		body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
@@ -126,8 +126,8 @@ end
 
 function Events.messageDeleteUncached(channel, messageID)
     local settings = client:getDB():Get(channel, "Settings")
-	local channel = channel.guild:getChannel(settings.audit_log_channel)
-	if channel and settings.audit_log then
+	local channel = channel.guild:getChannel(settings.audit_channel)
+	if channel and settings.audit then
 		channel:send {embed={
             author = {name = channel.guild.name, icon_url = channel.guild.iconURL},
             description = "**Uncached message deleted in** "..channel.mentionString,

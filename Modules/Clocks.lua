@@ -16,9 +16,10 @@ function Clocks.min(time)
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
 				if users[member.id] then
-                    reg = user[member.id].registered
+                    reg = users[member.id].registered
     				if parseTime(reg) ~= reg then
     					local date = parseTime(reg):toTableUTC()
+                        p(date)
     					if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
     						member:addRole('348693274917339139')
     						member:removeRole('348873284265312267')
