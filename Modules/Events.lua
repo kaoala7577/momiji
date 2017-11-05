@@ -1,7 +1,78 @@
 Events = {}
+local errLog, comLog
+
+function Events.messageCreate(msg)
+    if msg.author.bot then return end
+    local private
+    if msg.guild then private=false else private=true end
+    local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
+    if not private then
+        --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
+        data = Database:Get(msg)
+        if data.Users==nil or data.Users[msg.author.id]==nil then
+            data.Users[msg.author.id] = { registered="", watchlisted=false, under18=false, last_message=discordia.Date():toISO() }
+        else
+            data.Users[msg.author.id].last_message = discordia.Date():toISO()
+        end
+        Database:Update(msg, "Users", data.Users)
+    end
+    if msg.content == client.user.mentionString.." prefix" then msg:reply("The prefix for "..msg.guild.name.." is `"..data.Settings.prefix.."`") end
+    local command, rest = resolveCommand(msg.content, private, data.Settings.prefix)
+    if not command then return end --If the prefix isn't there, don't bother with anything else
+    local rank = getRank(sender, not private)
+    for name,tab in pairs(Commands) do
+        for ind,cmd in pairs(tab.commands) do
+            if command:lower() == cmd:lower() then
+                if tab.serverOnly and private then
+                    msg:reply("This command is not available in private messages.")
+                    return
+                end
+                if rank>=tab.rank then
+                    local args
+                    if tab.multi then
+                        args = string.split(rest, ',')
+                        for i,v in ipairs(args) do args[i]=v:trim() end
+                    else
+                        args = rest
+                    end
+                    local a,b = pcall(tab.action, msg, args)
+                    if not a then
+                        if errLog then
+                            errLog:send {embed = {
+                                description = b,
+                                footer = {text="ID: "..msg.id},
+                                timestamp = discordia.Date():toISO(),
+                                color = require('utils/Color').fromRGB(255, 0 ,0).value,
+                            }}
+                        end
+                        if tab.name ~= "Prune" then msg:addReaction('❌') end
+                    else
+                        if tab.name ~= "Prune" then msg:addReaction('✅') end
+                    end
+                    if comLog then
+                        comLog:send{embed={
+                            fields={
+                                {name="Command",value=tab.name,inline=true},
+                                {name="Guild",value=msg.guild.name,inline=true},
+                                {name="Author",value=msg.author.fullname,inline=true},
+                                {name="Message Content",value="```"..msg.content.."```"},
+                            },
+                            footer = {text="ID: "..msg.id},
+                            timestamp=discordia.Date():toISO(),
+                        }}
+                    end
+                else
+                    if tab.name ~= "Prune" then msg:addReaction('❌') end
+                    msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
+                end
+            end
+        end
+    end
+end
+
 
 function Events.memberJoin(member)
-    local settings = client:getDB():Get(member, "Settings")
+    local settings = Database:Get(member, "Settings")
     if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
         --TODO: make a system so all guilds can use embeds
         channel = member.guild:getChannel(settings['welcome_channel'])
@@ -37,7 +108,7 @@ function Events.memberJoin(member)
 end
 
 function Events.memberLeave(member)
-    local settings = client:getDB():Get(member, "Settings")
+    local settings = Database:Get(member, "Settings")
     local channel = member.guild:getChannel(settings.audit_channel)
     if settings.audit and channel then
         channel:send {embed={
@@ -63,7 +134,7 @@ function Events.presenceUpdate(member)
 end
 
 function Events.memberRegistered(member)
-    local settings = client:getDB():Get(member, "Settings")
+    local settings = Database:Get(member, "Settings")
     if settings['introduction_message'] ~= "" and settings['introduction_channel'] and settings['introduction'] then
         --TODO: make a system so all guilds can use embeds
         channel = member.guild:getChannel(settings['introduction_channel'])
@@ -73,7 +144,7 @@ end
 
 function Events.userBan(user, guild)
     local member = guild:getMember(user) or user
-    local settings = client:getDB():Get(guild, "Settings")
+    local settings = Database:Get(guild, "Settings")
 	local channel = guild:getChannel(settings.mod_log_channel)
 	if channel and member and settings.mod_log then
 		channel:send {embed={
@@ -89,7 +160,7 @@ end
 
 function Events.userUnban(user, guild)
     local member = guild:getMember(user) or user
-    local settings = client:getDB():Get(guild, "Settings")
+    local settings = Database:Get(guild, "Settings")
 	local channel = guild:getChannel(settings.mod_log_channel)
 	if channel and member and settings.mod_log then
 		channel:send {embed={
@@ -105,7 +176,7 @@ end
 
 function Events.messageDelete(message)
     local member = message.member or message.guild:getMember(message.author.id) or message.author
-    local settings = client:getDB():Get(message, "Settings")
+    local settings = Database:Get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
 		body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
@@ -125,7 +196,7 @@ function Events.messageDelete(message)
 end
 
 function Events.messageDeleteUncached(channel, messageID)
-    local settings = client:getDB():Get(channel, "Settings")
+    local settings = Database:Get(channel, "Settings")
 	local channel = channel.guild:getChannel(settings.audit_channel)
 	if channel and settings.audit then
 		channel:send {embed={
@@ -141,6 +212,6 @@ end
 function Events.ready()
     print("Ready!")
     client:setGame("m!help | Awoo!")
-    client:setErrLog(client:getChannel('376422808852627457'))
-    client:setComLog(client:getChannel('376422940570419200'))
+    errLog = client:getChannel('376422808852627457')
+    comLog = client:getChannel('376422940570419200')
 end

@@ -23,7 +23,7 @@ function getRank(member, server)
     if not member then return 0 end
     local rank = 0
     if server then
-        settings = member.client:getDB():Get(member, "Settings")
+        settings = Database:Get(member, "Settings")
         for _,v in ipairs(settings['mod_roles']) do
             if member:hasRole(v) then
                 rank = 1
@@ -112,4 +112,15 @@ function formatMessageSimple(str, member)
         end
     end
     return str
+end
+
+function resolveCommand(str, p, pre)
+    if p then
+        prefix = ""
+    else
+        prefix=pre and pre or "m!"
+        if not string.match(str,"^%"..prefix) then return end
+    end
+    local command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
+    return command, rest
 end

@@ -1,11 +1,23 @@
-client:addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
+Commands = {}
+
+function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
+    local b,e,n,g = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
+    if not b then
+        --TODO: error throw
+        print(name.." failed")
+        return
+    end
+    Commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
+end
+
+addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
     local response = message:reply("Pong!")
     if response then
         response:setContent("Pong!".."`"..math.round((response.createdAt - message.createdAt)*1000).." ms`")
     end
 end)
 
-client:addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message, args)
+addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message, args)
     message:reply{embed={
         author = {name=client.user.name, icon_url=client.user.avatarURL},
         thumbnail = {url=client.user.avatarURL},
@@ -21,12 +33,12 @@ client:addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, functi
     }}
 end)
 
-client:addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message, args)
+addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message, args)
     message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
 
-client:addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
-    local cmds = client:getCommands()
+addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
+    local cmds = Commands
     local order = {
         "General", "Mod", "Admin", "Guild Owner", "Bot Owner",
     }
@@ -87,7 +99,7 @@ client:addCommand('Help', 'Display help information', 'help', '[command]', 0, fa
     end
 end)
 
-client:addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
+addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
     local guild = message.guild
     if guild:requestMembers() then
         if client:getGuild(args) then
@@ -132,7 +144,7 @@ client:addCommand('Server Info', "Get information on the server", {'serverinfo',
     end
 end)
 
-client:addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
+addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
     local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
     if role then
         local hex = string.match(role:getColor():toHex(), "%x+")
@@ -162,7 +174,7 @@ client:addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, 
     end
 end)
 
-client:addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
+addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
     local guild = message.guild
     local member
     if args ~= "" then
@@ -181,7 +193,7 @@ client:addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '
         if roles == "" then roles = "None" end
         local joinTime = humanReadableTime(parseTime(member.joinedAt):toTableUTC())
         local createTime = humanReadableTime(parseTime(member.timestamp):toTableUTC())
-        local users = client:getDB():Get(message, "Users")
+        local users = Database:Get(message, "Users")
         local registerTime = "N/A"
         if users[member.id] then
             if users[member.id].registered ~= "" then
@@ -213,9 +225,9 @@ client:addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '
     end
 end)
 
-client:addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
+addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
     local member = message.member or message.guild:getMember(message.author.id)
-    local selfRoles = message.client:getDB():Get(message, "Roles")
+    local selfRoles = message.Database:Get(message, "Roles")
     if not selfRoles then return end
     local roles = args
     local rolesToAdd, rolesFailed = {}, {}
@@ -270,10 +282,10 @@ client:addCommand('Add Self Role', 'Add role(s) to yourself from the self role l
     end
 end)
 
-client:addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
+addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
     local roles = args
     local member = message.member or message.guild:getMember(message.author.id)
-    local selfRoles = message.client:getDB():Get(message, "Roles")
+    local selfRoles = message.Database:Get(message, "Roles")
     if not selfRoles then return end
     local rolesToRemove = {}
     for _,l in pairs(selfRoles) do
@@ -304,9 +316,9 @@ client:addCommand('Remove Self Role', 'Remove role(s) from the self role list fr
     end
 end)
 
-client:addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '', 0, false, true, function(message, args)
+addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '', 0, false, true, function(message, args)
     local roleList, cats = {},{}
-    local selfRoles = message.client:getDB():Get(message, "Roles")
+    local selfRoles = message.Database:Get(message, "Roles")
     if not selfRoles then return end
     for k,v in pairs(selfRoles) do
         for r,_ in pairs(v) do
@@ -326,7 +338,7 @@ client:addCommand('List Self Roles', 'List all roles in the self role list', 'ro
     }
 end)
 
-client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
+addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
@@ -360,7 +372,7 @@ client:addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|use
 	end
 end)
 
-client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
+addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
@@ -394,9 +406,9 @@ client:addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<
     end
 end)
 
-client:addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
+addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
     if message.guild.id ~= "348660188951216129" then return end
-    local settings, selfRoles, users = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Roles"), client:getDB():Get(message, "Users")
+    local settings, selfRoles, users = Database:Get(message, "Settings"), Database:Get(message, "Roles"), Database:Get(message, "Users")
     local channel = client:getChannel(settings.modlog_channel)
     local member
     for i,v in ipairs(args) do
@@ -460,7 +472,7 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
                 else
                     users[member.id].registered = discordia.Date():toISO()
                 end
-                client:getDB():Update(message, "Users", users)
+                Database:Update(message, "Users", users)
             end
         else
             message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
@@ -468,7 +480,7 @@ client:addCommand('Register', 'Register a given user with the listed roles', {'r
     end
 end)
 
-client:addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
+addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
     local m
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
@@ -476,7 +488,7 @@ client:addCommand('Mod Info', "Get mod-related information on a user", {'mi','mo
         args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
     end
     if m then
-        local users = client:getDB():Get(message, "Users")
+        local users = Database:Get(message, "Users")
         if users[m.id] then
             local watchlisted, under18 = users[m.id].watchlisted, users[m.id].under18
             if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
@@ -495,7 +507,7 @@ client:addCommand('Mod Info', "Get mod-related information on a user", {'mi','mo
     end
 end)
 
-client:addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
+addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
     local a = message.member or message.guild:getMember(message.author.id)
     local m
     pat = string.match(args, "[<@!]*(%d+)>*.*")
@@ -504,7 +516,7 @@ client:addCommand('Notes', 'Add the note to, delete a note from, or view all not
         args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
     end
     if (args == "") or not m then return end
-    local notes = client:getDB():Get(message, "Notes")
+    local notes = Database:Get(message, "Notes")
     if args:startswith("add") then
         args = args:gsub("^add",""):trim()
         if args and args ~= "" then
@@ -539,11 +551,11 @@ client:addCommand('Notes', 'Add the note to, delete a note from, or view all not
     else
         message:reply("Please specify add, del, or view")
     end
-    client:getDB():Update(message, "Notes", notes)
+    Database:Update(message, "Notes", notes)
 end)
 
-client:addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
-    local users = client:getDB():Get(message, "Users")
+addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
+    local users = Database:Get(message, "Users")
     args = args:split(' ')
     local member
     for i,v in ipairs(args) do
@@ -579,11 +591,11 @@ client:addCommand('Watchlist', "Add/remove someone from the watchlist or view ev
             }}
         end
     end
-    client:getDB():Update(message, "Users", users)
+    Database:Update(message, "Users", users)
 end)
 
-client:addCommand('Toggle 18', "Toggles the under18 flag on a user", 't18', '<@user|userID>', 1, false, true, function(message, args)
-    local users = client:getDB():Get(message, "Users")
+addCommand('Toggle 18', "Toggles the under18 flag on a user", 't18', '<@user|userID>', 1, false, true, function(message, args)
+    local users = Database:Get(message, "Users")
     local m
     pat = string.match(args, "[<@!]*(%d+)>*.*")
     if pat then
@@ -595,11 +607,11 @@ client:addCommand('Toggle 18', "Toggles the under18 flag on a user", 't18', '<@u
             users[m.id].under18 = not users[m.id].under18
         end
     end
-    client:getDB():Update(message, "Users", users)
+    Database:Update(message, "Users", users)
 end)
 
-client:addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
-    local settings, cases = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Cases")
+addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
+    local settings, cases = Database:Get(message, "Settings"), Database:Get(message, "Cases")
     local member
     if not settings.mute_setup then
         message:reply("Mute cannot be used until `setup` has been run.")
@@ -631,11 +643,11 @@ client:addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, tr
             }}
         end
     end
-    client:getDB():Update(message, "Cases", cases)
+    Database:Update(message, "Cases", cases)
 end)
 
-client:addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
-    local settings, cases = client:getDB():Get(message, "Settings"), client:getDB():Get(message, "Cases")
+addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
+    local settings, cases = Database:Get(message, "Settings"), Database:Get(message, "Cases")
     if not settings.mute_setup then
         message:reply("Unmute cannot be used until `setup` has been run.")
         return
@@ -666,11 +678,11 @@ client:addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, fal
             }}
         end
     end
-    client:getDB():Update(message, "Cases", cases)
+    Database:Update(message, "Cases", cases)
 end)
 
-client:addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
-    local settings = client:getDB():Get(message, "Settings")
+addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
+    local settings = Database:Get(message, "Settings")
     local author = message.member or message.guild:getMember(message.author.id)
     client:removeAllListeners('messageDelete')
     client:removeAllListeners('messageDeleteUncached')
@@ -703,8 +715,8 @@ client:addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false
     client:on('messageDeleteUncached', Events.messageDeleteUncached)
 end)
 
-client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
-    local roles = client:getDB():Get(message, "Roles")
+addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
+    local roles = Database:Get(message, "Roles")
     function fn(r) return r.name == args[1] end
     r = message.guild.roles:find(fn)
     if r then
@@ -736,12 +748,12 @@ client:addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}
     else
         message:reply(args[1].." is not a role. Please make it first.")
     end
-    client:getDB():Update(message, "Roles", roles)
+    Database:Update(message, "Roles", roles)
 end)
 
 --TODO: Make Delrank
-client:addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
-    local roles = client:getDB():Get(message, "Roles")
+addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
+    local roles = Database:Get(message, "Roles")
     function fn(r) return r.name == args end
     r = message.guild.roles:find(fn)
     if r then
@@ -756,14 +768,14 @@ client:addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','
     else
         message:reply(args.." is not a role.")
     end
-    client:getDB():Update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
-    client:getDB():Update(message, "Roles", roles)
+    Database:Update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
+    Database:Update(message, "Roles", roles)
 end)
 
-client:addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
+addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
     for i,v in pairs(args) do args[i] = v:trim() end
-    settings = client:getDB():Get(message, "Settings")
+    settings = Database:Get(message, "Settings")
     local switches = {
         roles = {'admin', 'mod'},
         channels = {'audit', 'modlog', 'welcome', 'introduction'},
@@ -846,11 +858,11 @@ client:addCommand('Config', 'Update configuration for the current guild', 'confi
         end
         message:reply(list)
     end
-    client:getDB():Update(message, "Settings", settings)
+    Database:Update(message, "Settings", settings)
 end)
 
-client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
-    settings = client:getDB():Get(message, "Settings")
+addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
+    settings = Database:Get(message, "Settings")
     local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
     if not role then
         role = message.guild:createRole("Muted")
@@ -862,10 +874,10 @@ client:addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, fun
         c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
     end
     settings.mute_setup = true
-    client:getDB():Update(message, "Settings", settings)
+    Database:Update(message, "Settings", settings)
 end)
 
-client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
+addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
     args = string.gsub(args, "`", ""):gsub("lua", ""):trim()
     msg = message
     printresult = ""
@@ -894,6 +906,26 @@ client:addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false
     print = oldPrint
 end)
 
-client:addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
+addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
     if args ~= "" then loadModule(args) end
+    if args=='Events' then
+        client:removeAllListeners('messageCreate')
+    	client:removeAllListeners('memberJoin')
+    	client:removeAllListeners('memberLeave')
+    	client:removeAllListeners('messageDelete')
+    	client:removeAllListeners('messageDeleteUncached')
+    	client:removeAllListeners('userBan')
+    	client:removeAllListeners('userUnban')
+    	client:removeAllListeners('presenceUpdate')
+    	client:removeAllListeners('memberRegistered')
+        client:on('messageCreate', Events.messageCreate)
+    	client:on('memberJoin', Events.memberJoin)
+    	client:on('memberLeave', Events.memberLeave)
+    	client:on('messageDelete',Events.messageDelete)
+    	client:on('messageDeleteUncached',Events.messageDeleteUncached)
+    	client:on('userBan',Events.userBan)
+    	client:on('userUnban',Events.userUnban)
+    	client:on('presenceUpdate', Events.presenceUpdate)
+    	client:on('memberRegistered', Events.memberRegistered)
+    end
 end)

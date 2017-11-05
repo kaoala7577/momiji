@@ -5,7 +5,7 @@ local rethink=require('luvit-reql')
 local conn=rethink:connect(options)
 local ts,fmt=tostring,string.format
 
-local Database={
+Database={
 	_raw_database=rethink,
 	_conn=conn,
 	Cache={},
@@ -92,11 +92,6 @@ function Database:Get(guild,index)
 						u=true
 					end
 				end
-				-- for i,v in pairs(d.Settings) do
-				-- 	if not Database.Default.Settings[i] then
-				-- 		d.Settings[i] = nil
-				-- 	end
-				-- end
 			end
 			if u then
 				Database:Update(id)
@@ -151,5 +146,3 @@ function Database:GetCached(guild)
 		return Database.Cache[id]
 	end
 end
-
-client:loadDatabase(Database)
