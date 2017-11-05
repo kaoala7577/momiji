@@ -104,7 +104,7 @@ function Events.userUnban(user, guild)
 end
 
 function Events.messageDelete(message)
-    local member = message.member or message.guild:getMember(message.author.id)
+    local member = message.member or message.guild:getMember(message.author.id) or message.author
     local settings = client:getDB():Get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then

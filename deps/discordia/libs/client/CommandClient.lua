@@ -25,10 +25,10 @@ function CommandClient:getCommands()
 end
 
 function CommandClient:onMessageCreate(msg)
+    if msg.author.bot then return end
     local private
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-    if msg.author.bot then return end
     if not private then
         --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = self:getDB():Get(msg)
