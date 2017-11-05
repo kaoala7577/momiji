@@ -6,7 +6,9 @@ She also come packed with logging functionality and a multitude of informative c
 She's written in Lua using the [Discordia library](https://github.com/SinisterRectus/Discordia) and all of her settings are stored using RethinkDB.
 
 In her current state, I cannot guarantee stability, but I use her with no major issues.
+
 [Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)
+
 [Support Server](https://discord.gg/YYdpsNc)
 
 Currently, she's functional in a few guilds.
