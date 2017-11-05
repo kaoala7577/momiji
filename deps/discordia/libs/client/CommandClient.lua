@@ -42,6 +42,7 @@ function CommandClient:onMessageCreate(msg)
         end
         self:getDB():Update(msg, "Users", data.Users)
     end
+    if msg.content == self.user.mentionString.." prefix" then msg:reply("The prefix for "..msg.guild.name.."is `"..self._settings.prefix.."`") end
     local command, rest = self:resolveCommand(msg.content, private)
     if not command then return end --If the prefix isn't there, don't bother with anything else
     local rank = getRank(sender, not private)

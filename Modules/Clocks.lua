@@ -15,9 +15,9 @@ function Clocks.min(time)
         local users = client:getDB():Get(guild, "Users")
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
-				for k,v in pairs(users) do
-                    reg = v.registered
-    				if reg and reg ~= 'N/A' and reg ~= "" then
+				if users[member.id] then
+                    reg = user[member.id].registered
+    				if parseTime(reg) ~= reg then
     					local date = parseTime(reg):toTableUTC()
     					if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
     						member:addRole('348693274917339139')
