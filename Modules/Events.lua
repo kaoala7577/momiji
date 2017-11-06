@@ -3,7 +3,7 @@ local errLog, comLog
 
 function Events.messageCreate(msg)
     if msg.author.bot then return end
-    local private
+    local private, data
     if msg.guild then private=false else private=true end
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if not private then
