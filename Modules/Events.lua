@@ -45,7 +45,7 @@ function Events.messageCreate(msg)
                                 description = b,
                                 footer = {text="ID: "..msg.id},
                                 timestamp = discordia.Date():toISO(),
-                                color = require('utils/Color').fromRGB(255, 0 ,0).value,
+                                color = discordia.Color.fromRGB(255, 0 ,0).value,
                             }}
                         end
                         if tab.name ~= "Prune" then msg:addReaction('❌') end
@@ -201,9 +201,9 @@ end
 
 function Events.messageDeleteUncached(channel, messageID)
     local settings = Database:Get(channel, "Settings")
-	local channel = channel.guild:getChannel(settings.audit_channel)
-	if channel and settings.audit then
-		channel:send {embed={
+	local logChannel = channel.guild:getChannel(settings.audit_channel)
+	if logChannel and settings.audit then
+		logChannel:send {embed={
             author = {name = channel.guild.name, icon_url = channel.guild.iconURL},
             description = "**Uncached message deleted in** "..channel.mentionString,
             color = discordia.Color.fromRGB(255, 0, 0).value,
