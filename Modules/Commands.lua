@@ -282,7 +282,7 @@ end)
 addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
     local roles = args
     local member = message.member or message.guild:getMember(message.author.id)
-    local selfRoles = message.Database:Get(message, "Roles")
+    local selfRoles = Database:Get(message, "Roles")
     if not selfRoles then return end
     local rolesToRemove = {}
     for _,l in pairs(selfRoles) do
@@ -315,7 +315,7 @@ end)
 
 addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '', 0, false, true, function(message, args)
     local roleList, cats = {},{}
-    local selfRoles = message.Database:Get(message, "Roles")
+    local selfRoles = Database:Get(message, "Roles")
     if not selfRoles then return end
     for k,v in pairs(selfRoles) do
         for r,_ in pairs(v) do
