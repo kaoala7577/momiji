@@ -20,7 +20,7 @@ function Events.messageCreate(msg)
         Database:Update(msg, "Users", data.Users)
     end
     if msg.content == client.user.mentionString.." prefix" then msg:reply("The prefix for "..msg.guild.name.." is `"..data.Settings.prefix.."`") end
-    local command, rest = resolveCommand(msg.content, private, data.Settings.prefix)
+    local command, rest = resolveCommand(msg.content, private, (not private and data.Settings.prefix or ""))
     if not command then return end --If the prefix isn't there, don't bother with anything else
     local rank = getRank(sender, not private)
     for name,tab in pairs(Commands) do
