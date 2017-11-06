@@ -908,7 +908,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
             result[i] = string.sub(ret, (len*(i-1)), (len*(i)))
         end
         for _,v in pairs(result) do
-            message:reply("```"..v.."```")
+            if v ~= "" then message:reply("```"..v.."```") end
         end
     end
     print = oldPrint
