@@ -53,6 +53,7 @@ function Events.messageCreate(msg)
                         if tab.name ~= "Prune" then msg:addReaction('✅') end
                     end
                     if comLog then
+                        local g = not private and msg.guild.name or "Private"
                         comLog:send{embed={
                             fields={
                                 {name="Command",value=tab.name,inline=true},
