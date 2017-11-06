@@ -3,8 +3,7 @@ Commands = {}
 function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
     local b,e,n,g = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
     if not b then
-        --TODO: error throw
-        print(name.." failed")
+        logger:log(1, "<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
         return
     end
     Commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
@@ -101,47 +100,45 @@ end)
 
 addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
     local guild = message.guild
-    if guild:requestMembers() then
-        if client:getGuild(args) then
-            guild = client:getGuild(args)
-        end
-        local humans, bots, online = 0,0,0
-        for member in guild.members:iter() do
-            if member.bot then
-                bots = bots+1
-            else
-                humans = humans+1
-            end
-            if not (member.status == 'offline') then
-                online = online+1
-            end
-        end
-        timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
-        fields = {
-            {name = 'ID', value = guild.id, inline = true},
-            {name = 'Name', value = guild.name, inline = true},
-            {name = 'Owner', value = guild.owner.mentionString, inline = true},
-            {name = 'Region', value = guild.region, inline = true},
-            {name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
-            {name = 'Text Channels', value = #guild.textChannels, inline = true},
-            {name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
-            {name = 'Members', value = #guild.members, inline = true},
-            {name = 'Humans', value = humans, inline = true},
-            {name = 'Bots', value = bots, inline = true},
-            {name = 'Online', value = online, inline = true},
-            {name = 'Roles', value = #guild.roles, inline = true},
-            {name = 'Emojis', value = #guild.emojis, inline = true},
-        }
-        message:reply {
-            embed = {
-                author = {name = guild.name, icon_url = guild.iconURL},
-                fields = fields,
-                thumbnail = {url = guild.iconURL, height = 200, width = 200},
-                color = discordia.Color.fromRGB(244, 198, 200).value,
-                footer = { text = "Server Created : "..timestamp }
-            }
-        }
+    if client:getGuild(args) then
+        guild = client:getGuild(args)
     end
+    local humans, bots, online = 0,0,0
+    for member in guild.members:iter() do
+        if member.bot then
+            bots = bots+1
+        else
+            humans = humans+1
+        end
+        if not (member.status == 'offline') then
+            online = online+1
+        end
+    end
+    timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+    fields = {
+        {name = 'ID', value = guild.id, inline = true},
+        {name = 'Name', value = guild.name, inline = true},
+        {name = 'Owner', value = guild.owner.mentionString, inline = true},
+        {name = 'Region', value = guild.region, inline = true},
+        {name = 'Total Channels', value = #guild.textChannels+#guild.voiceChannels, inline = true},
+        {name = 'Text Channels', value = #guild.textChannels, inline = true},
+        {name = 'Voice Channels', value = #guild.voiceChannels, inline = true},
+        {name = 'Members', value = #guild.members, inline = true},
+        {name = 'Humans', value = humans, inline = true},
+        {name = 'Bots', value = bots, inline = true},
+        {name = 'Online', value = online, inline = true},
+        {name = 'Roles', value = #guild.roles, inline = true},
+        {name = 'Emojis', value = #guild.emojis, inline = true},
+    }
+    message:reply {
+        embed = {
+            author = {name = guild.name, icon_url = guild.iconURL},
+            fields = fields,
+            thumbnail = {url = guild.iconURL, height = 200, width = 200},
+            color = discordia.Color.fromRGB(244, 198, 200).value,
+            footer = { text = "Server Created : "..timestamp }
+        }
+    }
 end)
 
 addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
@@ -227,7 +224,7 @@ end)
 
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
     local member = message.member or message.guild:getMember(message.author.id)
-    local selfRoles = message.Database:Get(message, "Roles")
+    local selfRoles = Database:Get(message, "Roles")
     if not selfRoles then return end
     local roles = args
     local rolesToAdd, rolesFailed = {}, {}

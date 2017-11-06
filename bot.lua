@@ -1,7 +1,9 @@
 token = require('token')
 discordia = require('discordia')
 enums = discordia.enums
-client = discordia.Client()
+client = discordia.Client({
+	cacheAllMembers = true,
+})
 logger = discordia.Logger(4, '%F %T', 'discordia.log')
 fs = require('fs')
 json = require('json')
