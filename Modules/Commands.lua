@@ -769,6 +769,17 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
     Database:Update(message, "Roles", roles)
 end)
 
+addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
+    local ignores = Database:Get(message, 'Ignore')
+    local channel = resolveChannel(message.guild, args)
+    if channel and not ignores[channel.id] then
+        ignores[channel.id] = true
+    elseif channel then
+        ignores[channel.id] = nil
+    end
+    Database:Update(message, 'Ignore', ignores)
+end)
+
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
     for i,v in pairs(args) do args[i] = v:trim() end

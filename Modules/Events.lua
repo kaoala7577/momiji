@@ -9,6 +9,9 @@ function Events.messageCreate(msg)
     if not private then
         --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = Database:Get(msg)
+        if data.Ignore[msg.channel.id] and (msg.author.id ~= msg.guild.owner.id) then
+            return
+        end
         if data.Users==nil or data.Users[msg.author.id]==nil then
             data.Users[msg.author.id] = { registered="", watchlisted=false, under18=false, last_message=discordia.Date():toISO() }
         else

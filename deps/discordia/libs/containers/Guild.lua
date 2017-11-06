@@ -29,6 +29,7 @@ function Guild:__init(data, parent)
 	self._text_channels = Cache({}, GuildTextChannel, self)
 	self._voice_channels = Cache({}, GuildVoiceChannel, self)
 	self._categories = Cache({}, GuildCategoryChannel, self)
+	self._voice_states = {}
 	if not data.unavailable then
 		return self:_makeAvailable(data)
 	end
@@ -39,12 +40,12 @@ function Guild:_makeAvailable(data)
 	self._roles:_load(data.roles)
 	self._emojis:_load(data.emojis)
 
-	local voice_states = data.voice_states
-	for i, state in ipairs(voice_states) do
-		voice_states[state.user_id] = state
-		voice_states[i] = nil
+	if data.voice_states then
+		local states = self._voice_states
+		for _, state in ipairs(data.voice_states) do
+			states[state.user_id] = state
+		end
 	end
-	self._voice_states = voice_states
 
 	local text_channels = self._text_channels
 	local voice_channels = self._voice_channels
@@ -303,7 +304,7 @@ function Guild:getWebhooks()
 end
 
 function Guild:listVoiceRegions()
-	return self.client._api:getGuildVoiceRegions()
+	return self.client._api:getGuildVoiceRegions(self._id)
 end
 
 function Guild:leave()
@@ -318,6 +319,10 @@ end
 function Guild:delete()
 	local data, err = self.client._api:deleteGuild(self._id)
 	if data then
+		local cache = self._parent._guilds
+		if cache then
+			cache:_delete(self._id)
+		end
 		return true
 	else
 		return false, err
