@@ -96,7 +96,20 @@ function resolveMember(guild,name)
 	if this then
 		m=guild:getMember(this)
 	else
-		m=guild.textChannels:find(function(mem)
+		m=guild.members:find(function(mem)
+			return mem.name==name
+		end)
+	end
+	return m
+end
+
+function resolveRole(guild,name)
+	local this=getIdFromString(name) or name
+    local m
+	if this then
+		m=guild:getRole(this)
+	else
+		m=guild.roles:find(function(mem)
 			return mem.name==name
 		end)
 	end
