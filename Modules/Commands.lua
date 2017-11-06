@@ -821,7 +821,8 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
             elseif args[2] == 'disable' then
                 settings[v] = false
             elseif args[2] == 'set' then
-                settings[v..'_channel'] = args[3] and args[3] or ''
+                local channel = resolveChannel(message.guild, args[3])
+                settings[v..'_channel'] = channel.id or ''
             elseif args[2] == 'message' and (v=='welcome' or v=='introduction') then
                 settings[v..'_message'] = table.concat(table.slice(args, 3, #args, 1), ' ')
             end
