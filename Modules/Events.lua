@@ -57,7 +57,7 @@ function Events.messageCreate(msg)
                         comLog:send{embed={
                             fields={
                                 {name="Command",value=tab.name,inline=true},
-                                {name="Guild",value=msg.guild.name,inline=true},
+                                {name="Guild",value=g,inline=true},
                                 {name="Author",value=msg.author.fullname,inline=true},
                                 {name="Message Content",value="```"..msg.content.."```"},
                             },
