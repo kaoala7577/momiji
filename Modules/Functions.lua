@@ -116,6 +116,11 @@ function resolveRole(guild,name)
 	return m
 end
 
+function getFormatType(str, member)
+    local type = str:match("$type:(%S*)")
+    return type
+end
+
 function formatMessageSimple(str, member)
     for word in string.gmatch(str, "{%S+}") do
         if word:lower()=='{user}' then
@@ -127,7 +132,23 @@ function formatMessageSimple(str, member)
     return str
 end
 
+function formatMessageEmbed(str, member)
+    local embed = {}
+    for word in string.gmatch(str, "$[^$]*") do
+        local field, val = string.match(word, "$(%S+):(.*)")
+        if field=='title' then
+            embed['title'] = formatMessageSimple(val, member)
+        elseif field=='description' then
+            embed['description'] = formatMessageSimple(val, member)
+        elseif field=='thumbnail' then
+
+        end
+    end
+    return embed
+end
+
 function resolveCommand(str, p, pre)
+    local prefix = ""
     if p then
         prefix = ""
     else

@@ -78,17 +78,14 @@ end
 function Events.memberJoin(member)
     local settings = Database:Get(member, "Settings")
     if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
-        --TODO: make a system so all guilds can use embeds
-        channel = member.guild:getChannel(settings['welcome_channel'])
-        if member.guild.id == '348660188951216129' then
-            channel:send{embed = {
-				title = "Welcome to "..member.guild.name.."!",
-				description = "Hello, "..member.name..". Please read through <#348660188951216130> and inform a member of staff how you identify, what pronouns you would like to use, and your age. These are required.",
-				thumbnail = {url = member.avatarURL, height = 200, width = 200},
-				color = discordia.Color.fromRGB(0, 255, 0).value,
-			}}
-        else
+        local type = getFormatType(settings['welcome_message'], member)
+        local channel = member.guild:getChannel(settings['welcome_channel'])
+        if type == 'plain' or not type then
             channel:send(formatMessageSimple(settings['welcome_message'], member))
+        elseif type == 'embed' then
+            channel:send{
+                embed = formatMessageEmbed(settings['welcome_message'], member)
+            }
         end
     end
     --Join message
