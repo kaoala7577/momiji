@@ -141,7 +141,16 @@ function formatMessageEmbed(str, member)
         elseif field=='description' then
             embed['description'] = formatMessageSimple(val, member)
         elseif field=='thumbnail' then
-
+            if val:startswith('member') then
+                embed['thumbnail'] = {url=member.avatarURL, height=200,width=200}
+            elseif val=='guild' then
+                embed['thumbnail'] = {url=member.guild.iconURL, height=200,width=200}
+            end
+        elseif field=='color' then
+            local color = val:match("#([0-9a-fA-F]*)")
+            if #color==6 then
+                embed['color'] = discordia.Color.fromHex(color).value
+            end
         end
     end
     return embed

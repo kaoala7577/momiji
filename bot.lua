@@ -17,20 +17,20 @@ function loadModule(name)
 	if data then
 		local a,b=loadstring(data,name)
 		if not a then
-			logger:log(2, "<SYNTAX> Error loading %s (%s)", name, b)
+			logger:log(1, "<SYNTAX> Error loading %s (%s)", name, b)
 			return false
 		else
 			setfenv(a,getfenv())
 			local c,d=pcall(a)
 			if not c then
-				logger:log(2, "<RUNTIME> Error loading %s (%s)", name, d)
+				logger:log(1, "<RUNTIME> Error loading %s (%s)", name, d)
 				return false
 			else
 				client:info('Module online: '..name)
 			end
 		end
 	else
-		logger:log(2, "<LOADING> Error loading %s (%s)", name, tostring(others))
+		logger:log(1, "<LOADING> Error loading %s (%s)", name, tostring(others))
 		return false
 	end
 end
