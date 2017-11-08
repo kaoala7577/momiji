@@ -36,6 +36,13 @@ addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function
     message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
 
+addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
+    local data, err = API.Misc:Urban(args, nil)
+    if data then
+        message:reply{embed=data}
+    end
+end)
+
 addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
     local cmds = Commands
     local order = {
