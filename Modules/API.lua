@@ -89,7 +89,7 @@ function API.Misc:Urban(input)
 					{name = "Definition", value = jdata.list[1].definition},
 					{name = "Example", value = jdata.list[1].example},
 				}
-				t.color = client.user.color.value
+				t.color = discordia.Color.fromHex('#5DA9FF').value
 			else
 				t.title = 'No definitions found.'
 			end

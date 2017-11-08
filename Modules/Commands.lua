@@ -142,7 +142,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 
             author = {name = guild.name, icon_url = guild.iconURL},
             fields = fields,
             thumbnail = {url = guild.iconURL, height = 200, width = 200},
-            color = client.user.color.value,
+            color = discordia.Color.fromHex('#5DA9FF').value,
             footer = { text = "Server Created : "..timestamp }
         }
     }
