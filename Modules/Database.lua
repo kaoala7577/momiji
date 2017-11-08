@@ -39,23 +39,6 @@ Database.Default = {
     Users = {},
 }
 
-function resolveGuild(guild)
-	local ts=tostring
-	if not guild then error"No ID/Guild/Message provided" end
-	local id
-	if type(guild)=='table' then
-		if guild['guild']then
-			id=ts(guild.guild.id)
-		else
-			id=ts(guild.id)
-		end
-	else
-		id=ts(guild)
-		guild=client:getGuild(id)
-	end
-	return id,guild
-end
-
 function Database:Get(guild,index)
 	local id,guild=resolveGuild(guild)
 	if Database.Cache[id]then
