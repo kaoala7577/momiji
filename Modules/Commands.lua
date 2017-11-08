@@ -43,6 +43,24 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
     end
 end)
 
+addCommand('Cat', 'Meow', 'cat', '<search term>', 0, false, false, function(message, args)
+    local data, err = API.Misc:Cats()
+    if data then
+        message:reply{embed={
+            image={url=data}
+        }}
+    end
+end)
+
+addCommand('Dog', 'Bork', 'dog', '<search term>', 0, false, false, function(message, args)
+    local data, err = API.Misc:Dogs()
+    if data then
+        message:reply{embed={
+            image={url=data}
+        }}
+    end
+end)
+
 addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
     local cmds = Commands
     local order = {
