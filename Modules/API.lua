@@ -12,6 +12,7 @@ API={
 		['Carbon']='https://www.carbonitex.net/discord/data/botdata.php',
 		['dadjoke']='https://icanhazdadjoke.com/',
 		['sgo']='http://setgetgo.com/',
+		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
 	},
 	Carbon={},
 	DBots={},
@@ -76,7 +77,8 @@ function API.Misc:Joke()
 end
 function API.Misc:Urban(input)
 	local fmt=string.format
-	local request=query.urlencode(input)
+	input=input.." order:random"
+	local request=query.urlencode(input:trim())
 	if request then
 		local technical,data=API:Get('Urban',{request})
 		local jdata=json.decode(data)
@@ -95,6 +97,22 @@ function API.Misc:Urban(input)
 				t.title = 'No definitions found.'
 			end
 			return t
+		else
+			return nil,"ERROR: unable to json decode"
+		end
+	else
+		return nil,"ERROR: unable to urlencode"
+	end
+end
+function API.Misc:Furry(input)
+	local fmt=string.format
+	input = input.." order:random"
+	local request=query.urlencode(input:trim())
+	if request then
+		local technical,data=API:Get('e621',{request},{{'User-Agent','luvit'}})
+		local jdata=json.decode(data)
+		if jdata then
+			return jdata[1].file_url
 		else
 			return nil,"ERROR: unable to json decode"
 		end
