@@ -5,11 +5,12 @@ function Events.messageCreate(msg)
     if msg.author.bot then return end
     local private, data
     if msg.guild then private=false else private=true end
+    local rank = getRank(sender, not private)
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
     if not private then
         --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = Database:Get(msg)
-        if data.Ignore[msg.channel.id] and (msg.author.id ~= msg.guild.owner.id) then
+        if data.Ignore[msg.channel.id] and rank<3 then
             return
         end
         if data.Users==nil or data.Users[msg.author.id]==nil then
@@ -22,7 +23,6 @@ function Events.messageCreate(msg)
     if msg.content == client.user.mentionString.." prefix" then msg:reply("The prefix for "..msg.guild.name.." is `"..data.Settings.prefix.."`") end
     local command, rest = resolveCommand(msg.content, private, (not private and data.Settings.prefix or ""))
     if not command then return end --If the prefix isn't there, don't bother with anything else
-    local rank = getRank(sender, not private)
     for name,tab in pairs(Commands) do
         for ind,cmd in pairs(tab.commands) do
             if command:lower() == cmd:lower() then
