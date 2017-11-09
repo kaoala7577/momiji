@@ -5,8 +5,8 @@ function Events.messageCreate(msg)
     if msg.author.bot then return end
     local private, data
     if msg.guild then private=false else private=true end
-    local rank = getRank(sender, not private)
     local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
+    local rank = getRank(sender, not private)
     if not private then
         --Load settings for the guild, Database.lua keeps a cache of requests to avoid mmaking excessive queries
         data = Database:Get(msg)
