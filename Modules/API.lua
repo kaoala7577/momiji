@@ -11,6 +11,7 @@ API={
 		['Urban']='https://api.urbandictionary.com/v0/define?term=%s',
 		['Carbon']='https://www.carbonitex.net/discord/data/botdata.php',
 		['dadjoke']='https://icanhazdadjoke.com/',
+		['sgo']='http://setgetgo.com/',
 	},
 	Carbon={},
 	DBots={},
