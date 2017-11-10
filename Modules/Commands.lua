@@ -126,7 +126,7 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
-        if pat then
+        if pat and pat~='18' then
             member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
@@ -160,7 +160,7 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
-        if pat then
+        if pat and pat~='18' then
             member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
@@ -197,7 +197,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
     local member
     for i,v in ipairs(args) do
         pat = string.match(v, "<?@?!?(%d+)>?.*")
-        if pat then
+        if pat and pat~='18' then
             member = resolveMember(message.guild, pat) or member
             args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
             if args[i] == "" then table.remove(args, i) end
@@ -271,7 +271,7 @@ end)
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
     local m
     pat = string.match(args, "[<@!]*(%d+)>*.*")
-    if pat then
+    if pat and pat~='18' then
         m = resolveMember(message.guild, pat)
         args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
     end
@@ -369,7 +369,8 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
         list = ""
         for id,v in pairs(users) do
             if v.watchlisted then
-                list = list..message.guild:getMember(id).mentionString.."\n"
+                local mention = message.guild:getMember(id).mentionString or client:getUser(id).mentionString or id
+                list = list..mention.."\n"
             end
         end
         if list ~= "" then
