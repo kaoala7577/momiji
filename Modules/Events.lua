@@ -14,7 +14,7 @@ function Events.messageCreate(msg)
             return
         end
         if data.Users==nil or data.Users[msg.author.id]==nil then
-            data.Users[msg.author.id] = { registered="", watchlisted=false, under18=false, last_message=discordia.Date():toISO() }
+            data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO() }
         else
             data.Users[msg.author.id].last_message = discordia.Date():toISO()
         end
