@@ -82,16 +82,18 @@ function API.Misc:Urban(input)
 		local technical,data=API:Get('Urban',{request}, {{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
+			p(jdata.list[1])
 			local t={}
 			if jdata.list[1] then
 				t.description = fmt('**Definition of "%s" by %s**',jdata.list[1].word,jdata.list[1].author)
 				t.fields = {
-					{name = "Thumbs up", value = jdata.list[1].thumbs_up, inline=true},
-					{name = "Thumbs down", value = jdata.list[1].thumbs_down, inline=true},
+					{name = "Thumbs up", value = jdata.list[1].thumbs_up or "0", inline=true},
+					{name = "Thumbs down", value = jdata.list[1].thumbs_down or "0", inline=true},
 					{name = "Definition", value = jdata.list[1].definition},
-					{name = "Example", value = jdata.list[1].example},
+					{name = "Example", value = jdata.list[1].example~='' and jdata.list[1].example or "No examples"},
 				}
 				t.color = discordia.Color.fromHex('#5DA9FF').value
+				p(t)
 			else
 				t.title = 'No definitions found.'
 			end
