@@ -5,6 +5,11 @@ addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
     end
 end)
 
+addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message, args)
+    local settings = Database:Get(message, "Settings")
+    message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
+end)
+
 addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message, args)
     message:reply{embed={
         author = {name=client.user.name, icon_url=client.user.avatarURL},
