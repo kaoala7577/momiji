@@ -77,14 +77,13 @@ function API.Misc:Joke()
 end
 function API.Misc:Urban(input)
 	local fmt=string.format
-	input=input.." order:random"
 	local request=query.urlencode(input:trim())
 	if request then
-		local technical,data=API:Get('Urban',{request})
+		local technical,data=API:Get('Urban',{request}, {{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			local t={}
-			if jdata.list[1]then
+			if jdata.list[1] then
 				t.description = fmt('**Definition of "%s" by %s**',jdata.list[1].word,jdata.list[1].author)
 				t.fields = {
 					{name = "Thumbs up", value = jdata.list[1].thumbs_up, inline=true},
@@ -105,7 +104,6 @@ function API.Misc:Urban(input)
 	end
 end
 function API.Misc:Furry(input)
-	local fmt=string.format
 	input = input.." order:random"
 	local request=query.urlencode(input:trim())
 	if request then

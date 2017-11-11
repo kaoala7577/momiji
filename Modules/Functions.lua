@@ -161,8 +161,8 @@ function resolveCommand(str, p, pre)
     if p then
         prefix = ""
     else
-        prefix=pre and pre or "m!"
-        if not string.match(str,"^%"..prefix) then return end
+        prefix=pre or "m!"
+        if not string.match(str,"^%"..prefix) or string.match(str, "^"..client.user.mentionString) then return end
     end
     local command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
     return command, rest
