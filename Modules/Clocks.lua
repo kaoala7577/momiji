@@ -9,6 +9,8 @@ function Clocks.min(time)
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 		role = guild:getRole('363398104491229184')
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
+		role = guild:getRole('378730029473071105')
+		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
     --Auto-remove Cooldown
     if guild then
