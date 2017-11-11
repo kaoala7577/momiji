@@ -307,6 +307,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
     	client:removeAllListeners('userBan')
     	client:removeAllListeners('userUnban')
     	client:removeAllListeners('presenceUpdate')
+        client:removeAllListeners('memberUpdate')
     	client:removeAllListeners('memberRegistered')
         client:on('messageCreate', Events.messageCreate)
     	client:on('memberJoin', Events.memberJoin)
@@ -316,6 +317,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
     	client:on('userBan',Events.userBan)
     	client:on('userUnban',Events.userUnban)
     	client:on('presenceUpdate', Events.presenceUpdate)
+        client:on('memberUpdate', Events.memberUpdate)
     	client:on('memberRegistered', Events.memberRegistered)
     end
 end)

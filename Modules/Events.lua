@@ -134,11 +134,30 @@ function Events.presenceUpdate(member)
     end
 end
 
+function Events.memberUpdate(member)
+    local users = Database:Get(member, "Users")
+    local settings = Database:Get(member, "Settings")
+    if users[member.id] then
+        if users[member.id].nick ~= member.nickname and settings.audit and settings.audit_channel then
+            local channel = member.guild:getChannel(settings.audit_channel)
+            channel:send{embed={
+                author = {name="Nickname Changed", icon_url=member.avatarURL},
+                description = "User: **"..member.fullname.."** changed their nickname from `"..users[member.id].nick.."` to `"..member.nickname.."`",
+                color = discordia.Color.fromHex('#5DA9FF').value,
+                timestamp = discordia.Date():toISO(),
+                footer = {text="ID: "..member.id},
+            }}
+        end
+        users[member.id].nick = member.nickname
+        Database:Update(member, "Users", users)
+    end
+end
+
 function Events.memberRegistered(member)
     local settings = Database:Get(member, "Settings")
     if settings['introduction_message'] ~= "" and settings['introduction_channel'] and settings['introduction'] then
         --TODO: make a system so all guilds can use embeds
-        channel = member.guild:getChannel(settings['introduction_channel'])
+        local channel = member.guild:getChannel(settings['introduction_channel'])
         channel:send(formatMessageSimple(settings['introduction_message'], member))
     end
 end
