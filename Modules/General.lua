@@ -22,7 +22,7 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
             {name="Owner",value=client.owner.fullname,inline=true},
             {name="Support Server",value="[Momiji's House](https://discord.gg/YYdpsNc)",inline=true},
             {name="Invite me!",value="[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)",inline=true},
-            {name="Github",value="https://github.com/Mishio595/momiji",inline=true},
+            {name="Contribute",value="[Github](https://github.com/Mishio595/momiji)",inline=true},
         },
     }}
 end)
