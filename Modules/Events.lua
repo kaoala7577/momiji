@@ -48,9 +48,9 @@ function Events.messageCreate(msg)
                                 color = discordia.Color.fromRGB(255, 0 ,0).value,
                             }}
                         end
-                        if tab.name ~= "Prune" then msg:addReaction('❌') end
+                        if msg then msg:addReaction('❌') end
                     else
-                        if tab.name ~= "Prune" then msg:addReaction('✅') end
+                        if msg then msg:addReaction('✅') end
                     end
                     if comLog then
                         local g = not private and msg.guild.name or "Private"
@@ -66,7 +66,7 @@ function Events.messageCreate(msg)
                         }}
                     end
                 else
-                    if tab.name ~= "Prune" then msg:addReaction('❌') end
+                    if msg then msg:addReaction('❌') end
                     msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
                 end
             end
@@ -196,6 +196,7 @@ end
 
 function Events.messageDelete(message)
     local member = message.member or message.guild:getMember(message.author.id) or message.author
+    if member.author.bot then return end
     local settings = Database:Get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
