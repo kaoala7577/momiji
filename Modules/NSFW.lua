@@ -1,9 +1,9 @@
-addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, false, function(message, args)
+addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, true, function(message, args)
     if not message.channel.nsfw then
         message:reply("This command can only be used in NSFW channels.")
         return
     end
-    local blacklist = {'cub', 'young'}
+    local blacklist = {'cub', 'young', 'small_cub'}
     for _,v in ipairs(blacklist) do
         if args:match(v) then
             message:reply("A tag you searched for is blacklisted: "..v)
