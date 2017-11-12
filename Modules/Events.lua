@@ -196,7 +196,7 @@ end
 
 function Events.messageDelete(message)
     local member = message.member or message.guild:getMember(message.author.id) or message.author
-    if member.author.bot then return end
+    if message.author.bot then return end
     local settings = Database:Get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
