@@ -110,7 +110,7 @@ function API.Misc:Furry(input)
 		local technical,data=API:Get('e621',{request},{{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
-			return jdata[1].file_url
+			return jdata[1]
 		else
 			return nil,"ERROR: unable to json decode"
 		end
