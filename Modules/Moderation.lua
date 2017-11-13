@@ -147,7 +147,7 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 					{note=args, moderator=a.username, timestamp=discordia.Date():toISO()}
 				}
 			else
-				notes[m.id][#notes[m.id]+1] = {note=args, moderator=a.username, timestamp=discordia.Date():toISO()}
+				notes[m.id][#notes[m.id]+1] = {note=args, moderator=a.fullname, timestamp=discordia.Date():toISO()}
 			end
 		end
 	elseif args:startswith("del") then
@@ -158,16 +158,16 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 			end
 		end
 	elseif args:startswith("view") then
-		local notelist = {}
+		local notelist = ""
 		if notes[m.id] then
 			for i,v in ipairs(notes[m.id]) do
-				table.insert(notelist, {name = i.." : added by "..v.moderator, value = v.note})
+				notelist = notelist..string.format("**%d)** %s (Added by %s)\n",i,v.note,v.moderator)
 			end
 		end
 		message:reply {
 			embed = {
-				footer = {text = "Notes for "..m.username},
-				fields = notelist,
+				title = "Notes for "..m.fullname,
+				description = notelist,
 			}
 		}
 	else
