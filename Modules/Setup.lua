@@ -1,7 +1,7 @@
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
     args = args:split(' ')
     for i,v in pairs(args) do args[i] = v:trim() end
-    settings = Database:Get(message, "Settings")
+    local settings = Database:Get(message, "Settings")
     local switches = {
         roles = {'admin', 'mod'},
         channels = {'audit', 'modlog', 'welcome', 'introduction'},
@@ -63,7 +63,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
             end
         end
     elseif args[1] == 'help' then
-        fields,roles,chans = {
+        local fields,roles,chans = {
             {name="prefix", value="Usage: config prefix <newPrefix>"},
             {name="autorole", value="Subcommands:\nenable\ndisable\nadd <roleID>\nremove <roleID>"},
         },"",""
@@ -79,7 +79,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
             fields = fields,
         }}
     elseif args[1]=="" then
-        list = ""
+        local list = ""
         for k,v in pairs(settings) do
             list = list.."**"..k.."**: "..tostring(v).."\n"
         end
@@ -89,7 +89,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 end)
 
 addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
-    settings = Database:Get(message, "Settings")
+    local settings = Database:Get(message, "Settings")
     local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
     if not role then
         role = message.guild:createRole("Muted")
@@ -154,7 +154,7 @@ end)
 addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
     local roles = Database:Get(message, "Roles")
     function fn(r) return r.name == args end
-    r = message.guild.roles:find(fn)
+    local r = message.guild.roles:find(fn)
     if r then
         for cat,v in pairs(roles) do
             if v[args] then

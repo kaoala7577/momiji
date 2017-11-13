@@ -63,7 +63,7 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
         message.author:send("**How to read this doc:**\nWhen reading the commands, arguments in angle brackets (`<>`) are mandatory\nwhile arguments in square brackets (`[]`) are optional.\nA pipe character `|` means or, so `a|b` means a **or** b.\nNo brackets should be included in the commands")
         for _,v in ipairs(sorted) do status = message.author:send(v) end
     else
-        cmd = nil
+        local cmd = nil
         for k,v in pairs(cmds) do
             if args == v.name then
                 cmd = v
@@ -109,7 +109,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 
             online = online+1
         end
     end
-    timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+    local timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
     fields = {
         {name = 'ID', value = guild.id, inline = true},
         {name = 'Name', value = guild.name, inline = true},
@@ -142,7 +142,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
         local hoisted, mentionable
         if role.hoisted then hoisted = "Yes" else hoisted = "No" end
         if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-        local status = message.channel:send {
+        message.channel:send {
             embed = {
                 thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
                 fields = {
@@ -157,7 +157,6 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
                 color = role:getColor().value,
             }
         }
-        return status
     end
 end)
 
@@ -165,7 +164,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
     local guild = message.guild
     local member
     if args ~= "" then
-        m = guild:getMember(resolveMember(message.guild, args))
+        local m = guild:getMember(resolveMember(message.guild, args))
         if m then
             member = m
         end
@@ -207,7 +206,6 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
                 timestamp = discordia.Date():toISO()
             }
         }
-        return status
     else
         message.channel:send("Sorry, I couldn't find that user.")
     end

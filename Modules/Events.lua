@@ -78,11 +78,11 @@ end
 function Events.memberJoin(member)
 	local settings = Database:Get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
-		local type = getFormatType(settings['welcome_message'], member)
+		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
-		if type == 'plain' or not type and channel then
+		if typeOf == 'plain' or not type and channel then
 			channel:send(formatMessageSimple(settings['welcome_message'], member))
-		elseif type == 'embed' and channel then
+		elseif typeOf == 'embed' and channel then
 			channel:send{
 				embed = formatMessageEmbed(settings['welcome_message'], member)
 			}
@@ -124,7 +124,7 @@ function Events.memberLeave(member)
 end
 
 function Events.presenceUpdate(member)
-	role = '370395740406546432'
+	local role = '370395740406546432'
 	if member.guild.id == '348660188951216129' then
 		if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
 			member:addRole(role)
@@ -191,7 +191,7 @@ function Events.messageDelete(message)
 	local settings = Database:Get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
+		local body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
