@@ -191,7 +191,7 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
---	if not message.guild.id=="348660188951216129" then return end
+	if not message.guild.id=="348660188951216129" then return end
 	local data = Database:Get(message)
 	local channel = message.guild:getChannel(data.Settings.modlog_channel)
 	local member
@@ -244,7 +244,12 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 						}
 					}
 				end
-				client:emit('memberRegistered', member)
+				if data.Settings.introduction_message ~= "" and data.Settings.introduction_channel and data.Settings.introduction then
+					local channel = member.guild:getChannel(data.Settings.introduction_channel)
+					if channel then
+						channel:send(formatMessageSimple(data.Settings.introduction_message, member))
+					end
+				end
 				if data.Users==nil or data.Users[member.id]==nil then
 					data.Users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="" }
 				else
