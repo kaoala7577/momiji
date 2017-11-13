@@ -17,7 +17,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
                     end
                 end
             elseif args[2] == 'list' then
-                list = ""
+                local list = ""
                 for i,j in ipairs(settings[v..'_roles']) do
                     role = message.guild:getRole(j)
                     if role then
@@ -118,7 +118,7 @@ end)
 addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
     local roles = Database:Get(message, "Roles")
     function fn(r) return r.name == args[1] end
-    r = message.guild.roles:find(fn)
+    local r = message.guild.roles:find(fn)
     if r then
         for k,v in pairs(roles) do
             if v[args[1]] then

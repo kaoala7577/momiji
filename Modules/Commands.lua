@@ -191,7 +191,7 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
-	if not message.guild.id=="348660188951216129" then return end
+	if message.guild.id~="348660188951216129" or message.guild.id~='375797411819552769' then return end
 	local data = Database:Get(message)
 	local channel = message.guild:getChannel(data.Settings.modlog_channel)
 	local member
@@ -231,6 +231,8 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			end
 			if message.guild.id == "348660188951216129" then
 				member:addRole('348873284265312267')
+			elseif message.guild.id == '375797411819552769' then
+				member:addRole('375799736294178827')
 			end
 			if #rolesToAdd > 0 then
 				if channel then
