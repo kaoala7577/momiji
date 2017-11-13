@@ -191,9 +191,9 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
-	if not message.guild.id=="348660188951216129" then return end
-	local settings, selfRoles, users = Database:Get(message, "Settings"), Database:Get(message, "Roles"), Database:Get(message, "Users")
-	local channel = client:getChannel(settings.modlog_channel)
+--	if not message.guild.id=="348660188951216129" then return end
+	local data = Database:Get(message)
+	local channel = message.guild:getChannel(data.Settings.modlog_channel)
 	local member
 	for i,v in ipairs(args) do
 		local pat = string.match(v, "<?@?!?(%d+)>?.*")
@@ -205,8 +205,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 	end
 	if member then
 		local rolesToAdd = {}
-		local hasGender, hasPronouns
-		for k,l in pairs(selfRoles) do
+		for k,l in pairs(data.Roles) do
 			for r,a in pairs(l) do
 				for _,role in pairs(args) do
 					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
@@ -215,19 +214,11 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 						end
 					end
 				end
-			end
-		end
-		for k,l in pairs(selfRoles) do
-			for _,j in pairs(rolesToAdd) do
 				if (k == 'Gender Identity' or k == 'Gender') then
-					for r,_ in pairs(l) do
-						if r == j then hasGender = true end
-					end
+					if rolesToAdd[#rolesToAdd]==r then hasGender = true end
 				end
 				if (k == 'Pronouns') then
-					for r,_ in pairs(l) do
-						if r == j then hasPronouns = true end
-					end
+					if rolesToAdd[#rolesToAdd]==r then hasPronouns = true end
 				end
 			end
 		end
@@ -242,22 +233,24 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				member:addRole('348873284265312267')
 			end
 			if #rolesToAdd > 0 then
-				channel:send {
-					embed = {
-						author = {name = "Registered", icon_url = member.avatarURL},
-						description = "**Registered "..member.mentionString.." with the following roles** \n"..roleList,
-						color = member:getColor().value,
-						timestamp = discordia.Date():toISO(),
-						footer = {text = "ID: "..member.id}
+				if channel then
+					channel:send {
+						embed = {
+							author = {name = "Registered", icon_url = member.avatarURL},
+							description = "**Registered "..member.mentionString.." with the following roles** \n"..roleList,
+							color = member:getColor().value,
+							timestamp = discordia.Date():toISO(),
+							footer = {text = "ID: "..member.id}
+						}
 					}
-				}
-				client:emit('memberRegistered', member)
-				if users==nil or users[member.id]==nil then
-					users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="" }
-				else
-					users[member.id].registered = discordia.Date():toISO()
 				end
-				Database:Update(message, "Users", users)
+				client:emit('memberRegistered', member)
+				if data.Users==nil or data.Users[member.id]==nil then
+					data.Users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="" }
+				else
+					data.Users[member.id].registered = discordia.Date():toISO()
+				end
+				Database:Update(message, "Users", data.Users)
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
