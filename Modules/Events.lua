@@ -80,7 +80,7 @@ function Events.memberJoin(member)
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
-		if typeOf == 'plain' or not type and channel then
+		if typeOf == 'plain' or not typeOf and channel then
 			channel:send(formatMessageSimple(settings['welcome_message'], member))
 		elseif typeOf == 'embed' and channel then
 			channel:send{
