@@ -105,7 +105,7 @@ function Database:Update(guild,index,value)
 	end
 end
 
-function Database:Delete(guild,query,index)
+function Database:Delete(guild,query)
 	if not guild then error"No ID/Guild/Message provided"end
 	local id,guild=resolveGuild(guild)
 	if Database.Cache[id]then

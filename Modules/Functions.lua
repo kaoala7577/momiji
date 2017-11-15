@@ -56,6 +56,90 @@ function parseTime(time)
 	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
+function parseHumanTime(message)
+	local t={}
+	for i,v in pairs(string.split(message,' '))do
+		for de,str in v:gmatch('(%d?%d?%d?%d?%d)%s*(%S?%S?%S?%S)')do
+			local s=str:lower()
+			if s=='y'or s:sub(1,4)=='year'then
+				t.years=de
+			elseif s=='mo'or s:sub(1,5)=='month'then
+				t.months=de
+			elseif s=='w'or s:sub(1,4)=='week'then
+				t.weeks=de
+			elseif s=='d'or s:sub(1,3)=='day'then
+				t.days=de
+			elseif s=='h'or s:sub(1,4)=='hour'then
+				t.hours=de
+			elseif s=='m'or s=='mi'or s:sub(1,6)=='minute'then
+				t.minutes=de
+			elseif s=='s'or s:sub(1,6)=='second'then
+				t.seconds=de
+			end
+		end
+	end
+	return t
+end
+
+function toSeconds(tim)
+	if not type(tim)=='table'then return 0 end
+	local s=0
+	local secs={
+		years=31536000,
+		months=60*60*24*31,
+		weeks=60*60*24*7,
+		days=60*60*24,
+		hours=60*60,
+		minutes=60,
+		seconds=1,
+	}
+	for typ,val in pairs(tim)do
+		s=s+(secs[typ]*val)
+	end
+	return s
+end
+
+function fromSeconds(tim)
+	local secs={
+		years=31536000,
+		months=60*60*24*31,
+		weeks=60*60*24*7,
+		days=60*60*24,
+		hours=60*60,
+		minutes=60,
+		seconds=1,
+	}
+	local ret={
+		years=0,
+		months=0,
+		weeks=0,
+		days=0,
+		hours=0,
+		minutes=0,
+		seconds=0,
+	}
+	for typ,val in pairs(secs)do
+		if tim>=tonumber(val)then
+			repeat
+				tim=tim-tonumber(val)
+				ret[typ]=ret[typ]+1
+			until tim<tonumber(val)
+		end
+	end
+	return ret
+end
+
+function timeBetween(tim)
+	local dat,str=fromSeconds(tim),''
+	for i,v in pairs(dat)do
+		if v>0 then
+			local s=tostring(i)
+			str=str..', '..tostring(v)..' '..(v==1 and s:sub(1,#s-1)or s)
+		end
+	end
+	return str:sub(3)
+end
+
 function getIdFromString(str)
 	return str:match("<[@#]!*(.*)>")
 end
@@ -162,7 +246,7 @@ function resolveCommand(str, pre)
 	if prefix then
 		if string.match(str, "^"..client.user.mentionString) then
 			command, rest = str:sub(#client.user.mentionString+1):match('(%S+)%s*(.*)')
-		elseif string.match(str,"^%"..prefix) then
+		elseif (prefix~="" and string.match(str,"^%"..prefix)) or prefix=="" then
 			command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
 		end
 	end

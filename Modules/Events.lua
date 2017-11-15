@@ -221,9 +221,30 @@ function Events.messageDeleteUncached(channel, messageID)
 	end
 end
 
+function Events.Timing(data)
+	local args=string.split(data,'||')
+	if args[1]=='REMINDER'then
+		local g=client:getGuild(args[2])
+		if g then
+			local m=g:getMember(args[3])
+			if not m then return end
+			local time=timeBetween(toSeconds(parseHumanTime(args[4])))
+			if m then
+				m:send{embed={
+					title='Reminder from '..time..' ago',
+					description=args[5],
+					color=discordia.Color.fromHex('#5DA9FF').value,
+				}}
+			end
+		end
+	end
+end
+
 function Events.ready()
+	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
 		Database:Get(g)
+		Timing:load(g)
 	end
 	client:setGame("m!help | Awoo!")
 	errLog = client:getChannel('376422808852627457')
