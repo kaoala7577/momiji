@@ -143,7 +143,7 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<rol
         if table.concat(aliases,', ')=='' then
             message:reply("Added "..r.name.." to "..cat)
         else
-            message:reply("Added "..r.name.." to "..cat.." wtih aliases "..table.concat(aliases,', '))
+            message:reply("Added "..r.name.." to "..cat.." with aliases "..table.concat(aliases,', '))
         end
     else
         message:reply(args[1].." is not a role. Please make it first.")
