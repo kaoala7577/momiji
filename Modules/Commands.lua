@@ -645,6 +645,21 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 	Database:Update(message, "Users", users)
 end)
 
+addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
+	local color = args:match("%#([0-9a-fA-F]*)")
+	local role = resolveRole(message.guild,args:gsub("%#"..color,""):trim())
+	if #color==6 then
+		if type(role)=='table' then
+			role:setColor(discordia.Color.fromHex(color))
+			message.channel:sendf("Changed the color of %s to #%s",role.name,color)
+		else
+			message:reply("Invalid role provided")
+		end
+	else
+		message:reply("Invalid color provided")
+	end
+end)
+
 addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
 	local member
 	for i,v in ipairs(args) do

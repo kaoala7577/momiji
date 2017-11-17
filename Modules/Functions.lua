@@ -162,7 +162,7 @@ function resolveGuild(guild)
 end
 
 function resolveChannel(guild,name)
-	local this=getIdFromString(name) or name
+	local this=getIdFromString(name)
 	local c
 	if this then
 		c=guild:getChannel(this)
@@ -175,7 +175,7 @@ function resolveChannel(guild,name)
 end
 
 function resolveMember(guild,name)
-	local this=getIdFromString(name) or name
+	local this=getIdFromString(name)
 	local m
 	if this then
 		m=guild:getMember(this)
@@ -188,7 +188,7 @@ function resolveMember(guild,name)
 end
 
 function resolveRole(guild,name)
-	local this=getIdFromString(name) or name
+	local this=getIdFromString(name)
 	local m
 	if this then
 		m=guild:getRole(this)
