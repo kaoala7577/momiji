@@ -43,7 +43,13 @@ function processor.processData(data)
 				dat = nil
 			end
 		else
-			dat = json.decode(rest).r
+			local theresp=json.decode(rest)
+			if theresp then
+				dat=theresp.r
+			else
+				logger.warn.format(string.format('Bad JSON: %s', rest))
+				dat=rest
+			end
 		end
 		todat.f(dat)
 		if not todat.keepAlive then
