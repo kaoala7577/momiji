@@ -35,6 +35,7 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
 			{name="Invite me!",value="[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)",inline=true},
 			{name="Contribute",value="[Github](https://github.com/Mishio595/momiji)",inline=true},
 		},
+		color = discordia.Color.fromHex('#5DA9FF').value
 	}}
 end)
 
@@ -55,11 +56,18 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, func
 	local count, sides = args:match("(%d+)d(%d+)")
 	count,sides = tonumber(count) or 0, tonumber(sides) or 0
 	if count>0 and sides>0 then
-		local roll = 0
+		local roll, pretty = 0,{}
 		for i=1,count do
-			roll = roll+math.round(math.random(1,sides))
+			local cur = math.round(math.random(1,sides))
+			pretty[#pretty+1]=tostring(cur)
+			roll = roll+cur
 		end
-		message.channel:sendf("You rolled %d %d-sided %s and got %d",count,sides,count==1 and "die" or "dice",roll)
+		message.channel:send{embed={
+			fields={
+				{name=string.format("%d 🎲 [1-%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
+			},
+			color = discordia.Color.fromHex('#5DA9FF').value,
+		}}
 	end
 end)
 
