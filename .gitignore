@@ -1,7 +1,6 @@
 discordia.log
 gateway.json
 token.lua
-helpers.lua
 rethinkdb_data/
 options.lua
 apidata.lua

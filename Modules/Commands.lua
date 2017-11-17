@@ -51,6 +51,18 @@ addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 
 	end
 end)
 
+addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, function(message, args)
+	local count, sides = args:match("(%d+)d(%d+)")
+	count,sides = tonumber(count) or 0, tonumber(sides) or 0
+	if count>0 and sides>0 then
+		local roll = 0
+		for i=1,count do
+			roll = roll+math.round(math.random(1,sides))
+		end
+		message.channel:sendf("You rolled %d %d-sided %s and got %d",count,sides,count==1 and "die" or "dice",roll)
+	end
+end)
+
 addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
 	local cmds = Commands
 	local order = {

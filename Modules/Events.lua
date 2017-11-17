@@ -48,9 +48,9 @@ function Events.messageCreate(msg)
 								color = discordia.Color.fromRGB(255, 0 ,0).value,
 							}}
 						end
-						if msg then msg:addReaction('❌') end
+						msg:addReaction('❌')
 					else
-						if msg then msg:addReaction('✅') end
+						msg:addReaction('✅')
 					end
 					if comLog then
 						local g = not private and msg.guild.name or "Private"
@@ -66,7 +66,7 @@ function Events.messageCreate(msg)
 						}}
 					end
 				else
-					if msg then msg:addReaction('❌') end
+					msg:addReaction('❌')
 					msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
 				end
 			end
