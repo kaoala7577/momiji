@@ -266,7 +266,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 end)
 
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
-	args = string.gsub(args, "`", ""):gsub("lua", ""):trim()
+	args = string.gsub(args, "`", ""):trim()
 	msg = message
 	local printresult = ""
 	local oldPrint = print

@@ -156,8 +156,8 @@ end
 function Events.userBan(user, guild)
 	local member = guild:getMember(user) or user
 	local settings = Database:Get(guild, "Settings")
-	local channel = guild:getChannel(settings.mod_log_channel)
-	if channel and member and settings.mod_log then
+	local channel = guild:getChannel(settings.modlog_channel)
+	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
 			description = member.mentionString.." "..member.username.."#"..member.discriminator,
@@ -172,8 +172,8 @@ end
 function Events.userUnban(user, guild)
 	local member = guild:getMember(user) or user
 	local settings = Database:Get(guild, "Settings")
-	local channel = guild:getChannel(settings.mod_log_channel)
-	if channel and member and settings.mod_log then
+	local channel = guild:getChannel(settings.modlog_channel)
+	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Unbanned", icon_url = member.avatarURL},
 			description = member.mentionString.." "..member.username.."#"..member.discriminator,
