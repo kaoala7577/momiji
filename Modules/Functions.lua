@@ -141,7 +141,7 @@ function timeBetween(tim)
 end
 
 function getIdFromString(str)
-	return str:match("<[@#]!*(.*)>")
+	return string.match(tostring(str),".*<[@#]!?(.*)>.*")
 end
 
 function resolveGuild(guild)
@@ -168,7 +168,7 @@ function resolveChannel(guild,name)
 		c=guild:getChannel(this)
 	else
 		c=guild.textChannels:find(function(c)
-			return c.name==name
+			return string.lower(c.name)==string.lower(c)
 		end)
 	end
 	return c
@@ -181,7 +181,7 @@ function resolveMember(guild,name)
 		m=guild:getMember(this)
 	else
 		m=guild.members:find(function(mem)
-			return mem.name==name
+			return string.lower(mem.name)==string.lower(name)
 		end)
 	end
 	return m
@@ -193,8 +193,8 @@ function resolveRole(guild,name)
 	if this then
 		m=guild:getRole(this)
 	else
-		m=guild.roles:find(function(mem)
-			return mem.name==name
+		m=guild.roles:find(function(r)
+			return string.lower(r.name)==string.lower(name)
 		end)
 	end
 	return m

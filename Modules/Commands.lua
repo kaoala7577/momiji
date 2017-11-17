@@ -660,24 +660,17 @@ addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour
 	end
 end)
 
-addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
-	local member
-	for i,v in ipairs(args) do
-		local pat = string.match(v, "<?@?!?(%d+)>?.*")
-		if pat and pat~='18' then
-			member = resolveMember(message.guild, pat) or member
-			args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
-			if args[i] == "" then table.remove(args, i) end
-		end
-	end
+addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
+		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for _,role in pairs(args) do
-			for r in message.guild.roles:iter() do
-				if string.lower(role) == string.lower(r.name) then
-					success = member:addRole(message.guild:getRole(r.id))
-					if success then rolesToAdd[#rolesToAdd+1] = r.name end
-				end
+			local r = resolveRole(message.guild, role)
+			if r then
+				member:addRole(r)
+				rolesToAdd[#rolesToAdd+1] = r.name
 			end
 		end
 		if #rolesToAdd > 0 then
@@ -694,24 +687,17 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 	end
 end)
 
-addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
-	local member
-	for i,v in ipairs(args) do
-		local pat = string.match(v, "<?@?!?(%d+)>?.*")
-		if pat and pat~='18' then
-			member = resolveMember(message.guild, pat) or member
-			args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
-			if args[i] == "" then table.remove(args, i) end
-		end
-	end
+addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
+		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = string.split(args, ",")
 		local rolesToRemove = {}
 		for _,role in pairs(args) do
-			for r in message.guild.roles:iter() do
-				if string.lower(role) == string.lower(r.name) then
-					success = member:removeRole(r)
-					if success then rolesToRemove[#rolesToRemove+1] = r.name end
-				end
+			local r = resolveRole(message.guild, role)
+			if r then
+				member:removeRole(r)
+				rolesToRemove[#rolesToRemove+1] = r.name
 			end
 		end
 		if #rolesToRemove > 0 then
@@ -728,20 +714,14 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 	end
 end)
 
-addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, true, true, function(message, args)
+addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
 	local data = Database:Get(message)
 	local channel = message.guild:getChannel(data.Settings.modlog_channel)
-	local member
-	for i,v in ipairs(args) do
-		local pat = string.match(v, "<?@?!?(%d+)>?.*")
-		if pat and pat~='18' then
-			member = resolveMember(message.guild, pat) or member
-			args[i] = v:gsub(pat, ""):gsub("[<@!>]*",""):trim()
-			if args[i] == "" then table.remove(args, i) end
-		end
-	end
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
+		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for k,l in pairs(data.Roles) do
 			for r,a in pairs(l) do
