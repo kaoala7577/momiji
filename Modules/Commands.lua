@@ -663,7 +663,7 @@ end)
 addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = args:gsub("<@!?%d+>",""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for i,role in ipairs(args) do
@@ -691,7 +691,7 @@ end)
 addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = args:gsub("<@!?%d+>",""):trim()
 		args = string.split(args, ",")
 		local rolesToRemove = {}
 		for i,role in ipairs(args) do
@@ -722,14 +722,13 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 	local channel = message.guild:getChannel(data.Settings.modlog_channel)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<?@?!?%d+>?",""):trim()
+		args = args:gsub("<@!?%d+>",""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for k,l in pairs(data.Roles) do
 			for r,a in pairs(l) do
 				for i,role in ipairs(args) do
 					role=role:trim()
-					print(role)
 					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 						if (r == 'Gamer') or (r == '18+') or not (k == 'Opt-In Roles') then
 							rolesToAdd[#rolesToAdd+1] = r
