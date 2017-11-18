@@ -1,6 +1,4 @@
-local token = require('token')
-
--- Globals
+token = require('token')
 discordia = require('discordia')
 enums = discordia.enums
 client = discordia.Client({

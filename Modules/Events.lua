@@ -9,7 +9,7 @@ function Events.messageCreate(msg)
 	local rank = getRank(sender, not private)
 	if not private then
 		--Load settings for the guild, Database.lua keeps a cache of requests to avoid making excessive queries
-		data = Database:Get(msg)
+		data = Database:get(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
@@ -19,7 +19,7 @@ function Events.messageCreate(msg)
 			data.Users[msg.author.id].last_message = discordia.Date():toISO()
 			data.Users[msg.author.id].nick = sender.nickname
 		end
-		Database:Update(msg, "Users", data.Users)
+		Database:update(msg, "Users", data.Users)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
@@ -76,7 +76,7 @@ end
 
 
 function Events.memberJoin(member)
-	local settings = Database:Get(member, "Settings")
+	local settings = Database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
@@ -109,7 +109,7 @@ function Events.memberJoin(member)
 end
 
 function Events.memberLeave(member)
-	local settings = Database:Get(member, "Settings")
+	local settings = Database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
 		channel:send {embed={
@@ -135,8 +135,8 @@ function Events.presenceUpdate(member)
 end
 
 function Events.memberUpdate(member)
-	local users = Database:Get(member, "Users")
-	local settings = Database:Get(member, "Settings")
+	local users = Database:get(member, "Users")
+	local settings = Database:get(member, "Settings")
 	if users[member.id] then
 		if users[member.id].nick ~= member.nickname and settings.audit and settings.audit_channel then
 			local channel = member.guild:getChannel(settings.audit_channel)
@@ -149,13 +149,13 @@ function Events.memberUpdate(member)
 			}}
 		end
 		users[member.id].nick = member.nickname
-		Database:Update(member, "Users", users)
+		Database:update(member, "Users", users)
 	end
 end
 
 function Events.userBan(user, guild)
 	local member = guild:getMember(user) or user
-	local settings = Database:Get(guild, "Settings")
+	local settings = Database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		channel:send {embed={
@@ -171,7 +171,7 @@ end
 
 function Events.userUnban(user, guild)
 	local member = guild:getMember(user) or user
-	local settings = Database:Get(guild, "Settings")
+	local settings = Database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		channel:send {embed={
@@ -188,7 +188,7 @@ end
 function Events.messageDelete(message)
 	local member = message.member or message.guild:getMember(message.author.id) or message.author
 	if message.author.bot then return end
-	local settings = Database:Get(message, "Settings")
+	local settings = Database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
 		local body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
@@ -208,7 +208,7 @@ function Events.messageDelete(message)
 end
 
 function Events.messageDeleteUncached(channel, messageID)
-	local settings = Database:Get(channel, "Settings")
+	local settings = Database:get(channel, "Settings")
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
@@ -243,7 +243,7 @@ end
 function Events.ready()
 	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
-		Database:Get(g)
+		Database:get(g)
 		Timing:load(g)
 	end
 	client:setGame("m!help | Awoo!")
