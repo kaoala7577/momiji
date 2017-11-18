@@ -740,7 +740,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				end
 			end
 		end
-		if hasGender and hasPronouns then
+		--if hasGender and hasPronouns then
 			local roleList = ""
 			for _,role in pairs(rolesToAdd) do
 				function fn(r) return r.name == role end
@@ -777,9 +777,9 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				end
 				Database:Update(message, "Users", data.Users)
 			end
-		else
-			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
-		end
+		-- else
+		-- 	message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
+		-- end
 	end
 end)
 
