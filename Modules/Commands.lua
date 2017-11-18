@@ -666,7 +666,8 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 		args = args:gsub("<?@?!?%d+>?",""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
-		for _,role in pairs(args) do
+		for i,role in ipairs(args) do
+			args[i] = args[i]:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
 				member:addRole(r)
@@ -693,7 +694,8 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 		args = args:gsub("<?@?!?%d+>?",""):trim()
 		args = string.split(args, ",")
 		local rolesToRemove = {}
-		for _,role in pairs(args) do
+		for i,role in ipairs(args) do
+			args[i] = args[i]:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
 				member:removeRole(r)
