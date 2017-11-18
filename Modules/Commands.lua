@@ -667,7 +667,7 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for i,role in ipairs(args) do
-			args[i] = args[i]:trim()
+			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
 				member:addRole(r)
@@ -695,7 +695,7 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 		args = string.split(args, ",")
 		local rolesToRemove = {}
 		for i,role in ipairs(args) do
-			args[i] = args[i]:trim()
+			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
 				member:removeRole(r)
@@ -728,7 +728,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 		for k,l in pairs(data.Roles) do
 			for r,a in pairs(l) do
 				for i,role in ipairs(args) do
-					args[i] = args[i]:trim()
+					role=role:trim()
 					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 						if (r == 'Gamer') or (r == '18+') or not (k == 'Opt-In Roles') then
 							rolesToAdd[#rolesToAdd+1] = r
