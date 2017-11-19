@@ -252,14 +252,14 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-    local data, err = API.Misc:Urban(args, nil)
+    local data, err = API.misc:Urban(args, nil)
     if data then
         message:reply{embed=data}
     end
 end)
 
 addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
-    local data, err = API.Misc:Cats()
+    local data, err = API.misc:Cats()
     if data then
         message:reply{embed={
             image={url=data}
@@ -268,7 +268,7 @@ addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
 end)
 
 addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message, args)
-    local data, err = API.Misc:Dogs()
+    local data, err = API.misc:Dogs()
     if data then
         message:reply{embed={
             image={url=data}
@@ -277,7 +277,7 @@ addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message, args)
 end)
 
 addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message, args)
-    local data, err = API.Misc:Joke()
+    local data, err = API.misc:Joke()
     message:reply(data or err)
 end)
 
@@ -296,7 +296,7 @@ addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', 
     message.channel:broadcastTyping()
     local data, err
     while not data do
-        local try,e = API.Misc:Furry(args)
+        local try,e = API.misc:Furry(args)
         local bl = false
         for _,v in ipairs(blacklist) do
             if try.tags:match(v) then
