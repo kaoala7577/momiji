@@ -14,7 +14,7 @@ function Clocks.min(time)
 	end
 	--Auto-remove Cooldown
 	if guild then
-		local users = Database:get(guild, "Users")
+		local users = Database:Get(guild, "Users")
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
 				if users[member.id] then

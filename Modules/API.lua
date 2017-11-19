@@ -3,27 +3,27 @@ query = require('querystring')
 http = require('coro-http')
 
 API={
-	data={},
-	endpoints={
+	Data={},
+	Endpoints={
 		['DBots_Stats']='https://bots.discord.pw/api/bots/%s/stats',
 		['Meow']='http://random.cat/meow',
 		['Bork']='https://dog.ceo/api/breeds/image/random',
 		['Urban']='https://api.urbandictionary.com/v0/define?term=%s',
+		['Carbon']='https://www.carbonitex.net/discord/data/botdata.php',
 		['dadjoke']='https://icanhazdadjoke.com/',
 		['sgo']='http://setgetgo.com/',
 		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
 	},
+	Carbon={},
 	DBots={},
-	misc={},
+	Misc={},
 }
-
 pcall(function()
-	API.data=require('./apidata.lua')
+	API.Data=require('./apidata.lua')
 end)
-
 function API:Post(End,Fmt,...)
 	local point
-	local p=API.endpoints[End]
+	local p=API.Endpoints[End]
 	if p then
 		if Fmt then
 			point=p:format(table.unpack(Fmt))
@@ -33,10 +33,9 @@ function API:Post(End,Fmt,...)
 	end
 	return http.request('POST',point,...)
 end
-
 function API:Get(End,Fmt,...)
 	local point
-	local p=API.endpoints[End]
+	local p=API.Endpoints[End]
 	if p then
 		if Fmt then
 			point=p:format(table.unpack(Fmt))
@@ -46,33 +45,37 @@ function API:Get(End,Fmt,...)
 	end
 	return http.request('GET',point,...)
 end
-
 function API.DBots:Stats_Update(info)
-	return API:Post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBots_Auth}},json.encode(info))
+	return API:Post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.Data.DBots_Auth}},json.encode(info))
 end
-
-function API.misc:Cats()
+function API.Carbon:Stats_Update()
+	local key=API.Data.Carbon_Key
+	if not key then return end
+	info={
+		key=key,
+		servercount=#client.guilds
+	}
+	return API:Post('Carbon',nil,{{"Content-Type","application/json"}},json.encode(info))
+end
+function API.Misc:Cats()
 	local requestdata,request=API:Get('Meow')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc:Cats]'
+		return nil,'ERROR: Unable to decode JSON [API.Misc:Cats]'
 	end
 	return json.decode(request).file
 end
-
-function API.misc:Dogs()
+function API.Misc:Dogs()
 	local requestdata,request=API:Get('Bork')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc:Dogs]'
+		return nil,'ERROR: Unable to decode JSON [API.Misc:Dogs]'
 	end
 	return json.decode(request).message
 end
-
-function API.misc:Joke()
+function API.Misc:Joke()
 	local request,data=API:Get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
 	return data
 end
-
-function API.misc:Urban(input)
+function API.Misc:Urban(input)
 	local fmt=string.format
 	local request=query.urlencode(input:trim())
 	if request then
@@ -100,8 +103,7 @@ function API.misc:Urban(input)
 		return nil,"ERROR: unable to urlencode"
 	end
 end
-
-function API.misc:Furry(input)
+function API.Misc:Furry(input)
 	input = input.." order:random"
 	local request=query.urlencode(input:trim())
 	if request then

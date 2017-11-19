@@ -36,7 +36,6 @@ function loadModule(name)
 end
 
 coroutine.wrap(function()
-	-- Load Modules
 	loadModule('Utilities')
 	loadModule('Functions')
 	loadModule('Database')
@@ -45,8 +44,6 @@ coroutine.wrap(function()
 	loadModule('Timed')
 	loadModule('API')
 	loadModule('Commands')
-
-	-- Register Client Events
 	client:on('messageCreate', Events.messageCreate)
 	client:on('memberJoin', Events.memberJoin)
 	client:on('memberLeave', Events.memberLeave)
@@ -58,10 +55,6 @@ coroutine.wrap(function()
 	client:on('memberUpdate', Events.memberUpdate)
 	client:on('memberRegistered', Events.memberRegistered)
 	client:once('ready',Events.ready)
-
-	-- Register Clock Events
 	clock:on('min', Clocks.min)
-
-	-- Run
 	client:run(token)
 end)()

@@ -17,7 +17,7 @@ addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
 end)
 
 addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message, args)
-	local settings = Database:get(message, "Settings")
+	local settings = Database:Get(message, "Settings")
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
@@ -219,7 +219,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 		if roles == "" then roles = "None" end
 		local joinTime = humanReadableTime(parseTime(member.joinedAt):toTableUTC())
 		local createTime = humanReadableTime(parseTime(member.timestamp):toTableUTC())
-		local users = Database:get(message, "Users")
+		local users = Database:Get(message, "Users")
 		local registerTime = "N/A"
 		if users[member.id] then
 			if users[member.id].registered ~= "" then
@@ -315,7 +315,7 @@ end)
 
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
 	local member = message.member or message.guild:getMember(message.author.id)
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = Database:Get(message, "Roles")
 	if not selfRoles then return end
 	local roles = args
 	local rolesToAdd, rolesFailed = {}, {}
@@ -373,7 +373,7 @@ end)
 addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
 	local roles = args
 	local member = message.member or message.guild:getMember(message.author.id)
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = Database:Get(message, "Roles")
 	if not selfRoles then return end
 	local rolesToRemove = {}
 	for _,l in pairs(selfRoles) do
@@ -406,7 +406,7 @@ end)
 
 addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '', 0, false, true, function(message, args)
 	local roleList, cats = {},{}
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = Database:Get(message, "Roles")
 	if not selfRoles then return end
 	for k,v in pairs(selfRoles) do
 		for r,_ in pairs(v) do
@@ -427,7 +427,7 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 end)
 
 addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
-	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
+	local settings, cases = Database:Get(message, "Settings"), Database:Get(message, "Cases")
 	local member
 	if not settings.mute_setup then
 		message:reply("Mute cannot be used until `setup` has been run.")
@@ -459,11 +459,11 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, fun
 			}}
 		end
 	end
-	Database:update(message, "Cases", cases)
+	Database:Update(message, "Cases", cases)
 end)
 
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
-	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
+	local settings, cases = Database:Get(message, "Settings"), Database:Get(message, "Cases")
 	if not settings.mute_setup then
 		message:reply("Unmute cannot be used until `setup` has been run.")
 		return
@@ -494,12 +494,12 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 			}}
 		end
 	end
-	Database:update(message, "Cases", cases)
+	Database:Update(message, "Cases", cases)
 end)
 
 --TODO: This really needs work
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
-	local settings = Database:get(message, "Settings")
+	local settings = Database:Get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	client:removeAllListeners('messageDelete')
 	client:removeAllListeners('messageDeleteUncached')
@@ -540,7 +540,7 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}
 		args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
 	end
 	if m then
-		local users = Database:get(message, "Users")
+		local users = Database:Get(message, "Users")
 		if users[m.id] then
 			local watchlisted = users[m.id].watchlisted
 			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
@@ -566,7 +566,7 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 		args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
 	end
 	if (args == "") or not m then return end
-	local notes = Database:get(message, "Notes")
+	local notes = Database:Get(message, "Notes")
 	if args:startswith("add") then
 		args = args:gsub("^add",""):trim()
 		if args and args ~= "" then
@@ -601,11 +601,11 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 	else
 		message:reply("Please specify add, del, or view")
 	end
-	Database:update(message, "Notes", notes)
+	Database:Update(message, "Notes", notes)
 end)
 
 addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
-	local users = Database:get(message, "Users")
+	local users = Database:Get(message, "Users")
 	args = args:split(' ')
 	local member
 	for i,v in ipairs(args) do
@@ -642,7 +642,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			}}
 		end
 	end
-	Database:update(message, "Users", users)
+	Database:Update(message, "Users", users)
 end)
 
 addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
@@ -718,7 +718,7 @@ end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
-	local data = Database:get(message)
+	local data = Database:Get(message)
 	local channel = message.guild:getChannel(data.Settings.modlog_channel)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
@@ -778,7 +778,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				else
 					data.Users[member.id].registered = discordia.Date():toISO()
 				end
-				Database:update(message, "Users", data.Users)
+				Database:Update(message, "Users", data.Users)
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
@@ -789,7 +789,7 @@ end)
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
 	args = args:split(' ')
 	for i,v in pairs(args) do args[i] = v:trim() end
-	local settings = Database:get(message, "Settings")
+	local settings = Database:Get(message, "Settings")
 	local switches = {
 		roles = {'admin', 'mod'},
 		channels = {'audit', 'modlog', 'welcome', 'introduction'},
@@ -873,11 +873,11 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 		end
 		message:reply(list)
 	end
-	Database:update(message, "Settings", settings)
+	Database:Update(message, "Settings", settings)
 end)
 
 addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
-	local settings = Database:get(message, "Settings")
+	local settings = Database:Get(message, "Settings")
 	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 	if not role then
 		role = message.guild:createRole("Muted")
@@ -889,22 +889,22 @@ addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(m
 		c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
 	end
 	settings.mute_setup = true
-	Database:update(message, "Settings", settings)
+	Database:Update(message, "Settings", settings)
 end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
-	local ignores = Database:get(message, 'Ignore')
+	local ignores = Database:Get(message, 'Ignore')
 	local channel = resolveChannel(message.guild, args)
 	if channel and not ignores[channel.id] then
 		ignores[channel.id] = true
 	elseif channel then
 		ignores[channel.id] = nil
 	end
-	Database:update(message, 'Ignore', ignores)
+	Database:Update(message, 'Ignore', ignores)
 end)
 
 addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
-	local roles = Database:get(message, "Roles")
+	local roles = Database:Get(message, "Roles")
 	function fn(r) return r.name == args[1] end
 	local r = message.guild.roles:find(fn)
 	if r then
@@ -936,11 +936,11 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<rol
 	else
 		message:reply(args[1].." is not a role. Please make it first.")
 	end
-	Database:update(message, "Roles", roles)
+	Database:Update(message, "Roles", roles)
 end)
 
 addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
-	local roles = Database:get(message, "Roles")
+	local roles = Database:Get(message, "Roles")
 	for cat,v in pairs(roles) do
 		if v[args] then
 			v[args]=nil
@@ -949,8 +949,8 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 			roles[cat]=nil
 		end
 	end
-	Database:update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
-	Database:update(message, "Roles", roles)
+	Database:Update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
+	Database:Update(message, "Roles", roles)
 end)
 
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)

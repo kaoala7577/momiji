@@ -3,23 +3,19 @@ ssl=require('openssl')
 timer=require("timer")
 
 local f=string.format
-
 Timing={
 	_callbacks={},
 	_timers={},
 }
-
 function Timing:on(f)
 	assert(type(f)=='function','Error: X3F - callback not function')
 	table.insert(self._callbacks,f)
 end
-
 function Timing:fire(...)
 	for i,cb in pairs(self._callbacks)do
 		coroutine.wrap(cb)(...)
 	end
 end
-
 function Timing:load(guild)
 	local timers=Database:Get(guild).Timers or{}
 	for id,timer in pairs(timers)do
@@ -32,13 +28,11 @@ function Timing:load(guild)
 		end
 	end
 end
-
 function Timing:save(guild,id,timer)
 	local timers=Database:Get(guild).Timers
 	timers[id]=timer
 	Database:Update(guild)
 end
-
 function Timing:delete(guild,id)
 	local data = Database:Get(guild,'Timers')
 	if data then
@@ -48,7 +42,6 @@ function Timing:delete(guild,id)
 		Database:Update(guild,'Timers',data)
 	end
 end
-
 function Timing:newTimer(guild,secs,data,ign)
 	if type(secs)~='number'then secs=5 end
 	local ms=secs*1000
@@ -68,7 +61,6 @@ function Timing:newTimer(guild,secs,data,ign)
 	if not ign then self:save(guild,id,tab)end
 	return id
 end
-
 function Timing:endTimer(timerId)
 	if self._timers[timerId]==nil then
 		client:warning('Invalid timerId passed to Timer:endTimer')
@@ -76,7 +68,6 @@ function Timing:endTimer(timerId)
 		self._timers[timerId].stopped=true
 	end
 end
-
 function Timing:getTimers(txt)
 	local t={}
 	for i,v in pairs(self._timers)do

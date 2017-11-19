@@ -8,11 +8,11 @@ local ts,fmt=tostring,string.format
 Database={
 	_raw_database=rethink,
 	_conn=conn,
-	cache={},
-	type='rethinkdb',
+	Cache={},
+	Type='rethinkdb',
 }
 
-Database.default = {
+Database.Default = {
 	Settings = {
 		prefix = "m!",
 		admin_roles = {},
@@ -39,14 +39,14 @@ Database.default = {
 	Users = {},
 }
 
-function Database:get(guild,index)
+function Database:Get(guild,index)
 	local id,guild=resolveGuild(guild)
-	if Database.cache[id]then
-		local cached=Database.cache[id]
-		if cached[index]then
-			return cached[index]
+	if Database.Cache[id]then
+		local Cached=Database.Cache[id]
+		if Cached[index]then
+			return Cached[index]
 		else
-			return cached
+			return Cached
 		end
 	else
 		local data,err=Database._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
@@ -55,21 +55,21 @@ function Database:get(guild,index)
 		else
 			local u
 			if data[1]==nil then
-				data=table.deepcopy(Database.default)
+				data=table.deepcopy(Database.Default)
 				data.id=id
-				Database.cache[id]=data
+				Database.Cache[id]=data
 				u=true
 			else
 				local d=data[1]
-				Database.cache[id]=d
-				Database.cache[id]['id']=id
-				for i,v in pairs(Database.default)do
+				Database.Cache[id]=d
+				Database.Cache[id]['id']=id
+				for i,v in pairs(Database.Default)do
 					if not d[i] then
 						d[i]=v
 						u=true
 					end
 				end
-				for i,v in pairs(Database.default.Settings)do
+				for i,v in pairs(Database.Default.Settings)do
 					if not d.Settings[i]then
 						d.Settings[i]=v
 						u=true
@@ -77,24 +77,24 @@ function Database:get(guild,index)
 				end
 			end
 			if u then
-				Database:update(id)
+				Database:Update(id)
 			end
 			return data[1]
 		end
 	end
 end
 
-function Database:update(guild,index,value)
+function Database:Update(guild,index,value)
 	if not guild then error"No ID/Guild/Message provided" end
 	local id,guild=resolveGuild(guild)
-	if Database.cache[id] then
+	if Database.Cache[id] then
 		if index then
-			Database.cache[id][index]=value
+			Database.Cache[id][index]=value
 		end
-		if not Database.cache[id].id then
-			Database.cache[id].id=id
+		if not Database.Cache[id].id then
+			Database.Cache[id].id=id
 		end
-		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrUp(Database.cache[id]).run()
+		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrUp(Database.Cache[id]).run()
 		if err then
 			print('UPDATE')
 			print(err)
@@ -105,13 +105,13 @@ function Database:update(guild,index,value)
 	end
 end
 
-function Database:delete(guild,query)
+function Database:Delete(guild,query)
 	if not guild then error"No ID/Guild/Message provided"end
 	local id,guild=resolveGuild(guild)
-	if Database.cache[id]then
-		local cached=Database.cache[id]
-		if cached[index]then
-			cached[index]=nil
+	if Database.Cache[id]then
+		local Cached=Database.Cache[id]
+		if Cached[index]then
+			Cached[index]=nil
 		end
 	end
 	local data,err=conn.reql().db('momiji').table('guilds').get(id).getField(query).filter({id=index}).delete().run()
@@ -123,9 +123,9 @@ function Database:delete(guild,query)
 	end
 end
 
-function Database:getCached(guild)
+function Database:GetCached(guild)
 	local id,guild=resolveGuild(guild)
-	if Database.cache[id]then
-		return Database.cache[id]
+	if Database.Cache[id]then
+		return Database.Cache[id]
 	end
 end
