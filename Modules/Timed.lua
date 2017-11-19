@@ -21,7 +21,7 @@ function Timing:fire(...)
 end
 
 function Timing:load(guild)
-	local timers=Database:Get(guild).Timers or{}
+	local timers=Database:get(guild).Timers or{}
 	for id,timer in pairs(timers)do
 		if timer.endTime<os.time()then
 			coroutine.wrap(function()self:delete(guild,id)end)()
@@ -34,18 +34,18 @@ function Timing:load(guild)
 end
 
 function Timing:save(guild,id,timer)
-	local timers=Database:Get(guild).Timers
+	local timers=Database:get(guild).Timers
 	timers[id]=timer
-	Database:Update(guild)
+	Database:update(guild)
 end
 
 function Timing:delete(guild,id)
-	local data = Database:Get(guild,'Timers')
+	local data = Database:get(guild,'Timers')
 	if data then
 		self._timers[id]=nil
 		data[id]=nil
-		Database:Update(guild,'Timers',{})
-		Database:Update(guild,'Timers',data)
+		Database:update(guild,'Timers',{})
+		Database:update(guild,'Timers',data)
 	end
 end
 
