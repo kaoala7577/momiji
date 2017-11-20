@@ -448,16 +448,11 @@ end)
 
 addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
 	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
-	local member
 	if not settings.mute_setup then
 		message:reply("Mute cannot be used until `setup` has been run.")
 		return
 	end
-	local pat = string.match(args, "[<@!]*(%d+)>*.*")
-	if pat then
-		member = resolveMember(message.guild, pat) or member
-		args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
-	end
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		member:addRole(role)
@@ -488,12 +483,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 		message:reply("Unmute cannot be used until `setup` has been run.")
 		return
 	end
-	local member
-	local pat = string.match(args, "[<@!]*(%d+)>*.*")
-	if pat then
-		member = resolveMember(message.guild, pat) or member
-		args = args:gsub(pat, ""):gsub("[<@!>]*",""):trim()
-	end
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		member:removeRole(role)
