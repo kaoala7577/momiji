@@ -14,10 +14,10 @@ function Events.messageCreate(msg)
 			return
 		end
 		if data.Users==nil or data.Users[msg.author.id]==nil then
-			data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.nickname }
+			data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
 		else
 			data.Users[msg.author.id].last_message = discordia.Date():toISO()
-			data.Users[msg.author.id].nick = sender.nickname
+			data.Users[msg.author.id].nick = sender.name
 		end
 		Database:update(msg, "Users", data.Users)
 	end
@@ -142,7 +142,7 @@ function Events.memberUpdate(member)
 			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
-				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick,member.nickname or member.name),
+				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick,member.name),
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
