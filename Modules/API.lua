@@ -134,8 +134,7 @@ function API.misc:Anime(input)
 				for k,v in pairs(substitutions) do
 					syn = string.gsub(syn,k,v)
 				end
-				t.title=xdata:children()[1]:children()[1].title:value()
-				t.description=string.format("%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",syn,xdata:children()[1]:children()[1].episodes:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
+				t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",xdata:children()[1]:children()[1].title:value(),xdata:children()[1]:children()[1].id:value(),syn,xdata:children()[1]:children()[1].episodes:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
 				t.thumbnail={url=xdata:children()[1]:children()[1].image:value()}
 			else
 				t.title="No results found for search "..input
@@ -162,8 +161,7 @@ function API.misc:Manga(input)
 				for k,v in pairs(substitutions) do
 					syn = string.gsub(syn,k,v)
 				end
-				t.title=xdata:children()[1]:children()[1].title:value()
-				t.description=string.format("%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",syn,xdata:children()[1]:children()[1].volumes:value(),xdata:children()[1]:children()[1].chapters:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
+				t.description=string.format("**[%s](https://myanimelist.net/manga/%s)**\n%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",xdata:children()[1]:children()[1].title:value(),xdata:children()[1]:children()[1].id:value(),syn,xdata:children()[1]:children()[1].volumes:value(),xdata:children()[1]:children()[1].chapters:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
 				t.thumbnail={url=xdata:children()[1]:children()[1].image:value()}
 			else
 				t.title="No results found for search "..input
