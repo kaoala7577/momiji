@@ -1,4 +1,4 @@
-token = require('token')
+local token = require('token')
 discordia = require('discordia')
 enums = discordia.enums
 client = discordia.Client({
@@ -10,6 +10,9 @@ json = require('json')
 uptime = discordia.Stopwatch()
 clock = discordia.Clock()
 clock:start(true)
+
+ssl=require('openssl')
+timer=require("timer")
 
 function loadModule(name)
 	name=name..'.lua'

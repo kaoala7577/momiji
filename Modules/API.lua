@@ -1,6 +1,8 @@
 --[[ Forked from DannehSC/Electricity-2.0 ]]
 query = require('querystring')
 http = require('coro-http')
+xml = require("xmlSimple").newParser()
+local substitutions = require('htmlsubs')
 
 API={
 	data={},
@@ -12,6 +14,8 @@ API={
 		['dadjoke']='https://icanhazdadjoke.com/',
 		['sgo']='http://setgetgo.com/',
 		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
+		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s',
+		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
 	},
 	DBots={},
 	misc={},
@@ -114,5 +118,61 @@ function API.misc:Furry(input)
 		end
 	else
 		return nil,"ERROR: unable to urlencode"
+	end
+end
+
+function API.misc:Anime(input)
+	local request = query.urlencode(input)
+	if request then
+		local technical, data = API:Get('Animu',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local xdata = xml:ParseXmlText(data)
+		if xdata.anime then
+			local t={}
+			t.color = discordia.Color.fromHex('#5DA9FF').value
+			if xdata.anime:children()[1] then
+				local syn = xdata:children()[1]:children()[1].synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
+				for k,v in pairs(substitutions) do
+					syn = string.gsub(syn,k,v)
+				end
+				t.title=xdata:children()[1]:children()[1].title:value()
+				t.description=string.format("%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",syn,xdata:children()[1]:children()[1].episodes:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
+				t.thumbnail={url=xdata:children()[1]:children()[1].image:value()}
+			else
+				t.title="No results found for search "..input
+			end
+			return t
+		else
+			return nil, "ERROR: unable to decode XML"
+		end
+	else
+		return nil, "ERROR: unable to urlencode"
+	end
+end
+
+function API.misc:Manga(input)
+	local request = query.urlencode(input)
+	if request then
+		local technical, data = API:Get('Mango',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local xdata = xml:ParseXmlText(data)
+		if xdata.manga then
+			local t={}
+			t.color = discordia.Color.fromHex('#5DA9FF').value
+			if xdata.manga:children()[1] then
+				local syn = xdata:children()[1]:children()[1].synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
+				for k,v in pairs(substitutions) do
+					syn = string.gsub(syn,k,v)
+				end
+				t.title=xdata:children()[1]:children()[1].title:value()
+				t.description=string.format("%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",syn,xdata:children()[1]:children()[1].volumes:value(),xdata:children()[1]:children()[1].chapters:value(),xdata:children()[1]:children()[1].score:value(),xdata:children()[1]:children()[1].status:value())
+				t.thumbnail={url=xdata:children()[1]:children()[1].image:value()}
+			else
+				t.title="No results found for search "..input
+			end
+			return t
+		else
+			return nil, "ERROR: unable to decode XML"
+		end
+	else
+		return nil, "ERROR: unable to urlencode"
 	end
 end

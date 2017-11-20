@@ -255,7 +255,9 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
     local data, err = API.misc:Urban(args, nil)
     if data then
         message:reply{embed=data}
-    end
+	else
+		message:reply(err)
+	end
 end)
 
 addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
@@ -279,6 +281,24 @@ end)
 addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message, args)
     local data, err = API.misc:Joke()
     message:reply(data or err)
+end)
+
+addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
+	local data, err = API.misc:Anime(args, nil)
+	if data then
+		message:reply{embed=data}
+	else
+		message:reply(err)
+	end
+end)
+
+addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<search>', 0, false, true, function(message, args)
+	local data, err = API.misc:Manga(args, nil)
+	if data then
+		message:reply{embed=data}
+	else
+		message:reply(err)
+	end
 end)
 
 addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, true, function(message, args)

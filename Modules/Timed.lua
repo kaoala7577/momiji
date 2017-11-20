@@ -1,6 +1,4 @@
 --[[ Forked from Timed.lua DannehSC/Electricity-2.0 ]]
-ssl=require('openssl')
-timer=require("timer")
 
 local f=string.format
 
