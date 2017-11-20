@@ -243,7 +243,6 @@ end
 function Events.ready()
 	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
-		print(g.name)
 		Database:get(g)
 		Timing:load(g)
 	end

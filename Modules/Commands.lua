@@ -639,7 +639,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 	if args[1] == 'add' then
 		if users[member.id] == nil then
 			--This shouldn't happen, but its here just in case
-			users[member.id] = { registered="", watchlisted=true, last_message="" }
+			users[member.id] = { registered="", watchlisted=true, last_message="", nick=member.name }
 		else
 			users[member.id].watchlisted = true
 		end
