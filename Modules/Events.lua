@@ -101,6 +101,9 @@ function Events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
+	local users = Database:get(member, "Users")
+	users[member.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
+	Database:update(member, "Users", users)
 end
 
 function Events.memberLeave(member)
