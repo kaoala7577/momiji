@@ -1,7 +1,4 @@
 --[[ Forked from DannehSC/Electricity-2.0 ]]
-query = require('querystring')
-http = require('coro-http')
-xml = require("xmlSimple").newParser()
 local substitutions = require('htmlsubs')
 
 API={

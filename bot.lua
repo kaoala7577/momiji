@@ -5,14 +5,17 @@ client = discordia.Client({
 	cacheAllMembers = true,
 })
 logger = discordia.Logger(4, '%F %T', 'discordia.log')
-fs = require('fs')
-json = require('json')
 uptime = discordia.Stopwatch()
 clock = discordia.Clock()
 clock:start(true)
 
-ssl=require('openssl')
-timer=require("timer")
+fs = require('fs')
+json = require('json')
+ssl = require('openssl')
+timer = require("timer")
+query = require('querystring')
+http = require('coro-http')
+xml = require("xmlSimple").newParser()
 
 function loadModule(name)
 	name=name..'.lua'
@@ -36,6 +39,7 @@ function loadModule(name)
 		logger:log(1, "<LOADING> Error loading %s (%s)", name, tostring(others))
 		return false
 	end
+	return true
 end
 
 coroutine.wrap(function()
