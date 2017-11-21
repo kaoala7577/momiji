@@ -102,7 +102,7 @@ function Events.memberJoin(member)
 		end
 	end
 	local users = Database:get(member, "Users")
-	users[member.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
+	users[member.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=member.name }
 	Database:update(member, "Users", users)
 end
 
