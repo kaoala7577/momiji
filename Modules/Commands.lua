@@ -462,12 +462,13 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, fun
 			cases[member.id][#cases[member.id]+1] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
 		end
 		if settings.modlog then
+			local reason = args:gsub("[<@!>]*",""):gsub(member.id,""):trim()~="" and args:gsub("[<@!>]*",""):gsub(member.id,""):trim() or "None"
 			message.guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Member Muted",
 				fields = {
 					{name = "User", value = member.mentionString, inline = true},
 					{name = "Moderator", value = message.author.mentionString, inline = true},
-					{name = "Reason", value = args:gsub("[<@!>]*",""):gsub(member.id,""):trim(), inline = true},
+					{name = "Reason", value = reason, inline = true},
 				},
 			}}
 		end
