@@ -142,7 +142,7 @@ function Events.memberUpdate(member)
 				footer = {text="ID: "..member.id},
 			}}
 		end
-		users[member.id].nick = member.nickname
+		users[member.id].nick = member.name
 		Database:update(member, "Users", users)
 	end
 end

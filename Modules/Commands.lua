@@ -777,7 +777,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 					end
 				end
 				if data.Users==nil or data.Users[member.id]==nil then
-					data.Users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="", nick=member.nickname or member.name }
+					data.Users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="", nick=member.name }
 				else
 					data.Users[member.id].registered = discordia.Date():toISO()
 				end
