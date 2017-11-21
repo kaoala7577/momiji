@@ -1047,3 +1047,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	end
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
+
+addCommand('Colors','COLORS!','color','CCCOOOOLLLOOOOR',4,false,true,function(message,args)
+	ColorChange.me = not ColorChange.me
+end)

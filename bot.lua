@@ -17,6 +17,10 @@ query = require('querystring')
 http = require('coro-http')
 xml = require("xmlSimple").newParser()
 
+ColorChange = {
+	me = true
+}
+
 function loadModule(name)
 	name=name..'.lua'
 	local data,others=fs.readFileSync('./Modules/'..name)
