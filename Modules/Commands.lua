@@ -457,9 +457,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, fun
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:addRole(role) then return end
 		if cases==nil or cases[member.id]==nil then
-			cases[member.id] = {
-				{type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
-			}
+			cases[member.id] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
 		else
 			cases[member.id][#cases[member.id]+1] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
 		end
@@ -469,7 +467,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, fun
 				fields = {
 					{name = "User", value = member.mentionString, inline = true},
 					{name = "Moderator", value = message.author.mentionString, inline = true},
-					{name = "Reason", value = args:gsub("[<@!>]*",""):trim(), inline = true},
+					{name = "Reason", value = args:gsub("[<@!>]*",""):gsub(member.id,""):trim(), inline = true},
 				},
 			}}
 		end
@@ -488,9 +486,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:removeRole(role) then return end
 		if cases==nil or cases[member.id]==nil then
-			cases[member.id] = {
-				{type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
-			}
+			cases[member.id] = {type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
 		else
 			cases[member.id][#cases[member.id]+1] = {type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
 		end
