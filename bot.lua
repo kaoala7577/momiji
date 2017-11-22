@@ -60,6 +60,7 @@ coroutine.wrap(function()
 
 	-- Register Client Events
 	registerAllEvents()
+	client:once('ready', Events.ready)
 
 	-- Register Clock Events
 	clock:on('min', Clocks.min)

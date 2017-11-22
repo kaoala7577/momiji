@@ -180,7 +180,12 @@ function Events.userUnban(user, guild)
 end
 
 function Events.messageDelete(message)
-	if table.search(discordia.storage.bulkDeletes, message.id) then return end
+	for i,v in ipairs(discordia.storage.bulkDeletes) do
+		if message.id==v then
+			table.remove(discordia.storage.bulkDeletes,i)
+			return
+		end
+	end
 	local member = message.member or message.guild:getMember(message.author.id) or message.author
 	if message.author.bot then return end
 	local settings = Database:get(message, "Settings")
@@ -203,7 +208,12 @@ function Events.messageDelete(message)
 end
 
 function Events.messageDeleteUncached(channel, messageID)
-	if table.search(discordia.storage.bulkDeletes, messageID) then return end
+	for i,v in ipairs(discordia.storage.bulkDeletes) do
+		if messageID==v then
+			table.remove(discordia.storage.bulkDeletes,i)
+			return
+		end
+	end
 	local settings = Database:get(channel, "Settings")
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then

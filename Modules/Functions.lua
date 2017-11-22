@@ -256,13 +256,17 @@ end
 function unregisterAllEvents()
 	if not Events then return end
 	for k,v in pairs(Events) do
-		client:removeAllListeners(k)
+		if k~="Timing" and k~="ready" then
+			client:removeAllListeners(k)
+		end
 	end
 end
 
 function registerAllEvents()
 	if not Events then return end
 	for k,v in pairs(Events) do
-		client:on(k,v)
+		if k~="Timing" and k~="ready" then
+			client:on(k,v)
+		end
 	end
 end
