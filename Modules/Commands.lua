@@ -727,7 +727,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			for r,a in pairs(l) do
 				for i,role in ipairs(args) do
 					role=role:trim()
-					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
+					if string.lower(role) == string.lower(r)  or(type(a)=='table' and table.search(a, string.lower(role))) then
 						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
 						end
