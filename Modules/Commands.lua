@@ -716,7 +716,7 @@ end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
-	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "roles")
+	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
@@ -727,7 +727,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			for r,a in pairs(l) do
 				for i,role in ipairs(args) do
 					role=role:trim()
-					if string.lower(role) == string.lower(r)  or(type(a)=='table' and table.search(a, string.lower(role))) then
+					if string.lower(role) == string.lower(r)  or(table.search(a, string.lower(role))) then
 						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
 							if (k == 'Gender Identity' or k == 'Gender') then
