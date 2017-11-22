@@ -346,7 +346,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 			for _,role in ipairs(roles) do
 				if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 					if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
-						if (r == 'Gamer') or (r == '18+') or (r == 'Momiji Dev') or (r == 'D&D') then
+						if (r == 'Gamer') or (r == '18+') or (r == 'D&D') then
 							rolesToAdd[#rolesToAdd+1] = r
 						else rolesFailed[#rolesFailed+1] = r.." is only available after cooldown" end
 					elseif (member:hasRole(member.guild:getRole('349051015758348289')) or member:hasRole(member.guild:getRole('349051017226354729'))) and (k == 'Opt-In Roles') then
@@ -728,7 +728,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				for i,role in ipairs(args) do
 					role=role:trim()
 					if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
-						if r=='Gamer' or r=='18+' or r=='Mafia' or not (k == 'Opt-In Roles') then
+						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
 						end
 					end
