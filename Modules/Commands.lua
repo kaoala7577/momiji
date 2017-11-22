@@ -730,14 +730,14 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 					if string.lower(role) == string.lower(r)  or(type(a)=='table' and table.search(a, string.lower(role))) then
 						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
+							if (k == 'Gender Identity' or k == 'Gender') then
+								hasGender = true
+							end
+							if (k == 'Pronouns') then
+								hasPronouns = true
+							end
 						end
 					end
-				end
-				if (k == 'Gender Identity' or k == 'Gender') then
-					if rolesToAdd[#rolesToAdd]==r then hasGender = true end
-				end
-				if (k == 'Pronouns') then
-					if rolesToAdd[#rolesToAdd]==r then hasPronouns = true end
 				end
 			end
 		end
