@@ -84,7 +84,7 @@ function Events.memberJoin(member)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Joined", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.username.."#"..member.discriminator,
+			description = member.mentionString.." "..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(0, 255, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -108,7 +108,7 @@ function Events.memberLeave(member)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Left", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.username.."#"..member.discriminator,
+			description = member.mentionString.." "..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -154,7 +154,7 @@ function Events.userBan(user, guild)
 	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.username.."#"..member.discriminator,
+			description = member.mentionString.." "..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -170,7 +170,7 @@ function Events.userUnban(user, guild)
 	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Unbanned", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.username.."#"..member.discriminator,
+			description = member.mentionString.." "..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(0, 255, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -198,7 +198,7 @@ function Events.messageDelete(message)
 			end
 		end
 		channel:send {embed={
-			author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
+			author = {name = member.fullname, icon_url = member.avatarURL},
 			description = body,
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
