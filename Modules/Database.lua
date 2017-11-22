@@ -101,31 +101,6 @@ function Database:update(guild,index,value)
 			p(edata)
 		end
 	else
-		print("Fetch data before trying to update it. You fool.")
-	end
-end
-
-function Database:delete(guild,query)
-	if not guild then error"No ID/Guild/Message provided"end
-	local id,guild=resolveGuild(guild)
-	if Database.cache[id]then
-		local cached=Database.cache[id]
-		if cached[index]then
-			cached[index]=nil
-		end
-	end
-	local data,err=conn.reql().db('momiji').table('guilds').get(id).getField(query).filter({id=index}).delete().run()
-	if err then
-		print('DELETE',err)
-		return err
-	else
-		return data
-	end
-end
-
-function Database:getCached(guild)
-	local id,guild=resolveGuild(guild)
-	if Database.cache[id]then
-		return Database.cache[id]
+		print("Fetch data before trying to update it.")
 	end
 end

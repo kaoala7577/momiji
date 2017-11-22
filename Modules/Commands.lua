@@ -512,7 +512,6 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user>', 1, false, true, func
 	Database:update(message, "Cases", cases)
 end)
 
---TODO: This really needs work
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
@@ -717,14 +716,14 @@ end)
 
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
-	local data = Database:get(message)
-	local channel = message.guild:getChannel(data.Settings.modlog_channel)
+	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "roles")
+	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
 		args = args:gsub("<@!?%d+>",""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
-		for k,l in pairs(data.Roles) do
+		for k,l in pairs(roles) do
 			for r,a in pairs(l) do
 				for i,role in ipairs(args) do
 					role=role:trim()
@@ -766,18 +765,18 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 						}
 					}
 				end
-				if data.Settings.introduction_message ~= "" and data.Settings.introduction_channel and data.Settings.introduction then
-					local channel = member.guild:getChannel(data.Settings.introduction_channel)
+				if settings.introduction_message ~= "" and settings.introduction_channel and settings.introduction then
+					local channel = member.guild:getChannel(settings.introduction_channel)
 					if channel then
-						channel:send(formatMessageSimple(data.Settings.introduction_message, member))
+						channel:send(formatMessageSimple(settings.introduction_message, member))
 					end
 				end
-				if data.Users==nil or data.Users[member.id]==nil then
-					data.Users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="", nick=member.name }
+				if users==nil or users[member.id]==nil then
+					users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="", nick=member.name }
 				else
-					data.Users[member.id].registered = discordia.Date():toISO()
+					users[member.id].registered = discordia.Date():toISO()
 				end
-				Database:update(message, "Users", data.Users)
+				Database:update(message, "Users", users)
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
@@ -785,7 +784,6 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 	end
 end)
 
---TODO: Add replies
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
 	args = args:split(' ')
 	for i,v in pairs(args) do args[i] = v:trim() end
