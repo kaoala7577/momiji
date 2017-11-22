@@ -8,6 +8,7 @@ logger = discordia.Logger(4, '%F %T', 'discordia.log')
 uptime = discordia.Stopwatch()
 clock = discordia.Clock()
 clock:start(true)
+discordia.storage.bulkDeletes = {}
 
 fs = require('fs')
 json = require('json')
@@ -18,7 +19,7 @@ http = require('coro-http')
 xml = require("xmlSimple").newParser()
 
 ColorChange = {
-	me = true
+	me = false
 }
 
 function loadModule(name)
@@ -58,17 +59,7 @@ coroutine.wrap(function()
 	loadModule('Commands')
 
 	-- Register Client Events
-	client:on('messageCreate', Events.messageCreate)
-	client:on('memberJoin', Events.memberJoin)
-	client:on('memberLeave', Events.memberLeave)
-	client:on('messageDelete',Events.messageDelete)
-	client:on('messageDeleteUncached',Events.messageDeleteUncached)
-	client:on('userBan',Events.userBan)
-	client:on('userUnban',Events.userUnban)
-	client:on('presenceUpdate', Events.presenceUpdate)
-	client:on('memberUpdate', Events.memberUpdate)
-	client:on('memberRegistered', Events.memberRegistered)
-	client:once('ready',Events.ready)
+	registerAllEvents()
 
 	-- Register Clock Events
 	clock:on('min', Clocks.min)

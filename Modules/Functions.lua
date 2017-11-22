@@ -252,3 +252,17 @@ function resolveCommand(str, pre)
 	end
 	return command, rest
 end
+
+function unregisterAllEvents()
+	if not Events then return end
+	for k,v in pairs(Events) do
+		client:removeAllListeners(k)
+	end
+end
+
+function registerAllEvents()
+	if not Events then return end
+	for k,v in pairs(Events) do
+		client:on(k,v)
+	end
+end

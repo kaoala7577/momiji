@@ -516,10 +516,8 @@ end)
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
-	client:removeAllListeners('messageDelete')
-	client:removeAllListeners('messageDeleteUncached')
-	message:delete()
 	if tonumber(args) > 0 then
+		message:delete()
 		args = tonumber(args)
 		local xHun, rem = math.floor(args/100), math.fmod(args, 100)
 		local numDel = 0
@@ -545,8 +543,6 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 			message.channel:sendf("Deleted %s messages", numDel)
 		end
 	end
-	client:on('messageDelete', Events.messageDelete)
-	client:on('messageDeleteUncached', Events.messageDeleteUncached)
 end)
 
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user>', 1, false, true, function(message, args)
@@ -1024,26 +1020,8 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	local loaded = false
 	if args ~= "" then loaded=loadModule(args) end
 	if loaded and args=='Events' then
-		client:removeAllListeners('messageCreate')
-		client:removeAllListeners('memberJoin')
-		client:removeAllListeners('memberLeave')
-		client:removeAllListeners('messageDelete')
-		client:removeAllListeners('messageDeleteUncached')
-		client:removeAllListeners('userBan')
-		client:removeAllListeners('userUnban')
-		client:removeAllListeners('presenceUpdate')
-		client:removeAllListeners('memberUpdate')
-		client:removeAllListeners('memberRegistered')
-		client:on('messageCreate', Events.messageCreate)
-		client:on('memberJoin', Events.memberJoin)
-		client:on('memberLeave', Events.memberLeave)
-		client:on('messageDelete',Events.messageDelete)
-		client:on('messageDeleteUncached',Events.messageDeleteUncached)
-		client:on('userBan',Events.userBan)
-		client:on('userUnban',Events.userUnban)
-		client:on('presenceUpdate', Events.presenceUpdate)
-		client:on('memberUpdate', Events.memberUpdate)
-		client:on('memberRegistered', Events.memberRegistered)
+		unregisterAllEvents()
+		registerAllEvents()
 	end
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
