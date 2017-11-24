@@ -14,7 +14,7 @@ function Events.messageCreate(msg)
 			return
 		end
 		data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
-		if message.guild.id=='348660188951216129' then Database:update(msg, "Users", data.Users) end
+		if msg.guild.id=='348660188951216129' then Database:update(msg, "Users", data.Users) end
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
