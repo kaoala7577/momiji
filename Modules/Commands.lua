@@ -518,7 +518,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	if tonumber(args) > 0 then
 		message:delete()
 		args = tonumber(args)
-		local xHun, rem = math.floor(args/100), math.fmod(args, 100)
+		local xHun, rem = math.floor(args/100), args%100
 		local numDel = 0
 		if xHun > 0 then
 			for i=1, xHun do

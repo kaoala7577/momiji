@@ -79,7 +79,12 @@ function Database:get(guild,index)
 			if u then
 				Database:update(id)
 			end
-			return data[1]
+			local cached=Database.cache[id]
+			if cached[index]then
+				return cached[index]
+			else
+				return cached
+			end
 		end
 	end
 end
