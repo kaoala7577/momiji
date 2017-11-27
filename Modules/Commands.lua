@@ -65,7 +65,7 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, func
 		end
 		message.channel:send{embed={
 			fields={
-				{name=string.format("%d 🎲 [1-%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
+				{name=string.format("%d 🎲 [1—%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
 			},
 			color = discordia.Color.fromHex('#5DA9FF').value,
 		}}
@@ -254,7 +254,16 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user]
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-    local data, err = API.misc:Urban(args, nil)
+    local data, err = API.misc:Urban(args)
+    if data then
+        message:reply{embed=data}
+	else
+		message:reply(err)
+	end
+end)
+
+addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
+    local data, err = API.misc:Weather(args)
     if data then
         message:reply{embed=data}
 	else
@@ -286,7 +295,7 @@ addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message,
 end)
 
 addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
-	local data, err = API.misc:Anime(args, nil)
+	local data, err = API.misc:Anime(args)
 	if data then
 		message:reply{embed=data}
 	else
@@ -295,7 +304,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 end)
 
 addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<search>', 0, false, true, function(message, args)
-	local data, err = API.misc:Manga(args, nil)
+	local data, err = API.misc:Manga(args)
 	if data then
 		message:reply{embed=data}
 	else

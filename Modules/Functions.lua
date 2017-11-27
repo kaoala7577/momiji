@@ -1,3 +1,17 @@
+function readAll(file)
+	local f = io.open(file, "rb")
+	local content = f:read("*all")
+	f:close()
+	return content
+end
+
+function saveJson(tbl, file)
+	local f = io.open(file, "w")
+	local str = json.stringify(tbl)
+	f:write(str)
+	f:close()
+end
+
 function checkArgs(types, vals)
 	for i,v in ipairs(types) do
 		if type(v)=='table' then

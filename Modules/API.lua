@@ -4,15 +4,15 @@ local substitutions = require('htmlsubs')
 API={
 	data={},
 	endpoints={
-		['DBots_Stats']='https://bots.discord.pw/api/bots/%s/stats',
+		['DBots_Stats']='https://bots.discord.pw/api/bots/%s/stats', --TODO: Set this up
 		['Meow']='http://random.cat/meow',
 		['Bork']='https://dog.ceo/api/breeds/image/random',
 		['Urban']='https://api.urbandictionary.com/v0/define?term=%s',
 		['dadjoke']='https://icanhazdadjoke.com/',
-		['sgo']='http://setgetgo.com/',
 		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
 		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s',
 		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
+		['Weather']='http://api.openweathermap.org/data/2.5/forecast?units=Metric&q=%s&appid=%s'
 	},
 	DBots={},
 	misc={},
@@ -71,6 +71,51 @@ end
 function API.misc:Joke()
 	local request,data=API:Get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
 	return data
+end
+
+function API.misc:Weather(input)
+	local fmt = string.format
+	local request = query.urlencode(input:trim())
+	if request then
+		local t,data = API:Get('Weather', {request,API.data.WeatherKey})
+		local jdata = json.decode(data)
+		if jdata.cod=='404' then
+			return nil,jdata.message:sub(0,1):upper()..jdata.message:sub(2)
+		end
+		local weather = jdata.list[1]
+		if jdata then
+			local t={}
+			local tempC, tempF = tostring(math.round(weather.main.temp)), tostring(math.round(weather.main.temp*1.8+32))
+			local windImperial, windMetric = tostring(math.round(weather.wind.speed*0.62137)), tostring(math.round(weather.wind.speed))
+			local deg = weather.wind.deg
+			local windDir
+			if (deg>10 and deg<80) then
+				windDir = "NE"
+			elseif (deg>=80 and deg<=100) then
+				windDir = "E"
+			elseif (deg>100 and deg<170) then
+				windDir = "SE"
+			elseif (deg>=170 and deg<=190) then
+				windDir = "S"
+			elseif (deg>190 and deg<260) then
+				windDir = "SW"
+			elseif (deg>=260 and deg<=280) then
+				windDir = "W"
+			elseif (deg>280 and deg<370) then
+				windDir = "NW"
+			elseif (deg>=370 and deg<=0) then
+				windDir = "N"
+			end
+			t.title=fmt("**Weather for %s, %s (ID: %s)**",jdata.city.name, jdata.city.country, jdata.city.id)
+			t.description=fmt("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s hPa\n**Wind:** %s kmph (%s mph) %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure),windMetric,windImperial,windDir)
+			t.color = discordia.Color.fromHex('#5DA9FF').value
+			return t
+		else
+			return nil,"ERROR: unable to json decode"
+		end
+	else
+		return nil,"ERROR: unable to url encode"
+	end
 end
 
 function API.misc:Urban(input)
