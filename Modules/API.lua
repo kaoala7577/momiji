@@ -107,7 +107,7 @@ function API.misc:Weather(input)
 				windDir = "N"
 			end
 			t.title=fmt("**Weather for %s, %s (ID: %s)**",jdata.city.name, jdata.city.country, jdata.city.id)
-			t.description=fmt("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s hPa\n**Wind:** %s kmph (%s mph) %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure),windMetric,windImperial,windDir)
+			t.description=fmt("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure*0.750062),windMetric,windImperial,windDir)
 			t.color = discordia.Color.fromHex('#5DA9FF').value
 			t.footer={text="Weather provided by OpenWeatherMap"}
 			return t
