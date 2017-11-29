@@ -202,17 +202,9 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 	end
 end)
 
-addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user]', 0, false, true, function(message, args)
+addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
 	local guild = message.guild
-	local member
-	if args ~= "" then
-		local m = guild:getMember(resolveMember(message.guild, args))
-		if m then
-			member = m
-		end
-	else
-		member = guild:getMember(message.author)
-	end
+	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
 		local roles = ""
 		for i in member.roles:iter() do
@@ -643,10 +635,10 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}
 	end
 end)
 
-addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user] [note|index]', 1, false, true, function(message, args)
+addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
 	local a = message.member or message.guild:getMember(message.author.id)
 	local m = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
-	args = args:gsub("<@!?%d+>",""):trim()
+	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 	if (args == "") or not m then return end
 	local notes = Database:get(message, "Notes")
 	if args:startswith("add") then
@@ -686,10 +678,10 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 	Database:update(message, "Notes", notes)
 end)
 
-addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user]', 1, false, true, function(message, args)
+addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
 	local users = Database:get(message, "Users")
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
-	args = args:gsub("<@!?%d+>",""):trim():split(' ')
+	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim():split(' ')
 	if args[1] == 'add' then
 		if users[member.id] == nil then
 			--This shouldn't happen, but its here just in case
