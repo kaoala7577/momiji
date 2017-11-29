@@ -530,7 +530,7 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 	}
 end)
 
-addCommand('Mute', 'Mutes a user', 'mute', '<@user>', 1, false, true, function(message, args)
+addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
 	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
 	if not settings.mute_setup then
 		message:reply("Mute cannot be used until `setup` has been run.")
@@ -547,7 +547,8 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user>', 1, false, true, function(m
 		end
 		message.channel:sendf("Muting %s", member.mentionString)
 		if settings.modlog then
-			local reason = args:gsub("[<@!>]*",""):gsub(member.id,""):trim()~="" and args:gsub("[<@!>]*",""):gsub(member.id,""):trim() or "None"
+			local r = args:gsub("[<@!>]*",""):gsub(member.id,""):trim()
+			local reason = r~="" and r or "None"
 			message.guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Member Muted",
 				fields = {
@@ -561,7 +562,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user>', 1, false, true, function(m
 	Database:update(message, "Cases", cases)
 end)
 
-addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user>', 1, false, true, function(message, args)
+addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
 	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
 	if not settings.mute_setup then
 		message:reply("Unmute cannot be used until `setup` has been run.")
@@ -622,9 +623,8 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	end
 end)
 
-addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user>', 1, false, true, function(message, args)
+addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
-	args = args:gsub("<@!?%d+>",""):trim()
 	if m then
 		local users = Database:get(message, "Users")
 		if users[m.id] then
@@ -736,18 +736,22 @@ addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour
 	end
 end)
 
-addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user> <role[, role, ...]>', 1, false, true, function(message, args)
+addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<@!?%d+>",""):trim()
+		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for i,role in ipairs(args) do
 			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
-				member:addRole(r)
-				rolesToAdd[#rolesToAdd+1] = r.name
+				if not member:hasRole(r) then
+					member:addRole(r)
+					rolesToAdd[#rolesToAdd+1] = r.name
+				else
+					rolesToAdd[#rolesToAdd+1] = member.fullname.." already has "..r.name
+				end
 			end
 		end
 		if #rolesToAdd > 0 then
@@ -764,18 +768,22 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user> <role[, r
 	end
 end)
 
-addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user> <role[, role, ...]>', 1, false, true, function(message, args)
+addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<@!?%d+>",""):trim()
+		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToRemove = {}
 		for i,role in ipairs(args) do
 			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
-				member:removeRole(r)
-				rolesToRemove[#rolesToRemove+1] = r.name
+				if member:hasRole(r) then
+					member:removeRole(r)
+					rolesToRemove[#rolesToRemove+1] = r.name
+				else
+					rolesToRemove[#rolesToRemove+1] = member.fullname.." does not have "..r.name
+				end
 			end
 		end
 		if #rolesToRemove > 0 then
@@ -792,13 +800,13 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user> 
 	end
 end)
 
-addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user> <role[, role, ...]>', 1, false, true, function(message, args)
+addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
 	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
 	if member then
-		args = args:gsub("<@!?%d+>",""):trim()
+		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
 		for k,l in pairs(roles) do

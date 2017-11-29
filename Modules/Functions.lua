@@ -141,7 +141,7 @@ function timeBetween(tim)
 end
 
 function getIdFromString(str)
-	return string.match(tostring(str),".*<[@#]!?(.*)>.*")
+	return string.match(tostring(str),"<?[@#]?!?(%d*)>?")
 end
 
 function resolveGuild(guild)
@@ -188,15 +188,9 @@ function resolveMember(guild,name)
 end
 
 function resolveRole(guild,name)
-	local this=getIdFromString(name)
-	local m
-	if this then
-		m=guild:getRole(this)
-	else
-		m=guild.roles:find(function(r)
-			return string.lower(r.name)==string.lower(name)
-		end)
-	end
+	local m=guild.roles:find(function(r)
+		return string.lower(r.name)==string.lower(name)
+	end)
 	return m
 end
 
