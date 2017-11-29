@@ -244,7 +244,7 @@ function resolveCommand(str, pre)
 	local prefix = pre or "m!"
 	local command,rest
 	if string.match(str, "^"..client.user.mentionString) then
-		command, rest = str:sub(#client.user.mentionString+1):match('(%S+)%s*(.*)')
+		command, rest = str:sub(#client.user.mentionString+2):match('(%S+)%s*(.*)')
 	elseif (prefix~="" and string.match(str,"^%"..prefix)) or prefix=="" then
 		command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
 	end
