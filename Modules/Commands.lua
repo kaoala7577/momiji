@@ -12,7 +12,7 @@ end
 addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
 	local response = message:reply("Pong!")
 	if response then
-		response:setContent("Pong!".."`"..math.round((response.createdAt - message.createdAt)*1000).." ms`")
+		response:setContent("Pong!".."`"..math.abs(math.round((response.createdAt - message.createdAt)*1000)).." ms`")
 	end
 end)
 

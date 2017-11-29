@@ -13,7 +13,6 @@ API={
 		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
 		['Weather']='http://api.openweathermap.org/data/2.5/forecast?units=Metric&q=%s&appid=%s'
 	},
-	DBots={},
 	misc={},
 }
 
@@ -21,33 +20,33 @@ pcall(function()
 	API.data=options.apiData
 end)
 
-function API:Post(End,Fmt,...)
+function API:Post(endpoint,fmt,...)
 	local point
-	local p=API.endpoints[End]
-	if p then
-		if Fmt then
-			point=p:format(table.unpack(Fmt))
+	local po=API.endpoints[endpoint]
+	if po then
+		if fmt then
+			point=po:format(table.unpack(fmt))
 		else
-			point=p
+			point=po
 		end
 	end
 	return http.request('POST',point,...)
 end
 
-function API:Get(End,Fmt,...)
+function API:Get(endpoint,fmt,...)
 	local point
-	local p=API.endpoints[End]
-	if p then
-		if Fmt then
-			point=p:format(table.unpack(Fmt))
+	local po=API.endpoints[endpoint]
+	if po then
+		if fmt then
+			point=po:format(table.unpack(fmt))
 		else
-			point=p
+			point=po
 		end
 	end
 	return http.request('GET',point,...)
 end
 
-function API.DBots:Stats_Update(info)
+function API.misc:DBots_Stats_Update(info)
 	return API:Post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBots_Auth}},json.encode(info))
 end
 

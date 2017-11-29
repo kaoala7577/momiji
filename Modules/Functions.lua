@@ -1,17 +1,3 @@
-function readAll(file)
-	local f = io.open(file, "rb")
-	local content = f:read("*all")
-	f:close()
-	return content
-end
-
-function saveJson(tbl, file)
-	local f = io.open(file, "w")
-	local str = json.stringify(tbl)
-	f:write(str)
-	f:close()
-end
-
 function checkArgs(types, vals)
 	for i,v in ipairs(types) do
 		if type(v)=='table' then
@@ -257,12 +243,10 @@ end
 function resolveCommand(str, pre)
 	local prefix = pre or "m!"
 	local command,rest
-	if prefix then
-		if string.match(str, "^"..client.user.mentionString) then
-			command, rest = str:sub(#client.user.mentionString+1):match('(%S+)%s*(.*)')
-		elseif (prefix~="" and string.match(str,"^%"..prefix)) or prefix=="" then
-			command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
-		end
+	if string.match(str, "^"..client.user.mentionString) then
+		command, rest = str:sub(#client.user.mentionString+1):match('(%S+)%s*(.*)')
+	elseif (prefix~="" and string.match(str,"^%"..prefix)) or prefix=="" then
+		command, rest = str:sub(#prefix+1):match('(%S+)%s*(.*)')
 	end
 	return command, rest
 end
