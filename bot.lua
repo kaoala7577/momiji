@@ -1,4 +1,12 @@
-local token = require('token')
+fs = require('fs')
+json = require('json')
+ssl = require('openssl')
+timer = require("timer")
+query = require('querystring')
+http = require('coro-http')
+xml = require("xmlSimple").newParser()
+
+options = json.parse(fs.readFileSync('options.json'))
 discordia = require('discordia')
 enums = discordia.enums
 client = discordia.Client({
@@ -9,14 +17,6 @@ uptime = discordia.Stopwatch()
 clock = discordia.Clock()
 clock:start(true)
 discordia.storage.bulkDeletes = {}
-
-fs = require('fs')
-json = require('json')
-ssl = require('openssl')
-timer = require("timer")
-query = require('querystring')
-http = require('coro-http')
-xml = require("xmlSimple").newParser()
 
 ColorChange = {
 	me = false
@@ -66,5 +66,5 @@ coroutine.wrap(function()
 	clock:on('min', Clocks.min)
 
 	-- Run
-	client:run(token)
+	client:run(options.token)
 end)()

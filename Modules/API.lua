@@ -18,7 +18,7 @@ API={
 }
 
 pcall(function()
-	API.data=require('./apidata.lua')
+	API.data=options.apiData
 end)
 
 function API:Post(End,Fmt,...)

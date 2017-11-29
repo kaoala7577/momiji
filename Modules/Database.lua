@@ -1,8 +1,7 @@
 --[[ RethinkDB databse interaction forked from DannehSC/electricity-2.0 ]]
 
-local options = require('./options.lua')
 local rethink=require('luvit-reql')
-local conn=rethink:connect(options)
+local conn=rethink:connect(options.database)
 local ts,fmt=tostring,string.format
 
 Database={
