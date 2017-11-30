@@ -205,6 +205,9 @@ end)
 addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
 	local guild = message.guild
 	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	if args=="" then
+		member = message.member
+	end
 	if member then
 		local roles = ""
 		for i in member.roles:iter() do
