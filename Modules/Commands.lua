@@ -710,7 +710,8 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			}}
 		end
 	end
-	if message.guild.id=='348660188951216129' then Database:update(message, "Users", users) end
+	Database:update(message, "Users", {})
+	Database:update(message, "Users", users)
 end)
 
 addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
@@ -854,7 +855,8 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				else
 					users[member.id].registered = discordia.Date():toISO()
 				end
-				if message.guild.id=='348660188951216129' then Database:update(message, "Users", users) end
+				Database:update(message, "Users", {})
+				Database:update(message, "Users", users)
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")

@@ -14,7 +14,8 @@ function Events.messageCreate(msg)
 			return
 		end
 		data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
-		if msg.guild.id=='348660188951216129' then Database:update(msg, "Users", data.Users) end
+		Database:update(msg, "Users", {})
+		Database:update(msg, "Users", data.Users)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
@@ -99,6 +100,7 @@ function Events.memberJoin(member)
 	end
 	local users = Database:get(member, "Users")
 	users[member.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=member.name }
+	Database:update(member, "Users", {})
 	Database:update(member, "Users", users)
 end
 
@@ -143,6 +145,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 		users[member.id].nick = member.name
+		Database:update(member, "Users", {})
 		Database:update(member, "Users", users)
 	end
 end
