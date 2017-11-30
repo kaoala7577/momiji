@@ -58,24 +58,22 @@ end
 
 function parseHumanTime(message)
 	local t={}
-	for i,v in pairs(string.split(message,' '))do
-		for de,str in v:gmatch('(%d?%d?%d?%d?%d)%s*(%S?%S?%S?%S)')do
-			local s=str:lower()
-			if s=='y'or s:sub(1,4)=='year'then
-				t.years=de
-			elseif s=='mo'or s:sub(1,5)=='month'then
-				t.months=de
-			elseif s=='w'or s:sub(1,4)=='week'then
-				t.weeks=de
-			elseif s=='d'or s:sub(1,3)=='day'then
-				t.days=de
-			elseif s=='h'or s:sub(1,4)=='hour'then
-				t.hours=de
-			elseif s=='m'or s=='mi'or s:sub(1,6)=='minute'then
-				t.minutes=de
-			elseif s=='s'or s:sub(1,6)=='second'then
-				t.seconds=de
-			end
+	for time,unit in v:gmatch('(%d+)%s+(%S+)') do
+		local u=unit:lower()
+		if u:startswith('y') then
+			t.years=time
+		elseif u:startswith('mo') then
+			t.months=time
+		elseif u:startswith('w') then
+			t.weeks=time
+		elseif u:startswith('d') then
+			t.days=time
+		elseif u:startswith('h') then
+			t.hours=time
+		elseif u:startswith('m') then
+			t.minutes=time
+		elseif u:startswith('s') then
+			t.seconds=time
 		end
 	end
 	return t

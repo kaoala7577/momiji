@@ -496,23 +496,40 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	end
 end)
 
-addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '', 0, false, true, function(message, args)
-	if args ~= "" then
-		message.channel:sendf("I noticed you had some roles in your command. Did you mean to do `role %s`", args)
-		return
-	end
+addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '[category]', 0, false, true, function(message, args)
 	local roleList, cats = {},{}
 	local selfRoles = Database:get(message, "Roles")
 	if not selfRoles then return end
-	for k,v in pairs(selfRoles) do
-		for r,_ in pairs(v) do
-			if not roleList[k] then
-				roleList[k] = r.."\n"
-			else
-				roleList[k] = roleList[k]..r.."\n"
+	if args~="" then
+		local found = false
+		for k,v in pairs(selfRoles) do
+			if args:lower()==k:lower() then
+				for r,_ in pairs(v) do
+					if not roleList[k] then
+						roleList[k] = r.."\n"
+					else
+						roleList[k] = roleList[k]..r.."\n"
+					end
+				end
+				table.insert(cats, {name = k, value = roleList[k], inline = true})
+				found = true
 			end
 		end
-		table.insert(cats, {name = k, value = roleList[k], inline = true})
+		if not found then
+			message.channel:sendf("None of those matched a category. Did you mean to do `role %s`?", args)
+			return
+		end
+	else
+		for k,v in pairs(selfRoles) do
+			for r,_ in pairs(v) do
+				if not roleList[k] then
+					roleList[k] = r.."\n"
+				else
+					roleList[k] = roleList[k]..r.."\n"
+				end
+			end
+			table.insert(cats, {name = k, value = roleList[k], inline = true})
+		end
 	end
 	message.channel:send {
 		embed = {
@@ -1005,6 +1022,13 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 		ignores[channel.id] = true
 	elseif channel then
 		ignores[channel.id] = nil
+	else
+		local r
+		for k,v in pairs(ignores) do
+			r = string.format(r and r or "".."%s",v and client:getChannel(k).mentionString.."\n")
+		end
+		message:reply(r)
+		return
 	end
 	message.channel:sendf("I will %s for commands in %s",ignores[channel.id] and "no longer listen" or "now listen",channel.mentionString)
 	Database:update(message, 'Ignore', ignores)
