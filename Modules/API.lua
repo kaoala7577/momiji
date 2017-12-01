@@ -11,7 +11,7 @@ API={
 		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
 		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s',
 		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
-		['Weather']='http://api.openweathermap.org/data/2.5/forecast?units=Metric&q=%s&appid=%s'
+		['Weather']='http://api.openweathermap.org/data/2.5/forecast?units=Metric&%s=%s&appid=%s'
 	},
 	misc={},
 }
@@ -73,9 +73,12 @@ end
 
 function API.misc:Weather(input)
 	local fmt = string.format
-	local request = query.urlencode(input:trim())
+	local type="q"
+	input = input:trim()
+	if input:match("^%d+$") then type="id" end
+	local request = query.urlencode(input)
 	if request then
-		local t,data = API:Get('Weather', {request,API.data.WeatherKey})
+		local t,data = API:Get('Weather', {type,request,API.data.WeatherKey})
 		local jdata = json.decode(data)
 		if jdata then
 			return jdata

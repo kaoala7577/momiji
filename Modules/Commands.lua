@@ -300,7 +300,7 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 			windDir = "N"
 		end
 		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.city.name, data.city.country, data.city.id)
-		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure*0.750062),windMetric,windImperial,windDir)
+		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure*0.750062),windMetric,windImperial,windDir,data.city.coord.lat,data.city.coord.lon)
 		t.color = discordia.Color.fromHex('#5DA9FF').value
 		t.footer={text="Weather provided by OpenWeatherMap"}
         message:reply{embed=t}
