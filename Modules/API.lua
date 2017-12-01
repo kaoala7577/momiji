@@ -11,7 +11,7 @@ API={
 		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
 		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s',
 		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
-		['Weather']='http://api.openweathermap.org/data/2.5/forecast?units=Metric&%s=%s&appid=%s'
+		['Weather']='http://api.openweathermap.org/data/2.5/weather?units=Metric&%s=%s&appid=%s'
 	},
 	misc={},
 }

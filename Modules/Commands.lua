@@ -276,11 +276,10 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 		if data.cod=='404' then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
 		end
-		local weather = data.list[1]
 		local t={}
-		local tempC, tempF = tostring(math.round(weather.main.temp)), tostring(math.round(weather.main.temp*1.8+32))
-		local windImperial, windMetric = tostring(math.round(weather.wind.speed*0.62137)), tostring(math.round(weather.wind.speed))
-		local deg = weather.wind.deg
+		local tempC, tempF = tostring(math.round(data.main.temp)), tostring(math.round(data.main.temp*1.8+32))
+		local windImperial, windMetric = tostring(math.round(data.wind.speed*0.62137)), tostring(math.round(data.wind.speed))
+		local deg = data.wind.deg
 		local windDir
 		if (deg>10 and deg<80) then
 			windDir = "NE"
@@ -299,8 +298,8 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 		elseif (deg>=370 and deg<=0) then
 			windDir = "N"
 		end
-		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.city.name, data.city.country, data.city.id)
-		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",weather.weather[1].description:sub(0,1):upper()..weather.weather[1].description:sub(2),tempC,tempF,weather.main.humidity,math.round(weather.main.pressure*0.750062),windMetric,windImperial,windDir,data.city.coord.lat,data.city.coord.lon)
+		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
+		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
 		t.color = discordia.Color.fromHex('#5DA9FF').value
 		t.footer={text="Weather provided by OpenWeatherMap"}
         message:reply{embed=t}
