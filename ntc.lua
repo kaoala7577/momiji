@@ -1,3 +1,7 @@
+--[[
+    Adapted from http://chir.ag/projects/ntc/ntc.js
+]]
+
 local Color = require('discordia').Color
 
 local ntc = {}
