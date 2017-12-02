@@ -1,9 +1,9 @@
 Commands = {}
 
 function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
-	local b,e,n,g = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
-	if not b then
-		logger:log(1, "<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
+	local bool,expected,number,got = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
+	if not bool then
+		logger:log(1, "<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,expected,number,got)
 		return
 	end
 	Commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
@@ -249,8 +249,8 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-    local data, err = API.misc:Urban(args)
-    if data then
+	local data, err = API.misc:Urban(args)
+	if data then
 		local t={}
 		if data.list[1] then
 			t.description = string.format('**Definition of "%s" by %s**\n%s',data.list[1].word,data.list[1].author,data.list[1].permalink)
@@ -264,15 +264,15 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 		else
 			t.title = 'No definitions found.'
 		end
-        message:reply{embed=t}
+		message:reply{embed=t}
 	else
 		message:reply(err)
 	end
 end)
 
 addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
-    local data, err = API.misc:Weather(args)
-    if data then
+	local data, err = API.misc:Weather(args)
+	if data then
 		if data.cod=='404' then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
 		end
@@ -302,33 +302,33 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
 		t.color = discordia.Color.fromHex('#5DA9FF').value
 		t.footer={text="Weather provided by OpenWeatherMap"}
-        message:reply{embed=t}
+		message:reply{embed=t}
 	else
 		message:reply(err)
 	end
 end)
 
 addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
-    local data, err = API.misc:Cats()
-    if data then
-        message:reply{embed={
-            image={url=data}
-        }}
-    end
+	local data, err = API.misc:Cats()
+	if data then
+		message:reply{embed={
+			image={url=data}
+		}}
+	end
 end)
 
 addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message, args)
-    local data, err = API.misc:Dogs()
-    if data then
-        message:reply{embed={
-            image={url=data}
-        }}
-    end
+	local data, err = API.misc:Dogs()
+	if data then
+		message:reply{embed={
+			image={url=data}
+		}}
+	end
 end)
 
 addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message, args)
-    local data, err = API.misc:Joke()
-    message:reply(data or err)
+	local data, err = API.misc:Joke()
+	message:reply(data or err)
 end)
 
 addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
@@ -376,35 +376,41 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<sear
 end)
 
 addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, true, function(message, args)
-    if not message.channel.nsfw then
-        message:reply("This command can only be used in NSFW channels.")
-        return
-    end
-    local blacklist = {'cub', 'young', 'small_cub'}
-    for _,v in ipairs(blacklist) do
-        if args:match(v) then
-            message:reply("A tag you searched for is blacklisted: "..v)
-            return
-        end
-    end
-    message.channel:broadcastTyping()
-    local data, err
-    while not data do
-        local try,e = API.misc:Furry(args)
-        local bl = false
-        for _,v in ipairs(blacklist) do
-            if try.tags:match(v) then
-                bl = true
-            end
-        end
-        if try.file_ext~='swf' and try.file_ext~='webm' and not bl then
-            data,err=try,e
-        end
-    end
-    message:reply{embed={
-        image={url=data.file_url},
-        description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Author:** %s\n**Score:** %s", data.tags:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://e621.net/post/show/"..data.id, data.author, data.score)
-    }}
+	if not message.channel.nsfw then
+		message:reply("This command can only be used in NSFW channels.")
+		return
+	end
+	local blacklist = {'cub', 'young', 'small_cub'}
+	for _,v in ipairs(blacklist) do
+		if args:match(v) then
+			message:reply("A tag you searched for is blacklisted: "..v)
+			return
+		end
+	end
+	message.channel:broadcastTyping()
+	local data, err
+	local count = 0
+	while not data do
+		local try,e = API.misc:Furry(args)
+		local bl = false
+		for _,v in ipairs(blacklist) do
+			if try and try.tags:match(v) then
+				bl = true
+			end
+		end
+		if try and try.file_ext~='swf' and try.file_ext~='webm' and not bl then
+			data,err=try,e
+		end
+		count = count+1
+		if count >= 5 then
+			message:reply("Unable to find results after "..count.." attempts")
+			return
+		end
+	end
+	message:reply{embed={
+		image={url=data.file_url},
+		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Author:** %s\n**Score:** %s", data.tags:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://e621.net/post/show/"..data.id, data.author, data.score)
+	}}
 end)
 
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
@@ -605,6 +611,7 @@ end)
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
+	local guild,channel=message.guild,message.channel
 	if tonumber(args) > 0 then
 		message:delete()
 		args = tonumber(args)
@@ -623,13 +630,13 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 			numDel = numDel+#deletions
 		end
 		if settings.modlog then
-			message.guild:getChannel(settings.modlog_channel):send {embed={
+			guild:getChannel(settings.modlog_channel):send {embed={
 				description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
 				color = discordia.Color.fromRGB(255, 0, 0).value,
 				timestamp = discordia.Date():toISO()
 			}}
 		else
-			message.channel:sendf("Deleted %s messages", numDel)
+			channel:sendf("Deleted %s messages", numDel)
 		end
 	end
 end)
@@ -896,30 +903,19 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 		if args[1]==v then
 			section = v
 			if args[2] == 'add' then
-				settings[v..'_roles'][#settings[v..'_roles']+1] = args[3] and args[3] or nil
+				local r = resolveRole(message.guild, args[3])
+				settings[v..'_roles'][#settings[v..'_roles']+1] = r and r.id or nil
 				operation = "add"
-				value = args[3]
+				value = r.id
 			elseif args[2] == 'remove' then
+				local r = resolveRole(message.guild, args[3])
 				for i,j in ipairs(settings[v..'_roles']) do
-					if j==args[3] then
+					if j==r.id then
 						table.remove(settings[v..'_roles'],i)
 					end
 				end
 				operation = "remove"
-				value = args[3]
-			elseif args[2] == 'list' then
-				local list = ""
-				for i,j in ipairs(settings[v..'_roles']) do
-					role = message.guild:getRole(j)
-					if role then
-						if list=="" then
-							list=role.name
-						else
-							list=list..role.name.."\n"
-						end
-					end
-				end
-				if list~="" then message:reply(list) end
+				value = r.id
 			end
 		end
 	end
@@ -973,26 +969,38 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 	elseif args[1] == 'help' then
 		local fields,roles,chans = {
 			{name="prefix", value="Usage: config prefix <newPrefix>"},
-			{name="autorole", value="Subcommands:\nenable\ndisable\nadd <roleID>\nremove <roleID>"},
+			{name="autorole", value="Subcommands:\n\tenable\n\tdisable\n\tadd <roleID>\n\tremove <roleID>"},
 		},"",""
 		for _,v in pairs(switches.roles) do
 			if roles == "" then roles=v else roles=roles..", "..v end
 		end
-		table.insert(fields, {name = roles, value = "Subcommands:\nadd <roleID>\nremove <roleID>\nlist"})
+		table.insert(fields, {name = roles, value = "Subcommands:\n\tadd <roleID>\n\tremove <roleID>"})
 		for _,v in pairs(switches.channels) do
 			if chans == "" then chans=v else chans=chans..", "..v end
 		end
-		table.insert(fields, {name = chans, value = "Subcommands:\nenable\ndisable\nset <channelID>\nmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
+		table.insert(fields, {name = chans, value = "Subcommands:\n\tenable\n\tdisable\n\tset <channelID>\n\tmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
 		message:reply{embed={
 			fields = fields,
 		}}
 	elseif args[1]=="" then
 		local list = ""
 		for k,v in pairs(settings) do
+			if type(v)=='table' and k:match('roles') then
+				for i,j in ipairs(v) do
+					local r = resolveRole(message.guild, j)
+					v[i] = r and r.name or j
+				end
+			end
+			if type('v')=='string' and k:match('channel') then
+				local c = resolveChannel(message.guild, v)
+				v = c and c.mentionString or v
+			end
 			local out = type(v)=='table' and table.concat(v,', ') or tostring(v)
 			list = list.."**"..k.."**: "..out.."\n"
 		end
-		message:reply(list)
+		message:reply{embed={
+			description = list.."\n".."For details on config usage, run `config help`"
+		}}
 	end
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")

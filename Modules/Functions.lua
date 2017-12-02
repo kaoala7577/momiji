@@ -56,9 +56,10 @@ function parseTime(time)
 	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
+--TODO: make these compatible with discordia.Date
 function parseHumanTime(message)
 	local t={}
-	for time,unit in v:gmatch('(%d+)%s+(%S+)') do
+	for time,unit in v:gmatch('(%d+)%s*(%S+)') do
 		local u=unit:lower()
 		if u:startswith('y') then
 			t.years=time
@@ -173,12 +174,12 @@ function resolveChannel(guild,name)
 end
 
 function resolveMember(guild,name)
-	local this=getIdFromString(name)
+	local this = getIdFromString(name)
 	local m
 	if this then
-		m=guild:getMember(this)
+		m = guild:getMember(this)
 	else
-		m=guild.members:find(function(mem)
+		m = guild.members:find(function(mem)
 			return string.lower(mem.name)==string.lower(name)
 		end)
 	end
@@ -186,10 +187,16 @@ function resolveMember(guild,name)
 end
 
 function resolveRole(guild,name)
-	local m=guild.roles:find(function(r)
-		return string.lower(r.name)==string.lower(name)
-	end)
-	return m
+	local this = getIdFromString(name)
+	local r
+	if this and this~='' then
+		r = guild:getRole(this)
+	else
+		r = guild.roles:find(function(r)
+			return string.lower(r.name)==string.lower(name)
+		end)
+	end
+	return r
 end
 
 function getFormatType(str, member)

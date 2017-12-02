@@ -252,7 +252,7 @@ end
 function Events.raw(raw)
 	local payload = json.parse(raw)
 	if payload.t == 'MESSAGE_DELETE_BULK' then
-		discordia.storage.bulkDeletes = payload.d.ids and payload.d.ids or {}
+		discordia.storage.bulkDeletes = payload.d.ids or {}
 	end
 end
 

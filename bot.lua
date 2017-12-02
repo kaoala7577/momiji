@@ -23,18 +23,18 @@ ColorChange = {
 }
 
 function loadModule(name)
-	name=name..'.lua'
-	local data,others=fs.readFileSync('./Modules/'..name)
+	name = name..'.lua'
+	local data,others = fs.readFileSync('./Modules/'..name)
 	if data then
-		local a,b=loadstring(data,name)
-		if not a then
-			logger:log(1, "<SYNTAX> Error loading %s (%s)", name, b)
+		local f, err = loadstring(data,name)
+		if not f then
+			logger:log(1, "<SYNTAX> Error loading %s (%s)", name, err)
 			return false
 		else
-			setfenv(a,getfenv())
-			local c,d=pcall(a)
-			if not c then
-				logger:log(1, "<RUNTIME> Error loading %s (%s)", name, d)
+			setfenv(f, getfenv())
+			local stat, ret = pcall(f)
+			if not stat then
+				logger:log(1, "<RUNTIME> Error loading %s (%s)", name, ret)
 				return false
 			else
 				client:info('Module online: '..name)
