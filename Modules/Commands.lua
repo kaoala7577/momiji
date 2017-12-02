@@ -1035,7 +1035,7 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	else
 		local r
 		for k,v in pairs(ignores) do
-			r = string.format(r and r or "".."%s",v and client:getChannel(k).mentionString.."\n")
+			r = string.format(r and r.."%s" or "".."%s",v and client:getChannel(k).mentionString.."\n")
 		end
 		message:reply(r)
 		return
