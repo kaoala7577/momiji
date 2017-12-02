@@ -332,7 +332,7 @@ addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message,
 end)
 
 addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
-	local substitutions = require('htmlsubs')
+	local substitutions = require('./htmlsubs')
 	local data, err = API.misc:Anime(args)
 	if data then
 		local t={}
@@ -354,7 +354,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 end)
 
 addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<search>', 0, false, true, function(message, args)
-	local substitutions = require('htmlsubs')
+	local substitutions = require('./htmlsubs')
 	local data, err = API.misc:Manga(args)
 	if data then
 		local t={}
@@ -1138,6 +1138,17 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
 
-addCommand('Colors','COLORS!','color','CCCOOOOLLLOOOOR',4,false,true,function(message,args)
-	ColorChange.me = not ColorChange.me
+addCommand('Color', 'Show information on the color', 'color', '<hexcolor>', 0, false, false, function(message,args)
+	local hex = args:match("#?([0-9a-fA-F]*)")
+	local ntc = require('./ntc')
+	if #hex==6 then
+		local color,name = ntc.name(hex)
+		message:reply{embed={
+			thumbnail = {url = "http://www.colorhexa.com/"..color:lower()..".png", height = 150, width = 150},
+			description = string.format("**%s**\n%s", name, "#"..color),
+			color = discordia.Color.fromHex(color).value,
+		}}
+	else
+		message:reply("Invalid Hex Color")
+	end
 end)

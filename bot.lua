@@ -19,7 +19,7 @@ clock:start(true)
 discordia.storage.bulkDeletes = {}
 
 ColorChange = {
-	me = false
+	me = true
 }
 
 function loadModule(name)
