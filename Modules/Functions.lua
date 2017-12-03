@@ -23,7 +23,7 @@ function getRank(member, server)
 	if not member then return 0 end
 	local rank = 0
 	if server then
-		settings = Database:get(member, "Settings")
+		local settings = Database:get(member, "Settings")
 		for _,v in ipairs(settings['mod_roles']) do
 			if member:hasRole(v) then
 				rank = 1
