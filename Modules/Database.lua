@@ -2,7 +2,6 @@
 
 local rethink=require('luvit-reql')
 local conn=rethink:connect(options.database)
-local fmt=tostring,string.format
 
 Database={
 	_raw_database=rethink,
@@ -39,7 +38,7 @@ Database.default = {
 }
 
 function Database:get(guild,index)
-	local id,guild=resolveGuild(guild)
+	local id=resolveGuild(guild)
 	if Database.cache[id]then
 		local cached=Database.cache[id]
 		if cached[index]then
@@ -90,7 +89,7 @@ end
 
 function Database:update(guild,index,value)
 	if not guild then error"No ID/Guild/Message provided" end
-	local id,guild=resolveGuild(guild)
+	local id=resolveGuild(guild)
 	if Database.cache[id] then
 		if index then
 			Database.cache[id][index]=value
@@ -98,7 +97,7 @@ function Database:update(guild,index,value)
 		if not Database.cache[id].id then
 			Database.cache[id].id=id
 		end
-		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
+		local _,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
 		if err then
 			print('UPDATE')
 			print(err)
