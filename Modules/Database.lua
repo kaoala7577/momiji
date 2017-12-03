@@ -2,7 +2,7 @@
 
 local rethink=require('luvit-reql')
 local conn=rethink:connect(options.database)
-local ts,fmt=tostring,string.format
+local fmt=tostring,string.format
 
 Database={
 	_raw_database=rethink,
