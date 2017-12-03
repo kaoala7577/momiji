@@ -342,7 +342,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 			for k,v in pairs(substitutions) do
 				syn = string.gsub(syn,k,v)
 			end
-			t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",data:anime:children()[1].title:value(),data.anime:children()[1].id:value(),syn,data.anime:children()[1].episodes:value(),data.anime:children()[1].score:value(),data:anime:children()[1].status:value())
+			t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",data.anime:children()[1].title:value(),data.anime:children()[1].id:value(),syn,data.anime:children()[1].episodes:value(),data.anime:children()[1].score:value(),data.anime:children()[1].status:value())
 			t.thumbnail={url=data.anime:children()[1].image:value()}
 		else
 			t.title="No results found for search "..input
