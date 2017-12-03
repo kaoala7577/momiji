@@ -25,8 +25,8 @@ function Events.messageCreate(msg)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
-	for name,tab in pairs(Commands) do
-		for ind,cmd in pairs(tab.commands) do
+	for _,tab in pairs(Commands) do
+		for _,cmd in pairs(tab.commands) do
 			if command:lower() == cmd:lower() then
 				if tab.serverOnly and private then
 					msg:reply("This command is not available in private messages.")

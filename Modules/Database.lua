@@ -37,7 +37,7 @@ Database.default = {
 	Users = {},
 }
 
-function Database:get(guild,index)
+function Database:get(guild,index) --luacheck: ignore self
 	local id=resolveGuild(guild)
 	if Database.cache[id]then
 		local cached=Database.cache[id]
@@ -87,7 +87,7 @@ function Database:get(guild,index)
 	end
 end
 
-function Database:update(guild,index,value)
+function Database:update(guild,index,value) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided" end
 	local id=resolveGuild(guild)
 	if Database.cache[id] then

@@ -168,8 +168,8 @@ function resolveChannel(guild,name)
 	if this then
 		c=guild:getChannel(this)
 	else
-		c=guild.textChannels:find(function(c)
-			return string.lower(c.name)==string.lower(c)
+		c=guild.textChannels:find(function(ch)
+			return string.lower(ch.name)==string.lower(name)
 		end)
 	end
 	return c
@@ -194,14 +194,14 @@ function resolveRole(guild,name)
 	if this and this~='' then
 		r = guild:getRole(this)
 	else
-		r = guild.roles:find(function(r)
-			return string.lower(r.name)==string.lower(name)
+		r = guild.roles:find(function(ro)
+			return string.lower(ro.name)==string.lower(name)
 		end)
 	end
 	return r
 end
 
-function getFormatType(str, member)
+function getFormatType(str)
 	local type = str:match("$type:(%S*)")
 	return type
 end
@@ -254,7 +254,7 @@ end
 
 function unregisterAllEvents()
 	if not Events then return end
-	for k,v in pairs(Events) do
+	for k,_ in pairs(Events) do
 		if k~="Timing" and k~="ready" then
 			client:removeAllListeners(k)
 		end

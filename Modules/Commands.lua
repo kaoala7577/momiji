@@ -10,19 +10,19 @@ function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
 	Commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
 end
 
-addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message, args)
+addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message)
 	local response = message:reply("Pong!")
 	if response then
 		response:setContent("Pong!".."`"..math.abs(math.round((response.createdAt - message.createdAt)*1000)).." ms`")
 	end
 end)
 
-addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message, args)
+addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message)
 	local settings = Database:get(message, "Settings")
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
-addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message, args)
+addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message)
 	message:reply{embed={
 		author = {name=client.user.name, icon_url=client.user.avatarURL},
 		thumbnail = {url=client.user.avatarURL},
@@ -40,7 +40,7 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
 	}}
 end)
 
-addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message, args)
+addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message)
 	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
 
@@ -60,7 +60,7 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, func
 		local roll, pretty = 0,{}
 		for i=1,count do
 			local cur = math.round(math.random(1,sides))
-			pretty[#pretty+1]=tostring(cur)
+			pretty[i]=tostring(cur)
 			roll = roll+cur
 		end
 		message.channel:send{embed={
@@ -79,7 +79,7 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 	}
 	if args == "" then
 		local help = {}
-		for com, tbl in pairs(cmds) do
+		for _,tbl in pairs(cmds) do
 			if not help[tbl.rank+1] then help[tbl.rank+1] = "" end
 			if type(tbl.commands)=='string' then
 				help[tbl.rank+1] = help[tbl.rank+1].."`"..tbl.name.." "..tbl.usage.."` - "..tbl.description.."\n"
@@ -102,11 +102,11 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 			sorted[c] = sorted[c].."**"..v.."**\n"..help[i]
 		end
 		message.author:send("**How to read this doc:**\nWhen reading the commands, arguments in angle brackets (`<>`) are mandatory\nwhile arguments in square brackets (`[]`) are optional.\nA pipe character `|` means or, so `a|b` means a **or** b.\nNo brackets should be included in the commands")
-		for _,v in ipairs(sorted) do status = message.author:send(v) end
+		for _,v in ipairs(sorted) do message.author:send(v) end
 		message:reply("I've DM'd you the help page!")
 	else
 		local cmd = nil
-		for k,v in pairs(cmds) do
+		for _,v in pairs(cmds) do
 			if args == v.name then
 				cmd = v
 				break
@@ -203,7 +203,6 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 end)
 
 addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
-	local guild = message.guild
 	local member = resolveMember(message.guild, args)
 	if args=="" then
 		member = message.member
@@ -249,7 +248,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-	local data, err = API.misc:Urban(args)
+	local data, err = API.misc.Urban(args)
 	if data then
 		local t={}
 		if data.list[1] then
@@ -271,7 +270,7 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 end)
 
 addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
-	local data, err = API.misc:Weather(args)
+	local data, err = API.misc.Weather(args)
 	if data then
 		if data.cod=='404' then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
@@ -308,8 +307,8 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 	end
 end)
 
-addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
-	local data, err = API.misc:Cats()
+addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message)
+	local data = API.misc.Cats()
 	if data then
 		message:reply{embed={
 			image={url=data}
@@ -317,8 +316,8 @@ addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message, args)
 	end
 end)
 
-addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message, args)
-	local data, err = API.misc:Dogs()
+addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message)
+	local data = API.misc.Dogs()
 	if data then
 		message:reply{embed={
 			image={url=data}
@@ -326,14 +325,14 @@ addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message, args)
 	end
 end)
 
-addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message, args)
-	local data, err = API.misc:Joke()
+addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message)
+	local data, err = API.misc.Joke()
 	message:reply(data or err)
 end)
 
 addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
 	local substitutions = require('./htmlsubs')
-	local data, err = API.misc:Anime(args)
+	local data, err = API.misc.Anime(args)
 	if data then
 		local t={}
 		t.color = discordia.Color.fromHex('#5DA9FF').value
@@ -346,7 +345,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 			t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",result.title:value(),result.id:value(),syn,result.episodes:value(),result.score:value(),result.status:value())
 			t.thumbnail={url=result.image:value()}
 		else
-			t.title="No results found for search "..input
+			t.title="No results found for search "..args
 		end
 		message:reply{embed=t}
 	else
@@ -356,7 +355,7 @@ end)
 
 addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<search>', 0, false, true, function(message, args)
 	local substitutions = require('./htmlsubs')
-	local data, err = API.misc:Manga(args)
+	local data, err = API.misc.Manga(args)
 	if data then
 		local t={}
 		t.color = discordia.Color.fromHex('#5DA9FF').value
@@ -369,7 +368,7 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<sear
 			t.description=string.format("**[%s](https://myanimelist.net/manga/%s)**\n%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",result.title:value(),result.id:value(),syn,result.volumes:value(),result.chapters:value(),result.score:value(),result.status:value())
 			t.thumbnail={url=result.image:value()}
 		else
-			t.title="No results found for search "..input
+			t.title="No results found for search "..args
 		end
 		message:reply{embed=t}
 	else
@@ -390,10 +389,10 @@ addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', 
 		end
 	end
 	message.channel:broadcastTyping()
-	local data, err
+	local data
 	local count = 0
 	while not data do
-		local try,e = API.misc:Furry(args)
+		local try = API.misc.Furry(args)
 		local bl = false
 		for _,v in ipairs(blacklist) do
 			if try and try.tags:match(v) then
@@ -401,7 +400,7 @@ addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', 
 			end
 		end
 		if try and try.file_ext~='swf' and try.file_ext~='webm' and not bl then
-			data,err=try,e
+			data=try
 		end
 		count = count+1
 		if count >= 5 then
@@ -623,14 +622,14 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 		if xHun > 0 then
 			for i=1, xHun do
 				deletions = message.channel:getMessages(100)
-				success = message.channel:bulkDelete(deletions)
-				numDel = numDel+#deletions
+				local success = message.channel:bulkDelete(deletions)
+				if success then numDel = numDel+#deletions end
 			end
 		end
 		if rem > 0 then
 			deletions = message.channel:getMessages(rem)
-			success = message.channel:bulkDelete(deletions)
-			numDel = numDel+#deletions
+			local success = message.channel:bulkDelete(deletions)
+			if success then numDel = numDel+#deletions end
 		end
 		if settings.modlog then
 			guild:getChannel(settings.modlog_channel):send {embed={
@@ -651,7 +650,7 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}
 		if users[m.id] then
 			local watchlisted = users[m.id].watchlisted
 			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
-			status = message:reply {embed={
+			message:reply {embed={
 				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
 				fields = {
 					{name = "Watchlisted", value = watchlisted, inline = true},
@@ -667,7 +666,7 @@ end)
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
 	local a = message.member or message.guild:getMember(message.author.id)
 	local m = resolveMember(message.guild, args)
-	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
+	args = args:gsub("<@!?%d+>",""):gsub(m.id,""):trim()
 	if (args == "") or not m then return end
 	local notes = Database:get(message, "Notes")
 	if args:startswith("add") then
@@ -764,7 +763,7 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
-		for i,role in ipairs(args) do
+		for _,role in ipairs(args) do
 			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
@@ -796,7 +795,7 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToRemove = {}
-		for i,role in ipairs(args) do
+		for _,role in ipairs(args) do
 			role=role:trim()
 			local r = resolveRole(message.guild, role)
 			if r then
@@ -834,7 +833,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 		local rolesToAdd = {}
 		for k,l in pairs(roles) do
 			for r,a in pairs(l) do
-				for i,role in ipairs(args) do
+				for _,role in ipairs(args) do
 					role=role:trim()
 					if string.lower(role) == string.lower(r)  or(table.search(a, string.lower(role))) then
 						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
@@ -875,9 +874,9 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 					}
 				end
 				if settings.introduction_message ~= "" and settings.introduction_channel and settings.introduction then
-					local channel = member.guild:getChannel(settings.introduction_channel)
-					if channel then
-						channel:send(formatMessageSimple(settings.introduction_message, member))
+					local introChannel = member.guild:getChannel(settings.introduction_channel)
+					if introChannel then
+						introChannel:send(formatMessageSimple(settings.introduction_message, member))
 					end
 				end
 				if users==nil or users[member.id]==nil then
@@ -1012,7 +1011,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 end)
 
 --TODO: Figure out why this hangs
-addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message, args)
+addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message)
 	local settings = Database:get(message, "Settings")
 	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 	if not role then
@@ -1068,7 +1067,7 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<rol
 		end
 		local aliases = table.slice(args, 3, #args, 1)
 		if aliases ~= {} then
-			for i,v in ipairs(aliases) do
+			for _,v in ipairs(aliases) do
 				table.insert(roles[cat][r.name], v)
 			end
 		end
@@ -1107,7 +1106,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	local oldPrint = print
 	print = function(...)
 		local arg = {...}
-		for i,v in ipairs(arg) do
+		for _,v in ipairs(arg) do
 			printresult = printresult..tostring(v).."\t"
 		end
 		printresult = printresult.."\n"
@@ -1115,7 +1114,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	local a = loadstring(args)
 	if a then
 		setfenv(a,getfenv())
-		local status, ret = pcall(a)
+		local _,ret = pcall(a)
 		if not ret then ret = printresult else ret = ret.."\n"..printresult end
 		local result, len = {}, 1900
 		local count = math.floor(#ret/len)>0 and math.floor(#ret/len) or 1

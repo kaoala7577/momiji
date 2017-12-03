@@ -55,7 +55,7 @@ coroutine.wrap(function()
 	loadModule('Database')
 	loadModule('Events')
 	loadModule('Clocks')
-	loadModule('Timed')
+	loadModule('Timing')
 	loadModule('API')
 	loadModule('Commands')
 

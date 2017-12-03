@@ -13,7 +13,7 @@ function Timing:on(f)
 end
 
 function Timing:fire(...)
-	for i,cb in pairs(self._callbacks)do
+	for _,cb in pairs(self._callbacks)do
 		coroutine.wrap(cb)(...)
 	end
 end
@@ -31,7 +31,7 @@ function Timing:load(guild)
 	end
 end
 
-function Timing:save(guild,id,timer)
+function Timing.save(guild,id,timer)
 	local timers = Database:get(guild).Timers
 	timers[id] = timer
 	Database:update(guild,'Timers',timers)

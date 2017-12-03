@@ -20,7 +20,7 @@ pcall(function()
 	API.data=options.apiData
 end)
 
-function API:post(endpoint,fmt,...)
+function API.post(endpoint,fmt,...)
 	local uri
 	local url=API.endpoints[endpoint]
 	if url then
@@ -33,7 +33,7 @@ function API:post(endpoint,fmt,...)
 	return http.request('POST',uri,...)
 end
 
-function API:get(endpoint,fmt,...)
+function API.get(endpoint,fmt,...)
 	local uri
 	local url=API.endpoints[endpoint]
 	if url then
@@ -46,38 +46,38 @@ function API:get(endpoint,fmt,...)
 	return http.request('GET',uri,...)
 end
 
-function API.misc:DBots_Stats_Update(info)
-	return API:post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBots_Auth}},json.encode(info))
+function API.misc.DBots_Stats_Update(info)
+	return API.post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBots_Auth}},json.encode(info))
 end
 
-function API.misc:Cats()
-	local _,request=API:get('Meow')
+function API.misc.Cats()
+	local _,request=API.get('Meow')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc:Cats]'
+		return nil,'ERROR: Unable to decode JSON [API.misc.Cats]'
 	end
 	return json.decode(request).file
 end
 
-function API.misc:Dogs()
-	local _,request=API:get('Bork')
+function API.misc.Dogs()
+	local _,request=API.get('Bork')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc:Dogs]'
+		return nil,'ERROR: Unable to decode JSON [API.misc.Dogs]'
 	end
 	return json.decode(request).message
 end
 
-function API.misc:Joke()
-	local _,data=API:get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
+function API.misc.Joke()
+	local _,data=API.get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
 	return data
 end
 
-function API.misc:Weather(input)
+function API.misc.Weather(input)
 	local type="q"
 	input = input:trim()
 	if input:match("^%d+$") then type="id" end
 	local request = query.urlencode(input)
 	if request then
-		local _,data = API:get('Weather', {type,request,API.data.WeatherKey})
+		local _,data = API.get('Weather', {type,request,API.data.WeatherKey})
 		local jdata = json.decode(data)
 		if jdata then
 			return jdata
@@ -89,10 +89,10 @@ function API.misc:Weather(input)
 	end
 end
 
-function API.misc:Urban(input)
+function API.misc.Urban(input)
 	local request=query.urlencode(input:trim())
 	if request then
-		local _,data=API:get('Urban',{request}, {{'User-Agent','luvit'}})
+		local _,data=API.get('Urban',{request}, {{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata
@@ -104,11 +104,11 @@ function API.misc:Urban(input)
 	end
 end
 
-function API.misc:Furry(input)
+function API.misc.Furry(input)
 	input = input.." order:random"
 	local request=query.urlencode(input:trim())
 	if request then
-		local _,data=API:get('e621',{request},{{'User-Agent','luvit'}})
+		local _,data=API.get('e621',{request},{{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata[1]
@@ -120,10 +120,10 @@ function API.misc:Furry(input)
 	end
 end
 
-function API.misc:Anime(input)
+function API.misc.Anime(input)
 	local request = query.urlencode(input)
 	if request then
-		local _, data = API:get('Animu',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local _, data = API.get('Animu',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
 		local xdata = xml:ParseXmlText(data)
 		if xdata.anime then
 			return xdata
@@ -135,10 +135,10 @@ function API.misc:Anime(input)
 	end
 end
 
-function API.misc:Manga(input)
+function API.misc.Manga(input)
 	local request = query.urlencode(input)
 	if request then
-		local _, data = API:get('Mango',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local _, data = API.get('Mango',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
 		local xdata = xml:ParseXmlText(data)
 		if xdata.manga then
 			return xdata

@@ -1588,7 +1588,7 @@ function ntc.name(color)
 
     local r,g,b = color:toRGB()
     local h,s,l = color:toHSL()
-    local ndf,ndf1,ndf2 = 0,0,0
+    local ndf,ndf1,ndf2
     local cl, df = -1,-1
     local r1,g1,b1,h1,s1,l1
 
