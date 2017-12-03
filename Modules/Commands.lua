@@ -1,5 +1,6 @@
 Commands = {}
 
+-- addCommand adapted from DannehSC/Electricity-2.0
 function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
 	local bool,expected,number,got = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
 	if not bool then
@@ -422,6 +423,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 		for r,a in pairs(l) do
 			for _,role in ipairs(roles) do
 				if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
+					--This section is only relevant to my guild unless you somehow got a role with the same snowflake
 					if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
 						if (r == 'Gamer') or (r == '18+') or (r == 'D&D') then
 							rolesToAdd[#rolesToAdd+1] = r
@@ -818,8 +820,9 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 	end
 end)
 
+-- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
+	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then msg:reply("This command is not available in this guild");return end
 	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = resolveMember(message.guild, args)
@@ -1091,7 +1094,7 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 		end
 	end
 	if removed then message.channel:sendf("Removed %s from the rolelist", args) else message:reply("I couldn't find that role.") end
-	Database:update(message, "Roles", {}) --shitty workaround to an issue in RethinkDB
+	Database:update(message, "Roles", {}) --shitty workaround to an unknown issue
 	Database:update(message, "Roles", roles)
 end)
 

@@ -1,3 +1,5 @@
+--[[ Adapted from DannehSC/Electricity-2.0 ]]
+
 Events = {}
 local errLog, comLog
 
@@ -63,7 +65,8 @@ function Events.messageCreate(msg)
 						}}
 					end
 				else
-					msg:reply("Insufficient permission to execute command: "..tab.name..". Rank "..tostring(tab.rank).." expected, your rank: "..tostring(rank))
+					local ranks = {"Everyone", "Mod", "Admin", "Guild Owner", "Bot Owner"}
+					msg.channel:sendf("Insufficient permission to execute command: **%s**\nRank expected: **%s**\nYour Rank: **%s**", tab.name, ranks[tab.rank+1], ranks[rank+1])
 				end
 			end
 		end

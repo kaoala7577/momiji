@@ -1,4 +1,4 @@
---[[ Forked from Timed.lua DannehSC/Electricity-2.0 ]]
+--[[ Adapted from Timed.lua DannehSC/Electricity-2.0 ]]
 
 local fmt = string.format
 

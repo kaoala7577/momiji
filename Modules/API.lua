@@ -1,4 +1,4 @@
---[[ Forked from DannehSC/Electricity-2.0 ]]
+--[[ Adapted from DannehSC/Electricity-2.0 ]]
 
 API={
 	data={},

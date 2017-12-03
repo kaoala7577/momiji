@@ -1,4 +1,4 @@
---[[ RethinkDB databse interaction forked from DannehSC/electricity-2.0 ]]
+--[[ RethinkDB databse interaction adapted from DannehSC/electricity-2.0 ]]
 
 local rethink=require('luvit-reql')
 local conn=rethink:connect(options.database)

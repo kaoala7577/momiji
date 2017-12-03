@@ -22,6 +22,7 @@ ColorChange = {
 	me = true
 }
 
+-- loadModule adapted from DannehSC/Electricity-2.0
 function loadModule(name)
 	name = name..'.lua'
 	local data,others = fs.readFileSync('./Modules/'..name)

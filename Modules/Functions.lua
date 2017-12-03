@@ -1,3 +1,5 @@
+--[[ Seeveral functions adapted from DannehSC/Electricity-2.0 ]]
+
 function checkArgs(types, vals)
 	for i,v in ipairs(types) do
 		if type(v)=='table' then
