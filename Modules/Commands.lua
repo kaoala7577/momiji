@@ -620,7 +620,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 		local xHun, rem = math.floor(args/100), args%100
 		local numDel = 0
 		if xHun > 0 then
-			for i=1, xHun do
+			for i=1, xHun do --luacheck: ignore i
 				deletions = message.channel:getMessages(100)
 				local success = message.channel:bulkDelete(deletions)
 				if success then numDel = numDel+#deletions end
