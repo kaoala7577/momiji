@@ -15,6 +15,7 @@ function Events.messageCreate(msg)
 		end
 		if data.Users[msg.author.id] then
 			data.Users[msg.author.id].last_message = discordia.Date():toISO()
+			data.Users[msg.author.id].nick = msg.author.name
 		else
 			data.Users[msg.author.id] = {last_message = discordia.Date():toISO(), nick=msg.author.name}
 		end

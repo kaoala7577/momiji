@@ -53,7 +53,7 @@ function humanReadableTime(table)
 end
 
 function parseTime(time)
-	if string.match(time, '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
+	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
 --TODO: make these compatible with discordia.Date
