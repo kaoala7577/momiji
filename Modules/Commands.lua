@@ -337,13 +337,14 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 	if data then
 		local t={}
 		t.color = discordia.Color.fromHex('#5DA9FF').value
-		if data.anime:children()[1] then
-			local syn = data.anime:children()[1].synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
+		local result = data.anime:children()[1]
+		if result then
+			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
 			for k,v in pairs(substitutions) do
 				syn = string.gsub(syn,k,v)
 			end
-			t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",data.anime:children()[1].title:value(),data.anime:children()[1].id:value(),syn,data.anime:children()[1].episodes:value(),data.anime:children()[1].score:value(),data.anime:children()[1].status:value())
-			t.thumbnail={url=data.anime:children()[1].image:value()}
+			t.description=string.format("**[%s](https://myanimelist.net/anime/%s)**\n%s\n\n**Episodes:** %s\n**Score:** %s\n**Status: ** %s",result.title:value(),result.id:value(),syn,result.episodes:value(),result.score:value(),result.status:value())
+			t.thumbnail={url=result.image:value()}
 		else
 			t.title="No results found for search "..input
 		end
@@ -359,13 +360,14 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<sear
 	if data then
 		local t={}
 		t.color = discordia.Color.fromHex('#5DA9FF').value
-		if data.manga:children()[1] then
-			local syn = data.manga:children()[1].synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
+		local result = data.manga:children()[1]
+		if result then
+			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
 			for k,v in pairs(substitutions) do
 				syn = string.gsub(syn,k,v)
 			end
-			t.description=string.format("**[%s](https://myanimelist.net/manga/%s)**\n%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",data.manga:children()[1].title:value(),data.manga:children()[1].id:value(),syn,data.manga:children()[1].volumes:value(),data.manga:children()[1].chapters:value(),data.manga:children()[1].score:value(),data.manga:children()[1].status:value())
-			t.thumbnail={url=data.manga:children()[1].image:value()}
+			t.description=string.format("**[%s](https://myanimelist.net/manga/%s)**\n%s\n\n**Volumes:** %s\n**Chapters:** %s\n**Score:** %s\n**Status: ** %s",result.title:value(),result.id:value(),syn,result.volumes:value(),result.chapters:value(),result.score:value(),result.status:value())
+			t.thumbnail={url=result.image:value()}
 		else
 			t.title="No results found for search "..input
 		end
