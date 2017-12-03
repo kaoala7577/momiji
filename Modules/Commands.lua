@@ -219,8 +219,8 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 		local users = Database:get(message, "Users")
 		local registerTime = "N/A"
 		if users[member.id] then
-			if users[member.id].registered ~= "" then
-				registerTime = humanReadableTime(parseTime(users[member.id] and users[member.id].registered or ""):toTableUTC())
+			if users[member.id].registered and users[member.id].registered ~= "" then
+				registerTime = humanReadableTime(parseTime(users[member.id].registered):toTableUTC())
 			end
 		end
 		local fields = {
