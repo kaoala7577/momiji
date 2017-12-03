@@ -1,7 +1,7 @@
-# Momiji, a moderation bot for Discord
+# Momiji, a general purpose bot for Discord
 
 Momiji is a general purpose Discord bot focused on supplying flexible commands for moderation and role management.
-She also come packed with logging functionality and a multitude of informative commands.
+She also come packed with logging functionality and a multitude of informative commands, plus some fun stuff.
 
 She's written in Lua using the [Discordia library](https://github.com/SinisterRectus/Discordia) and all of her settings are stored using RethinkDB.
 

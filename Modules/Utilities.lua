@@ -184,7 +184,7 @@ function string.levenshtein(str1, str2)
 	for i = 1, len1 do
 		for j = 1, len2 do
 			local cost = byte(str1, i) == byte(str2, j) and 0 or 1
-  			matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
+			matrix[i][j] = min(matrix[i-1][j] + 1, matrix[i][j-1] + 1, matrix[i-1][j-1] + cost)
 		end
 	end
 
