@@ -13,8 +13,11 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		data.Users[msg.author.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=sender.name }
-		Database:update(msg, "Users", {})
+		if data.Users[msg.author.id] then
+			data.Users[msg.author.id].last_message = discordia.Date():toISO()
+		else
+			data.Users[msg.author.id] = {last_message = discordia.Date():toISO(), nick=msg.author.name}
+		end
 		Database:update(msg, "Users", data.Users)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
@@ -99,8 +102,7 @@ function Events.memberJoin(member)
 		end
 	end
 	local users = Database:get(member, "Users")
-	users[member.id] = { registered="", watchlisted=false, last_message=discordia.Date():toISO(), nick=member.name }
-	Database:update(member, "Users", {})
+	users[member.id] = { last_message=discordia.Date():toISO(), nick=member.name }
 	Database:update(member, "Users", users)
 end
 
@@ -144,8 +146,7 @@ function Events.memberUpdate(member)
 				footer = {text="ID: "..member.id},
 			}}
 		end
-		users[member.id].nick = member.name
-		Database:update(member, "Users", {})
+		if users[member.id] then users[member.id].nick = member.name else users[member.id] = {nick = member.name} end
 		Database:update(member, "Users", users)
 	end
 end

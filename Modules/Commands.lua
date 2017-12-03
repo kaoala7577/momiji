@@ -204,7 +204,7 @@ end)
 
 addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
 	local guild = message.guild
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if args=="" then
 		member = message.member
 	end
@@ -553,7 +553,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, fun
 		message:reply("Mute cannot be used until `setup` has been run.")
 		return
 	end
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:addRole(role) then return end
@@ -585,7 +585,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 		message:reply("Unmute cannot be used until `setup` has been run.")
 		return
 	end
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:removeRole(role) then return end
@@ -642,7 +642,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 end)
 
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
-	local m = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local m = resolveMember(message.guild, args)
 	if m then
 		local users = Database:get(message, "Users")
 		if users[m.id] then
@@ -663,7 +663,7 @@ end)
 
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
 	local a = message.member or message.guild:getMember(message.author.id)
-	local m = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local m = resolveMember(message.guild, args)
 	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 	if (args == "") or not m then return end
 	local notes = Database:get(message, "Notes")
@@ -706,19 +706,20 @@ end)
 
 addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
 	local users = Database:get(message, "Users")
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim():split(' ')
 	if args[1] == 'add' then
-		if users[member.id] == nil then
-			--This shouldn't happen, but its here just in case
-			users[member.id] = { registered="", watchlisted=true, last_message="", nick=member.name }
-		else
+		if users[member.id] then
 			users[member.id].watchlisted = true
+		else
+			users[member.id] = {watchlisted = true}
 		end
 		message.channel:sendf("Added %s to the watchlist",member.mentionString)
 	elseif args[1] == 'remove' then
 		if users[member.id] then
 			users[member.id].watchlisted = false
+		else
+			users[member.id] = {watchlisted = false}
 		end
 		message.channel:sendf("Removed %s from the watchlist",member.mentionString)
 	elseif args[1] == 'list' then
@@ -736,7 +737,6 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			}}
 		end
 	end
-	Database:update(message, "Users", {})
 	Database:update(message, "Users", users)
 end)
 
@@ -756,7 +756,7 @@ addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour
 end)
 
 addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if member then
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
@@ -788,7 +788,7 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 end)
 
 addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if member then
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
@@ -823,7 +823,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then return end
 	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
-	local member = message.guild:getMember(#message.mentionedUsers==1 and message.mentionedUsers:iter()() or resolveMember(message.guild, args))
+	local member = resolveMember(message.guild, args)
 	if member then
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
@@ -877,11 +877,10 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 					end
 				end
 				if users==nil or users[member.id]==nil then
-					users[member.id] = { registered=discordia.Date():toISO(), watchlisted=false, last_message="", nick=member.name }
+					users[member.id] = { registered=discordia.Date():toISO() }
 				else
 					users[member.id].registered = discordia.Date():toISO()
 				end
-				Database:update(message, "Users", {})
 				Database:update(message, "Users", users)
 			end
 		else
