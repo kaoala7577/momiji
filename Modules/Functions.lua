@@ -59,7 +59,7 @@ end
 --TODO: make these compatible with discordia.Date
 function parseHumanTime(message)
 	local t={}
-	for time,unit in v:gmatch('(%d+)%s*(%S+)') do
+	for time,unit in message:gmatch('(%d+)%s*(%S+)') do
 		local u=unit:lower()
 		if u:startswith('y') then
 			t.years=time

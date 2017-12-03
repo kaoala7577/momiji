@@ -1,10 +1,10 @@
 --[[ Forked from Timed.lua DannehSC/Electricity-2.0 ]]
 
-local f=string.format
+local fmt = string.format
 
-Timing={
-	_callbacks={},
-	_timers={},
+Timing = {
+	_callbacks = {},
+	_timers = {},
 }
 
 function Timing:on(f)
@@ -19,10 +19,10 @@ function Timing:fire(...)
 end
 
 function Timing:load(guild)
-	local timers=Database:get(guild).Timers or{}
-	for id,timer in pairs(timers)do
-		if timer.endTime<os.time()then
-			coroutine.wrap(function()self:delete(guild,id)end)()
+	local timers = Database:get(guild).Timers or {}
+	for id,timer in pairs(timers) do
+		if timer.endTime<os.time() then
+			coroutine.wrap(function() self:delete(guild,id) end)()
 			if timer.stopped==true then return end
 			self:fire(timer.data)
 		else
@@ -32,38 +32,37 @@ function Timing:load(guild)
 end
 
 function Timing:save(guild,id,timer)
-	local timers=Database:get(guild).Timers
-	timers[id]=timer
+	local timers = Database:get(guild).Timers
+	timers[id] = timer
 	Database:update(guild,'Timers',timers)
 end
 
 function Timing:delete(guild,id)
 	local data = Database:get(guild,'Timers')
 	if data then
-		self._timers[id]=nil
-		data[id]=nil
-		Database:update(guild,'Timers',{})
+		self._timers[id] = nil
+		data[id] = nil
 		Database:update(guild,'Timers',data)
 	end
 end
 
 function Timing:newTimer(guild,secs,data,ign)
-	if type(secs)~='number'then secs=5 end
-	local ms=secs*1000
+	if type(secs)~='number'then secs = 5 end
+	local ms = secs*1000
 	assert(guild~=nil,'Error 9F2 - guild nil')
 	assert(type(data)=='string','Error CXT - data not string')
-	local id=ssl.base64(f('%s|%s|%s',ssl.random(20),ms,data),true):gsub('/','')
+	local id = ssl.base64(fmt('%s|%s|%s',ssl.random(20),ms,data),true):gsub('/','')
 	timer.setTimeout(ms,function()
 		coroutine.wrap(function()
-			if not self._timers[id]then return end
+			if not self._timers[id] then return end
 			if self._timers[id].stopped then return end
 			self:fire(data)
 			self:delete(guild,id)
 		end)()
 	end)
-	local tab={duration=secs,endTime=os.time()+secs,stopped=false,data=data}
-	self._timers[id]=tab
-	if not ign then self:save(guild,id,tab)end
+	local tab = {duration=secs,endTime=os.time()+secs,stopped=false,data=data}
+	self._timers[id] = tab
+	if not ign then self:save(guild,id,tab) end
 	return id
 end
 
@@ -77,8 +76,8 @@ end
 
 function Timing:getTimers(txt)
 	local t={}
-	for i,v in pairs(self._timers)do
-		if v.data:find(txt)then
+	for i,v in pairs(self._timers) do
+		if v.data:find(txt) then
 			t[i]=v
 		end
 	end

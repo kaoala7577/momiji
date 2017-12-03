@@ -46,7 +46,6 @@ end)
 addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 0, false, false, function(message, args)
 	local reminder, time = args:match("(.*)in(.*)")
 	local secs = toSeconds(parseHumanTime(time))
-	print(secs)
 	if reminder and time and secs then
 		Timing:newTimer(message.guild,secs,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,time,reminder))
 		message.channel:sendf("Got it! I'll remind %s to %sin%s.",message.author.name,reminder,time)
