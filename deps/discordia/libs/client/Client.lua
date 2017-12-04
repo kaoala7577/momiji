@@ -371,6 +371,12 @@ function Client:setGame(game)
 				if game.type<0 or game.type>3 then
 					game.type = gameType.default
 				end
+			else
+				if type(game.url) == 'string' then
+					game.type = gameType.streaming
+				else
+					game.type = gameType.default
+				end
 			end
 		else
 			game = null

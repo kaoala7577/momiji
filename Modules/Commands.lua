@@ -1119,7 +1119,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	if a then
 		setfenv(a,getfenv())
 		local _,ret = pcall(a)
-		if not ret then ret = printresult else ret = ret.."\n"..printresult end
+		if not ret then ret = printresult else ret = tostring(ret).."\n"..printresult end
 		local result, len = {}, 1900
 		local count = math.floor(#ret/len)>0 and math.floor(#ret/len) or 1
 		for i=1,count do
