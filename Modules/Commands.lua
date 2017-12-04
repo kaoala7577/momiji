@@ -46,10 +46,15 @@ end)
 
 addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 0, false, false, function(message, args)
 	local reminder, time = args:match("(.*)in(.*)")
-	local secs = toSeconds(parseHumanTime(time))
+	local parsedTime, strTime = parseHumanTime(time), ""
+	for k,v in pairs(parsedTime) do
+		strTime = strTime.." "..v.." "..k
+	end
+	strTime = strTime:trim()
+	local secs = toSeconds(parsedTime)
 	if reminder and time and secs then
-		Timing:newTimer(message.guild,secs,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,time,reminder))
-		message.channel:sendf("Got it! I'll remind %s to %sin%s.",message.author.name,reminder,time)
+		Timing:newTimer(message.guild,secs,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
+		message.channel:sendf("Got it! I'll remind %s to %sin%s.",message.author.name,reminder,strTime)
 	end
 end)
 
@@ -1095,7 +1100,6 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 		end
 	end
 	if removed then message.channel:sendf("Removed %s from the rolelist", args) else message:reply("I couldn't find that role.") end
-	Database:update(message, "Roles", {}) --shitty workaround to an unknown issue
 	Database:update(message, "Roles", roles)
 end)
 
