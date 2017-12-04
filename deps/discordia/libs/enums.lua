@@ -75,6 +75,8 @@ enums.relationshipType = enum {
 enums.gameType = enum {
 	default   = 0,
 	streaming = 1,
+	listening = 2,
+	watching = 3,
 }
 
 enums.verificationLevel = enum {
