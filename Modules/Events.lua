@@ -267,7 +267,10 @@ function Events.ready()
 		Database:get(g)
 		Timing:load(g)
 	end
-	client:setGame("m!help | Awoo!")
+	client:setGame({
+		name = "Awoo! | m!help",
+		type = 2,
+	})
 	errLog = client:getChannel('376422808852627457')
 	comLog = client:getChannel('376422940570419200')
 	logger:log(3, "Logged in as %s", client.user.fullname)
