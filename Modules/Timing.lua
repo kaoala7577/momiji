@@ -32,8 +32,9 @@ function Timing:load(guild)
 end
 
 function Timing.save(guild,id,timer)
-	local timers = Database:get(guild).Timers
+	local timers = Database:get(guild, "Timers")
 	timers[id] = timer
+	p(timer)
 	Database:update(guild,'Timers',timers)
 end
 
@@ -62,7 +63,7 @@ function Timing:newTimer(guild,secs,data,ign)
 	end)
 	local tab = {duration=secs,endTime=os.time()+secs,stopped=false,data=data}
 	self._timers[id] = tab
-	if not ign then self:save(guild,id,tab) end
+	if not ign then self.save(guild,id,tab) end
 	return id
 end
 
