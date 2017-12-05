@@ -142,7 +142,7 @@ function timeBetween(tim)
 end
 
 function getIdFromString(str)
-	return string.match(tostring(str),"<?[@#]?!?(%d*)>?")
+	return string.match(tostring(str),"<?[@#]?!?(%d+)>?")
 end
 
 function resolveGuild(guild)

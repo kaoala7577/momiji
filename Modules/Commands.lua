@@ -673,8 +673,8 @@ end)
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
 	local a = message.member or message.guild:getMember(message.author.id)
 	local m = resolveMember(message.guild, args)
-	args = args:gsub("<@!?%d+>",""):gsub(m.id,""):trim()
 	if (args == "") or not m then return end
+	args = args:gsub("<@!?%d+>",""):gsub(m.id,""):trim()
 	local notes = Database:get(message, "Notes")
 	if args:startswith("add") then
 		args = args:gsub("^add",""):trim()
