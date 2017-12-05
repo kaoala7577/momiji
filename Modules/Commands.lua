@@ -449,8 +449,9 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	for _,role in ipairs(rolesToAdd) do
 		function fn(r) return r.name == role end
 		if not member:hasRole(member.guild.roles:find(fn)) then
-			local success = member:addRole(member.guild.roles:find(fn))
-			if success then rolesAdded[#rolesAdded+1] = role end
+			if member:addRole(member.guild.roles:find(fn)) then
+				rolesAdded[#rolesAdded+1] = role
+			end
 		else rolesFailed[#rolesFailed+1] = "You already have "..role end
 	end
 	if #rolesAdded > 0 then
@@ -495,8 +496,9 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	local roleList = ""
 	for _,role in ipairs(rolesToRemove) do
 		function fn(r) return r.name == role end
-		local success = member:removeRole(member.guild.roles:find(fn))
-		if success then roleList = roleList..role.."\n" end
+		if member:removeRole(member.guild.roles:find(fn)) then
+			roleList = roleList..role.."\n"
+		end
 	end
 	if #rolesToRemove > 0 then
 		message.channel:send {
@@ -773,8 +775,9 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 			local r = resolveRole(message.guild, role)
 			if r then
 				if not member:hasRole(r) then
-					member:addRole(r)
-					rolesToAdd[#rolesToAdd+1] = r.name
+					if member:addRole(r) then
+						rolesToAdd[#rolesToAdd+1] = r.name
+					end
 				else
 					rolesToAdd[#rolesToAdd+1] = member.fullname.." already has "..r.name
 				end
@@ -805,8 +808,9 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 			local r = resolveRole(message.guild, role)
 			if r then
 				if member:hasRole(r) then
-					member:removeRole(r)
-					rolesToRemove[#rolesToRemove+1] = r.name
+					if member:removeRole(r) then
+						rolesToRemove[#rolesToRemove+1] = r.name
+					end
 				else
 					rolesToRemove[#rolesToRemove+1] = member.fullname.." does not have "..r.name
 				end
@@ -858,8 +862,9 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			local roleList = ""
 			for _,role in pairs(rolesToAdd) do
 				function fn(r) return r.name == role end
-				member:addRole(member.guild.roles:find(fn))
-				roleList = roleList..role.."\n"
+				if member:addRole(member.guild.roles:find(fn)) then
+					roleList = roleList..role.."\n"
+				end
 			end
 			if message.guild.id == "348660188951216129" then
 				member:addRole('348873284265312267')
