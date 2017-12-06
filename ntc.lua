@@ -1594,7 +1594,7 @@ function ntc.name(color)
 
     for k,v in pairs(names) do
         if color:toHex()=="#"..k then
-            return "#"..k, v
+            return k, v
         end
 
         r1,g1,b1 = Color.fromHex(k):toRGB()
