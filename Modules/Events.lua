@@ -52,15 +52,16 @@ function Events.messageCreate(msg)
 						end
 					end
 					if comLog then
-						local g = not private and msg.guild.name or "Private"
+						local g = not private and msg.guild or "Private"
 						comLog:send{embed={
 							fields={
+								{name="Guild",value=g.name.."\n"..g.id,inline=true},
+								{name="Author",value=msg.author.fullname.."\n"..msg.author.id,inline=true},
+								{name="Channel",value=msg.channel.name.."\n"..msg.channel.id,inline=true},
 								{name="Command",value=tab.name,inline=true},
-								{name="Guild",value=g,inline=true},
-								{name="Author",value=msg.author.fullname,inline=true},
-								{name="Message Content",value="```"..msg.content.."```"},
+								{name="Message Content",value=msg.cleanContent},
 							},
-							footer = {text="ID: "..msg.id},
+							footer = {text="Message ID: "..msg.id},
 							timestamp=discordia.Date():toISO(),
 						}}
 					end
