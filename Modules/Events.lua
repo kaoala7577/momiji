@@ -152,7 +152,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	if users[member.id] then
+	if users[member.id] and type(users[member.id])=="table" then
 		users[member.id].nick = member.nickname or member.username
 	else
 		users[member.id] = {nick = member.nickname or member.username}
