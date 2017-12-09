@@ -141,7 +141,7 @@ function Events.memberUpdate(member)
 	local users = Database:get(member, "Users")
 	local settings = Database:get(member, "Settings")
 	if users[member.id] and settings.audit and settings.audit_channel then
-		if users[member.id].nick~=member.nickname then
+		if users[member.id].nick~=member.nickname and users[member.id].nick~=member.username then
 			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
@@ -152,7 +152,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	if users[member.id] and type(users[member.id])=="table" then
+	if users[member.id] then
 		users[member.id].nick = member.nickname or member.username
 	else
 		users[member.id] = {nick = member.nickname or member.username}
