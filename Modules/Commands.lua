@@ -454,27 +454,24 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 			end
 		else rolesFailed[#rolesFailed+1] = "You already have "..role end
 	end
+	local desc = ""
 	if #rolesAdded > 0 then
-		message.channel:send {
-			embed = {
-				author = {name = "Roles Added", icon_url = member.avatarURL},
-				description = "**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesAdded,"\n"),
-				color = member:getColor().value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text = "ID: "..member.id}
-			}
-		}
+		desc = desc.."**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesAdded,"\n")
 	end
 	if #rolesFailed > 0 then
-		message.channel:send {
-			embed = {
-				author = {name = "Roles Failed to be Added", icon_url = member.avatarURL},
-				description = "**Failed to add the following roles to** "..member.mentionString.."\n"..table.concat(rolesFailed,"\n"),
-				color = member:getColor().value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text = "ID: "..member.id}
-			}
-		}
+		local val = "**Failed to add the following roles to** "..member.mentionString.."\n"..table.concat(rolesFailed,"\n")
+		desc = desc=="" and desc.."\n"..val or val
+	end
+	if desc~="" then
+		message.channel:send{embed={
+			author = {name = "Roles Failed to be Added", icon_url = member.avatarURL},
+			description = desc,
+			color = member:getColor().value,
+			timestamp = discordia.Date():toISO(),
+			footer = {text = "ID: "..member.id}
+		}}
+	else
+		message:reply("I was unable to find any of those roles")
 	end
 end)
 
@@ -510,6 +507,8 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 				footer = {text = "ID: "..member.id}
 			}
 		}
+	else
+		message:reply("I was unable to find any of those roles")
 	end
 end)
 
@@ -793,6 +792,8 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 					footer = {text = "ID: "..member.id}
 				}
 			}
+		else
+			message:reply("I was unable to find any of those roles")
 		end
 	end
 end)
@@ -826,6 +827,8 @@ addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|u
 					footer = {text = "ID: "..member.id}
 				}
 			}
+		else
+			message:reply("I was unable to find any of those roles")
 		end
 	end
 end)
