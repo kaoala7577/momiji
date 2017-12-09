@@ -93,7 +93,7 @@ function Events.memberJoin(member)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Joined", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.fullname,
+			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(0, 255, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -117,7 +117,7 @@ function Events.memberLeave(member)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Left", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.fullname,
+			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -163,7 +163,7 @@ function Events.userBan(user, guild)
 	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.fullname,
+			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -179,7 +179,7 @@ function Events.userUnban(user, guild)
 	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Unbanned", icon_url = member.avatarURL},
-			description = member.mentionString.." "..member.fullname,
+			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(0, 255, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -200,7 +200,7 @@ function Events.messageDelete(message)
 	local settings = Database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = "**Message sent by "..member.mentionString.." deleted in "..message.channel.mentionString.."**\n"..message.content
+		local body = "**Message sent by "..member.mentionString.." ("..member.fullname..")".." deleted in "..message.channel.mentionString.." ("..message.channel.name..")".."**\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
@@ -228,7 +228,7 @@ function Events.messageDeleteUncached(channel, messageID)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
 			author = {name = channel.guild.name, icon_url = channel.guild.iconURL},
-			description = "**Uncached message deleted in** "..channel.mentionString,
+			description = "**Uncached message deleted in** "..channel.mentionString.." ("..channel.name..")",
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..channel.id}
