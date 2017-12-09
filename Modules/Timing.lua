@@ -34,7 +34,6 @@ end
 function Timing.save(guild,id,timer)
 	local timers = Database:get(guild, "Timers")
 	timers[id] = timer
-	p(timer)
 	Database:update(guild,'Timers',timers)
 end
 

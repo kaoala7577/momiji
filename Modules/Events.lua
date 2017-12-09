@@ -241,19 +241,38 @@ function Events.messageDeleteUncached(channel, messageID)
 end
 
 function Events.Timing(data)
-	local args=string.split(data,'||')
-	if args[1]=='REMINDER'then
-		local g=client:getGuild(args[2])
+	local args = string.split(data,'||')
+	if args[1]=='REMINDER' then
+		local g = client:getGuild(args[2])
 		if g then
-			local m=g:getMember(args[3])
-			if not m then return end
-			local time=timeBetween(toSeconds(parseHumanTime(args[4])))
+			local m = g:getMember(args[3])
+			local time = timeBetween(toSeconds(parseHumanTime(args[4])))
 			if m then
 				m:send{embed={
 					title='Reminder from '..time..' ago',
 					description=args[5],
 					color=discordia.Color.fromHex('#5DA9FF').value,
 				}}
+			end
+		end
+	elseif args[1]=='UNMUTE' then
+		local g = client:getGuild(args[2])
+		if g then
+			local settings = Database:get(g, "Settings")
+			local m = g:getMember(args[3])
+			local time = timeBetween(toSeconds(parseHumanTime(args[4])))
+			if m then
+				local s = m:removeRole(g.roles:find(function(r) return r.name=='Muted' end))
+				if s and settings.modlog and settings.modlog_channel then
+					g:getChannel(settings.modlog_channel):send{embed={
+						title = "Member Unmuted Automatically",
+						fields = {
+							{name = "Member", value = m.mentionString.."\n"..m.fullname, inline = true},
+							{name = "Moderator", value = client.user.mentionString.."\n"..client.user.fullname, inline = true},
+							{name = "Duration", value = time, inline = true},
+						}
+					}}
+				end
 			end
 		end
 	end

@@ -27,7 +27,7 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
 		author = {name=client.user.name, icon_url=client.user.avatarURL},
 		thumbnail = {url=client.user.avatarURL},
 		timestamp = discordia.Date():toISO(),
-		description = "I'm a moderation bot created in the [Lua](http://www.lua.org/) scripting language using the [Discordia](https://github.com/SinisterRectus/Discordia) framework.",
+		description = "I'm a general purpose bot created in the [Lua](http://www.lua.org/) scripting language using the [Discordia](https://github.com/SinisterRectus/Discordia) framework.",
 		fields = {
 			{name="Guilds",value=#client.guilds,inline=true},
 			{name="Shards",value=client.shardCount,inline=true},
@@ -555,31 +555,43 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 	}
 end)
 
-addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID>', 1, false, true, function(message, args)
+addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, false, true, function(message, args)
 	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
 	if not settings.mute_setup then
 		message:reply("Mute cannot be used until `setup` has been run.")
 		return
 	end
 	local member = resolveMember(message.guild, args)
+	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim():split(" ")
+	local time = args[1]
+	local parsedTime, strTime = parseHumanTime(time), ""
+	for k,v in pairs(parsedTime) do
+		strTime = strTime.." "..v.." "..k
+	end
+	strTime = strTime:trim()
+	local secs = toSeconds(parsedTime)
 	if member then
+		if secs then
+			Timing:newTimer(message.guild,secs,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
+		end
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:addRole(role) then return end
-		if cases==nil or cases[member.id]==nil then
-			cases[member.id] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
-		else
-			cases[member.id][#cases[member.id]+1] = {type="mute", reason=args, moderator=message.author.id, timestamp=discordia.Date():toISO()}
-		end
 		message.channel:sendf("Muting %s", member.mentionString)
 		if settings.modlog then
-			local r = args:gsub("[<@!>]*",""):gsub(member.id,""):trim()
+			local r = table.concat(table.slice(args, strTime=="" and 1 or 2), " ")
 			local reason = r~="" and r or "None"
+			if cases==nil or cases[member.id]==nil then
+				cases[member.id] = {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()}
+			else
+				cases[member.id][#cases[member.id]+1] = {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()}
+			end
 			message.guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Member Muted",
 				fields = {
-					{name = "User", value = member.mentionString, inline = true},
-					{name = "Moderator", value = message.author.mentionString, inline = true},
+					{name = "User", value = member.mentionString.."\n"..member.fullname, inline = true},
+					{name = "Moderator", value = message.author.mentionString.."\n"..message.author.fullname, inline = true},
 					{name = "Reason", value = reason, inline = true},
+					{name = "Duration", value = strTime~="" and strTime or "Indefinite", inline = true},
 				},
 			}}
 		end

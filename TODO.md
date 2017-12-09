@@ -1,5 +1,4 @@
 # High Priority
-* Timed Mutes
 * Advanced pruning
 * Rewite Register to not suck ass
 # Low Priority
