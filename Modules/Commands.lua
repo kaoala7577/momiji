@@ -460,7 +460,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	if #rolesFailed > 0 then
 		local val = "**Failed to add the following roles to** "..member.mentionString.."\n"..table.concat(rolesFailed,"\n")
-		desc = desc=="" and desc.."\n"..val or val
+		desc = desc~="" and desc.."\n"..val or val
 	end
 	if desc~="" then
 		message.channel:send{embed={
