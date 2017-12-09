@@ -464,7 +464,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	if desc~="" then
 		message.channel:send{embed={
-			author = {name = "Roles Failed to be Added", icon_url = member.avatarURL},
+			author = {name = "Add Self Role Summary", icon_url = member.avatarURL},
 			description = desc,
 			color = member:getColor().value,
 			timestamp = discordia.Date():toISO(),
