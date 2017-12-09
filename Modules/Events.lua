@@ -17,9 +17,9 @@ function Events.messageCreate(msg)
 		end
 		if data.Users[msg.author.id] then
 			data.Users[msg.author.id].last_message = discordia.Date():toISO()
-			data.Users[msg.author.id].nick = msg.author.nickname or msg.author.username
+			data.Users[msg.author.id].nick = msg.author.nickname
 		else
-			data.Users[msg.author.id] = {last_message = discordia.Date():toISO(), nick=msg.author.nickname or msg.author.username}
+			data.Users[msg.author.id] = {last_message = discordia.Date():toISO(), nick=msg.author.nickname}
 		end
 		Database:update(msg, "Users", data.Users)
 	end
@@ -107,7 +107,7 @@ function Events.memberJoin(member)
 		end
 	end
 	local users = Database:get(member, "Users")
-	users[member.id] = { last_message=discordia.Date():toISO(), nick=member.nickname or member.username }
+	users[member.id] = { last_message=discordia.Date():toISO(), nick=member.nickname}
 	Database:update(member, "Users", users)
 end
 
@@ -141,11 +141,11 @@ function Events.memberUpdate(member)
 	local users = Database:get(member, "Users")
 	local settings = Database:get(member, "Settings")
 	if users[member.id] and settings.audit and settings.audit_channel then
-		if users[member.id].nick~=member.nickname and users[member.id].nick~=member.username then
+		if users[member.id].nick~=member.nickname then
 			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
-				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick,member.nickname or member.username),
+				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick or member.username,member.nickname or member.username,
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
@@ -153,9 +153,9 @@ function Events.memberUpdate(member)
 		end
 	end
 	if users[member.id] then
-		users[member.id].nick = member.nickname or member.username
+		users[member.id].nick = member.nickname
 	else
-		users[member.id] = {nick = member.nickname or member.username}
+		users[member.id] = {nick = member.nickname}
 	end
 	Database:update(member, "Users", users)
 end
