@@ -15,7 +15,7 @@ local TextChannel, get = require('class')('TextChannel', Channel)
 
 function TextChannel:__init(data, parent)
 	Channel.__init(self, data, parent)
-	self._messages = WeakCache({}, Message, self)
+	self._messages = Cache({}, Message, self)
 end
 
 function TextChannel:getMessage(id)
