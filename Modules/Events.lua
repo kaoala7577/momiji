@@ -151,9 +151,9 @@ function Events.memberUpdate(member)
 				footer = {text="ID: "..member.id},
 			}}
 		end
-		if users[member.id] then users[member.id].nick = member.nickname or member.username else users[member.id] = {nick = member.nickname or member.username} end
-		Database:update(member, "Users", users)
 	end
+	if users[member.id] then users[member.id].nick = member.nickname or member.username else users[member.id] = {nick = member.nickname or member.username} end
+	Database:update(member, "Users", users)
 end
 
 function Events.userBan(user, guild)
