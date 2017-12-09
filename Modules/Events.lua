@@ -204,14 +204,14 @@ function Events.messageDelete(message)
 	local settings = Database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = "**Message sent by "..member.mentionString.." ("..member.fullname..")".." deleted in "..message.channel.mentionString.." ("..message.channel.name..")".."**\n"..message.content
+		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
 			end
 		end
 		channel:send {embed={
-			author = {name = member.fullname, icon_url = member.avatarURL},
+			author = {name = "Message Deleted", icon_url = member.avatarURL},
 			description = body,
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -231,8 +231,8 @@ function Events.messageDeleteUncached(channel, messageID)
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
-			author = {name = channel.guild.name, icon_url = channel.guild.iconURL},
-			description = "**Uncached message deleted in** "..channel.mentionString.." ("..channel.name..")",
+			author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
+			description = "**Channel:** "..channel.mentionString.." ("..channel.name..")",
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..channel.id}
