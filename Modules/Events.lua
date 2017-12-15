@@ -107,7 +107,7 @@ function Events.memberJoin(member)
 		end
 	end
 	local users = Database:get(member, "Users")
-	users[member.id] = { last_message=discordia.Date():toISO(), nick=member.nickname}
+	users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname}
 	Database:update(member, "Users", users)
 end
 
@@ -145,7 +145,7 @@ function Events.memberUpdate(member)
 			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
-				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick or member.username,member.nickname or member.username),
+				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
