@@ -23,6 +23,9 @@ function Events.messageCreate(msg)
 		end
 		Database:update(msg, "Users", data.Users)
 	end
+	if msg.content:lower():match("i need a hug") then
+		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
+	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
 	for _,tab in pairs(Commands) do
