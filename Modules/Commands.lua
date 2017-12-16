@@ -277,7 +277,7 @@ end)
 addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
 	local data, err = API.misc.Weather(args)
 	if data then
-		if data.cod=='404' then
+		if data.cod==404 then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
 		end
 		local t={}

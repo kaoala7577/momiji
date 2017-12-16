@@ -72,13 +72,25 @@ function API.misc.Joke()
 end
 
 function API.misc.Weather(input)
-	local type="q"
+	local t="q"
 	input = input:trim()
-	if input:match("^%d+$") then type="id" end
+	local tp = input:match("^%d+$")
+	if tp then
+		if #tp == 5 then
+			t="zip"
+		else
+			t="id"
+		end
+	end
 	local request = query.urlencode(input)
 	if request then
-		local _,data = API.get('Weather', {type,request,API.data.WeatherKey})
+		local _,data = API.get('Weather', {t,request,API.data.WeatherKey})
 		local jdata = json.decode(data)
+		if t=="zip" and jdata.cod~=200 then
+			t="id"
+			_,data = API.get('Weather', {t,request,API.data.WeatherKey})
+			jdata = json.decode(data)
+		end
 		if jdata then
 			return jdata
 		else
