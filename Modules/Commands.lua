@@ -46,15 +46,20 @@ end)
 
 addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 0, false, false, function(message, args)
 	local reminder, time = args:match("(.*)in(.*)")
-	local parsedTime, strTime = parseHumanTime(time), ""
-	for k,v in pairs(parsedTime) do
-		strTime = strTime.." "..v.." "..k
+	local t = timeBetween(parseTime(time))
+	local t2 = t:toTableUTC()
+	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
+		if type(v)=='number' then
+			local val = t2[k]-v
+			t2[k] = val~=0 and val or nil
+		else
+			t2[k] = nil
+		end
 	end
-	strTime = strTime:trim()
-	local secs = toSeconds(parsedTime)
-	if reminder and time and secs then
-		Timing:newTimer(message.guild,secs,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
-		message.channel:sendf("Got it! I'll remind %s to %sin%s.",message.author.name,reminder,strTime)
+	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
+	if reminder and time then
+		Timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
+		message.channel:sendf("Got it! I'll remind %s to %sin %s.",message.author.name,reminder,strTime)
 	end
 end)
 
@@ -156,7 +161,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 
 			online = online+1
 		end
 	end
-	local timestamp = humanReadableTime(parseTime(guild.timestamp):toTable())
+	local timestamp = humanReadableTime(parseISOTime(guild.timestamp):toTable())
 	fields = {
 		{name = 'ID', value = guild.id, inline = true},
 		{name = 'Name', value = guild.name, inline = true},
@@ -218,13 +223,13 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 			if roles == "" then roles = i.name else roles = roles..", "..i.name end
 		end
 		if roles == "" then roles = "None" end
-		local joinTime = humanReadableTime(parseTime(member.joinedAt):toTableUTC())
-		local createTime = humanReadableTime(parseTime(member.timestamp):toTableUTC())
+		local joinTime = humanReadableTime(parseISOTime(member.joinedAt):toTableUTC())
+		local createTime = humanReadableTime(parseISOTime(member.timestamp):toTableUTC())
 		local users = Database:get(message, "Users")
 		local registerTime = "N/A"
 		if users[member.id] then
 			if users[member.id].registered and users[member.id].registered ~= "" then
-				registerTime = humanReadableTime(parseTime(users[member.id].registered):toTableUTC())
+				registerTime = humanReadableTime(parseISOTime(users[member.id].registered):toTableUTC())
 			end
 		end
 		local fields = {
@@ -564,16 +569,19 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 	local member = resolveMember(message.guild, args)
 	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim():split(" ")
 	local time = args[1]
-	local parsedTime, strTime = parseHumanTime(time), ""
-	for k,v in pairs(parsedTime) do
-		strTime = strTime.." "..v.." "..k
-	end
-	strTime = strTime:trim()
-	local secs = toSeconds(parsedTime)
-	if member then
-		if secs then
-			Timing:newTimer(message.guild,secs,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
+	local t = timeBetween(parseTime(time))
+	local t2 = t:toTableUTC()
+	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
+		if type(v)=='number' then
+			local val = t2[k]-v
+			t2[k] = val~=0 and val or nil
+		else
+			t2[k] = nil
 		end
+	end
+	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
+	if member then
+		Timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:addRole(role) then return end
 		message.channel:sendf("Muting %s", member.mentionString)

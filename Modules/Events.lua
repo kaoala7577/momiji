@@ -249,7 +249,7 @@ function Events.Timing(data)
 		local g = client:getGuild(args[2])
 		if g then
 			local m = g:getMember(args[3])
-			local time = timeBetween(toSeconds(parseHumanTime(args[4])))
+			local time = args[4]
 			if m then
 				m:send{embed={
 					title='Reminder from '..time..' ago',
@@ -263,7 +263,7 @@ function Events.Timing(data)
 		if g then
 			local settings = Database:get(g, "Settings")
 			local m = g:getMember(args[3])
-			local time = timeBetween(toSeconds(parseHumanTime(args[4])))
+			local time = args[4]
 			if m then
 				local s = m:removeRole(g.roles:find(function(r) return r.name=='Muted' end))
 				if s and settings.modlog and settings.modlog_channel then

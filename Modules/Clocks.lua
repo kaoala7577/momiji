@@ -19,8 +19,8 @@ function Clocks.min(time)
 			if member:hasRole('348873284265312267') then
 				if users[member.id] then
 					local reg = users[member.id].registered
-					if parseTime(reg) ~= reg then
-						local date = parseTime(reg):toTableUTC()
+					if parseISOTime(reg) ~= reg then
+						local date = parseISOTime(reg):toTableUTC()
 						if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
 							member:addRole('348693274917339139')
 							member:removeRole('348873284265312267')

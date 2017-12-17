@@ -1,4 +1,4 @@
---[[ Seeveral functions adapted from DannehSC/Electricity-2.0 ]]
+--[[ Several functions adapted from DannehSC/Electricity-2.0 ]]
 
 function checkArgs(types, vals)
 	for i,v in ipairs(types) do
@@ -54,91 +54,48 @@ function humanReadableTime(table)
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
-function parseTime(time)
+function parseISOTime(time)
 	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
 --TODO: make these compatible with discordia.Date
-function parseHumanTime(message)
-	local t={}
-	for time,unit in message:gmatch('(%d+)%s*(%S+)') do
-		local u=unit:lower()
+function parseTime(message)
+	local t = discordia.Date():toTableUTC()
+	for time,unit in message:gmatch('(%d+)%s*([^%d]+)') do
+		local u = unit:lower()
 		if u:startswith('y') then
-			t.years=time
+			t.year = t.year+time
 		elseif u:startswith('mo') then
-			t.months=time
+			t.month = t.month+time
 		elseif u:startswith('w') then
-			t.weeks=time
+			t.week = t.week+time
 		elseif u:startswith('d') then
-			t.days=time
+			t.day = t.day+time
 		elseif u:startswith('h') then
-			t.hours=time
+			t.hour = t.hour+time
 		elseif u:startswith('m') then
-			t.minutes=time
+			t.min = t.min+time
 		elseif u:startswith('s') then
-			t.seconds=time
+			t.sec = t.sec+time
 		end
 	end
-	return t
+	return discordia.Date.fromTableUTC(t)
 end
 
-function toSeconds(tim)
-	if not type(tim)=='table'then return 0 end
-	local s=0
-	local secs={
-		years=31536000,
-		months=60*60*24*31,
-		weeks=60*60*24*7,
-		days=60*60*24,
-		hours=60*60,
-		minutes=60,
-		seconds=1,
-	}
-	for typ,val in pairs(tim)do
-		s=s+(secs[typ]*val)
-	end
-	return s
+function timeBetween(time)
+	return discordia.Date.fromSeconds(math.abs(time:toSeconds()-discordia.Date():toSeconds()))
 end
 
-function fromSeconds(tim)
-	local secs={
-		years=31536000,
-		months=60*60*24*31,
-		weeks=60*60*24*7,
-		days=60*60*24,
-		hours=60*60,
-		minutes=60,
-		seconds=1,
-	}
-	local ret={
-		years=0,
-		months=0,
-		weeks=0,
-		days=0,
-		hours=0,
-		minutes=0,
-		seconds=0,
-	}
-	for typ,val in pairs(secs)do
-		if tim>=tonumber(val)then
-			repeat
-				tim=tim-tonumber(val)
-				ret[typ]=ret[typ]+1
-			until tim<tonumber(val)
+function prettyTime(t)
+	local out = ""
+	for k,v in pairs(t) do
+		if type(v)=='number' then
+			if v~=0 and k~='wday' and k~='yday' then
+				out = out=="" and tostring(v).." "..k or out..", "..tostring(v).." "..k
+			end
 		end
 	end
-	return ret
-end
-
-function timeBetween(tim)
-	local dat,str=fromSeconds(tim),''
-	for i,v in pairs(dat)do
-		if v>0 then
-			local s=tostring(i)
-			str=str..', '..tostring(v)..' '..(v==1 and s:sub(1,#s-1)or s)
-		end
-	end
-	return str:sub(3)
+	return out
 end
 
 function getIdFromString(str)
