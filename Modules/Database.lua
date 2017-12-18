@@ -51,32 +51,32 @@ function Database:get(guild,index) --luacheck: ignore self
 		if err then
 			print('GET',err)
 		else
-			local u
-			if data[1]==nil then
-				data=table.deepcopy(Database.default)
-				data.id=id
-				Database.cache[id]=data
-				u=true
-			else
-				local d=data[1]
-				Database.cache[id]=d
-				Database.cache[id]['id']=id
-				for i,v in pairs(Database.default)do
-					if not d[i] then
-						d[i]=v
-						u=true
-					end
-				end
-				for i,v in pairs(Database.default.Settings)do
-					if not d.Settings[i]then
-						d.Settings[i]=v
-						u=true
-					end
-				end
-			end
-			if u then
-				Database:update(id)
-			end
+			-- local u
+			-- if data[1]==nil then
+			-- 	data=table.deepcopy(Database.default)
+			-- 	data.id=id
+			-- 	Database.cache[id]=data
+			-- 	u=true
+			-- else
+			-- 	local d=data[1]
+			-- 	Database.cache[id]=d
+			-- 	Database.cache[id]['id']=id
+			-- 	for i,v in pairs(Database.default)do
+			-- 		if not d[i] then
+			-- 			d[i]=v
+			-- 			u=true
+			-- 		end
+			-- 	end
+			-- 	for i,v in pairs(Database.default.Settings)do
+			-- 		if not d.Settings[i]then
+			-- 			d.Settings[i]=v
+			-- 			u=true
+			-- 		end
+			-- 	end
+			-- end
+			-- if u then
+			-- 	Database:update(id)
+			-- end
 			local cached=Database.cache[id]
 			if cached[index]then
 				return cached[index]
