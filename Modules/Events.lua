@@ -15,11 +15,11 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		if data.Users[msg.author.id] then
-			data.Users[msg.author.id].last_message = discordia.Date():toISO()
-			data.Users[msg.author.id].nick = msg.author.nickname
+		if data.Users[sender.id] then
+			data.Users[sender.id].last_message = discordia.Date():toISO()
+			data.Users[sender.id].nick = sender.nickname
 		else
-			data.Users[msg.author.id] = {last_message = discordia.Date():toISO(), nick=msg.author.nickname}
+			data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname}
 		end
 		Database:update(msg, "Users", data.Users)
 	end
