@@ -207,7 +207,7 @@ function Events.messageDelete(message)
 	local settings = Database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n"..message.content
+		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\nContent:\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"

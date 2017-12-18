@@ -97,12 +97,13 @@ function Database:update(guild,index,value) --luacheck: ignore self
 		if not Database.cache[id].id then
 			Database.cache[id].id=id
 		end
-		local _,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
+		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
 		if err then
 			print('UPDATE')
 			print(err)
 			p(edata)
 		end
+		return data,err,edata
 	else
 		print("Fetch data before trying to update it.")
 	end
