@@ -97,7 +97,7 @@ function Database:update(guild,index,value) --luacheck: ignore self
 		if not Database.cache[id].id then
 			Database.cache[id].id=id
 		end
-		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
+		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrUp(Database.cache[id]).run()
 		if err then
 			print('UPDATE')
 			print(err)
