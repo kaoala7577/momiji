@@ -659,7 +659,8 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 		end
 		if settings.modlog then
 			guild:getChannel(settings.modlog_channel):send {embed={
-				description = "Moderator "..author.mentionString.." deleted "..numDel.." messages in "..message.channel.mentionString,
+				title = "Messages Pruned",
+				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
 				color = discordia.Color.fromRGB(255, 0, 0).value,
 				timestamp = discordia.Date():toISO()
 			}}

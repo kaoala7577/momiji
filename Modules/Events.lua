@@ -148,7 +148,7 @@ function Events.memberUpdate(member)
 			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
-				description = string.format("User: **%s** changed their nickname from `%s` to `%s`",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
+				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
@@ -168,9 +168,15 @@ function Events.userBan(user, guild)
 	local settings = Database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
+		local audit = guild:getAuditLogs({
+			limit = 1,
+			type = enums.actionType.memberBanAdd,
+			user_id = user.id,
+		}):iter()()
+		if not audit then audit.reason="" end
 		channel:send {embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = member.mentionString.."\n"..member.fullname,
+			description = string.format("%s\n%s\n**Reason:** %s", member.mentionString, member.fullname, audit.reason~="" and audit.reason or "None"),
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
@@ -207,7 +213,7 @@ function Events.messageDelete(message)
 	local settings = Database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\nContent:\n"..message.content
+		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n**Content:**\n"..message.content
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
