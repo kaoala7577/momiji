@@ -210,6 +210,25 @@ function resolveCommand(str, pre)
 	return command, rest
 end
 
+function dispatcher(name, ...)
+	local b,e,n,g = checkArgs({'string'}, {name})
+	if not b then
+		logger:log(1, "<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
+		return
+	end
+	local ret, err = pcall(Events[name], ...)
+	if not ret then
+		if errLog then
+			errLog:send {embed = {
+				description = err,
+				footer = {text="DISPATCHER: "..name},
+				timestamp = discordia.Date():toISO(),
+				color = discordia.Color.fromRGB(255, 0 ,0).value,
+			}}
+		end
+	end
+end
+
 function unregisterAllEvents()
 	if not Events then return end
 	for k,_ in pairs(Events) do
@@ -221,9 +240,9 @@ end
 
 function registerAllEvents()
 	if not Events then return end
-	for k,v in pairs(Events) do
+	for k,_ in pairs(Events) do
 		if k~="Timing" and k~="ready" then
-			client:on(k,v)
+			client:on(k,function(...) dispatcher(k,...) end)
 		end
 	end
 end
