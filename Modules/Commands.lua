@@ -1159,7 +1159,10 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 			result[i] = string.sub(ret, (len*(i-1)), (len*(i)))
 		end
 		for _,v in pairs(result) do
-			if v ~= "" then message:reply("```"..v.."```") end
+			if v ~= "" then message:reply({
+				content = v,
+				code = "lua"
+			}) end
 		end
 	else
 		message:reply("Error loading function")
