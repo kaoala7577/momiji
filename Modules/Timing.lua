@@ -19,7 +19,7 @@ function Timing:fire(...)
 end
 
 function Timing:load(guild)
-	local timers = Database:get(guild).Timers or {}
+	local timers = Database:get(guild, "Timers") or {}
 	for id,timer in pairs(timers) do
 		if timer.endTime<os.time() then
 			coroutine.wrap(function() self:delete(guild,id) end)()

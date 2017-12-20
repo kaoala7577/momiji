@@ -84,7 +84,7 @@ function Database:get(guild,index) --luacheck: ignore self
 				return cached
 			end
 		else
-			logger:log(2, "Received raw string from database, likely bad JSON.")
+			logger:log(2, "Received raw string from database, likely bad JSON. GUILD: %s", id)
 		end
 	end
 end
