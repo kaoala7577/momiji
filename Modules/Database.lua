@@ -50,7 +50,7 @@ function Database:get(guild,index) --luacheck: ignore self
 		local data,err = Database._conn.reql().db('momiji').table('guilds').get(id).run()
 		if err then
 			print('GET',err)
-		elseif type(data)=='table' then
+		else
 			local u
 			if data==nil then
 				data = table.deepcopy(Database.default)
@@ -74,17 +74,17 @@ function Database:get(guild,index) --luacheck: ignore self
 					end
 				end
 			end
-			if u and (type(data)=='table') then
-				Database:update(id)
-			end
 			local cached = Database.cache[id]
+			if u and (type(cached)=='table') then
+				Database:update(id)
+			else
+				logger:log(2, "Received raw string from database, likely bad JSON. GUILD: %s", id)
+			end
 			if cached[index] then
 				return cached[index]
 			else
 				return cached
 			end
-		else
-			logger:log(2, "Received raw string from database, likely bad JSON. GUILD: %s", id)
 		end
 	end
 end

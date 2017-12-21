@@ -15,13 +15,15 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		if data.Users[sender.id] then
-			data.Users[sender.id].last_message = discordia.Date():toISO()
-			data.Users[sender.id].nick = sender.nickname
-		else
-			data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname}
+		if msg.guild.id~="110373943822540800" then
+			if data.Users[sender.id] then
+				data.Users[sender.id].last_message = discordia.Date():toISO()
+				data.Users[sender.id].nick = sender.nickname
+			else
+				data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname}
+			end
+			Database:update(msg, "Users", data.Users)
 		end
-		Database:update(msg, "Users", data.Users)
 	end
 	if msg.content:lower():match("i need a hug") then
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
@@ -109,9 +111,11 @@ function Events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
-	local users = Database:get(member, "Users")
-	users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname}
-	Database:update(member, "Users", users)
+	if member.guild.id~="110373943822540800" then
+		local users = Database:get(member, "Users")
+		users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname}
+		Database:update(member, "Users", users)
+	end
 end
 
 function Events.memberLeave(member)
@@ -155,12 +159,14 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	if users[member.id] then
-		users[member.id].nick = member.nickname
-	else
-		users[member.id] = {nick = member.nickname}
+	if member.guild.id~="110373943822540800" then
+		if users[member.id] then
+			users[member.id].nick = member.nickname
+		else
+			users[member.id] = {nick = member.nickname}
+		end
+		Database:update(member, "Users", users)
 	end
-	Database:update(member, "Users", users)
 end
 
 function Events.userBan(user, guild)
