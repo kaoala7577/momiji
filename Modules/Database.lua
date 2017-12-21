@@ -52,13 +52,13 @@ function Database:get(guild,index) --luacheck: ignore self
 			print('GET',err)
 		elseif type(data)=='table' then
 			local u
-			if data[1]==nil then
-				data[1] = table.deepcopy(Database.default)
+			if data==nil then
+				data = table.deepcopy(Database.default)
 				data.id = id
-				Database.cache[id] = data[1]
+				Database.cache[id] = data
 				u = true
 			else
-				local d = data[1]
+				local d = data
 				Database.cache[id] = d
 				Database.cache[id]['id'] = id
 				for i,v in pairs(Database.default) do
