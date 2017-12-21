@@ -177,7 +177,7 @@ function Events.userBan(user, guild)
 		local audit = guild:getAuditLogs({
 			limit = 1,
 			type = enums.actionType.memberBanAdd,
-			user_id = user.id,
+			user = user.id,
 		}):iter()()
 		if not audit then audit.reason="" end
 		channel:send {embed={
