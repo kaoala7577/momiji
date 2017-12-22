@@ -636,6 +636,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 	Database:update(message, "Cases", cases)
 end)
 
+--TODO: Prune with predicates
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
@@ -670,6 +671,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	end
 end)
 
+--TODO: Pull from Cases
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then

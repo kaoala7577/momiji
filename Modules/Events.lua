@@ -147,9 +147,13 @@ end
 function Events.memberUpdate(member)
 	local users = Database:get(member, "Users")
 	local settings = Database:get(member, "Settings")
-	if users[member.id] and settings.audit and settings.audit_channel then
+	local channel = member.guild:getChannel(settings.audit_channel)
+	local newRoles = {}
+	for role in member.roles:iter() do
+		table.insert(newRoles, role.id)
+	end
+	if users[member.id] and settings.audit and channel then
 		if users[member.id].nick~=member.nickname then
-			local channel = member.guild:getChannel(settings.audit_channel)
 			channel:send{embed={
 				author = {name="Nickname Changed", icon_url=member.avatarURL},
 				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
@@ -158,12 +162,38 @@ function Events.memberUpdate(member)
 				footer = {text="ID: "..member.id},
 			}}
 		end
+		local oldRoles = users[member.id].roles
+		if oldRoles~=newRoles then
+			local changedRoles, type = {}, ""
+			local longer = #oldRoles>#newRoles and oldRoles or newRoles
+			for _,v in ipairs(longer) do
+				local role = member.guild:getRole(v)
+				if table.search(oldRoles, v) and not table.search(newRoles, v) then
+					print("r")
+					type = "Removed"
+					table.insert(changedRoles,role.name)
+				elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
+					print("a")
+					type = "Added"
+					table.insert(changedRoles,role.name)
+				end
+			end
+			local changes = table.concat(changedRoles, ", ")
+			channel:send{embed={
+				author = {name="Roles Changed", icon_url=member.avatarURL},
+				description = string.format("**User:** %s\n**%s:** %s",member.fullname,type, changes),
+				color = discordia.Color.fromHex('#5DA9FF').value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text="ID: "..member.id}
+			}}
+		end
 	end
 	if member.guild.id~="110373943822540800" then
 		if users[member.id] then
 			users[member.id].nick = member.nickname
+			users[member.id].roles = newRoles
 		else
-			users[member.id] = {nick = member.nickname}
+			users[member.id] = {nick = member.nickname, roles = newRoles}
 		end
 		Database:update(member, "Users", users)
 	end
