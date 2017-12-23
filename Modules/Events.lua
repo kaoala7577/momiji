@@ -17,8 +17,8 @@ function Events.messageCreate(msg)
 		end
 		if msg.guild.id~="110373943822540800" then
 			local roles = {}
-			for r in sender.roles:iter() do
-				table.inset(roles, r.id)
+			for r in msg.member.roles:iter() do
+				table.insert(roles, r.id)
 			end
 			if data.Users[sender.id] then
 				data.Users[sender.id].last_message = discordia.Date():toISO()
