@@ -212,7 +212,7 @@ function Events.userBan(user, guild)
 		if not audit or not audit.reason then audit.reason="" end
 		channel:send {embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit:getMember().fullname, (audit.reason~="" and audit.reason or "None"),
+			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit:getMember().fullname, audit.reason~="" and audit.reason or "None"),
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
