@@ -168,25 +168,26 @@ function Events.memberUpdate(member)
 			}}
 		end
 		local oldRoles = users[member.id].roles
-		if oldRoles~=newRoles then
-			local changedRoles, type = {}, ""
-			local longer = #oldRoles>#newRoles and oldRoles or newRoles
-			for _,v in ipairs(longer) do
-				local role = member.guild:getRole(v)
-				if table.search(oldRoles, v) and not table.search(newRoles, v) then
-					print("r")
-					type = "Removed"
-					table.insert(changedRoles,role.name)
-				elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
-					print("a")
-					type = "Added"
-					table.insert(changedRoles,role.name)
-				end
+		local changedRoles, t = {}, ""
+		local longer = #oldRoles>#newRoles and oldRoles or newRoles
+		for _,v in ipairs(longer) do
+			local role = member.guild:getRole(v)
+			if table.search(oldRoles, v) and not table.search(newRoles, v) then
+				print("r")
+				t = "Removed"
+				table.insert(changedRoles,role.name)
+			elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
+				print("a")
+				t = "Added"
+				table.insert(changedRoles,role.name)
 			end
+		end
+		if changedRoles[1]~=nil then
+			p(changedRoles)
 			local changes = table.concat(changedRoles, ", ")
 			channel:send{embed={
 				author = {name="Roles Changed", icon_url=member.avatarURL},
-				description = string.format("**User:** %s\n**%s:** %s",member.fullname,type, changes),
+				description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id}
