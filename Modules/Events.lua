@@ -173,17 +173,14 @@ function Events.memberUpdate(member)
 		for _,v in ipairs(longer) do
 			local role = member.guild:getRole(v)
 			if table.search(oldRoles, v) and not table.search(newRoles, v) then
-				print("r")
 				t = "Removed"
 				table.insert(changedRoles,role.name)
 			elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
-				print("a")
 				t = "Added"
 				table.insert(changedRoles,role.name)
 			end
 		end
 		if changedRoles[1]~=nil then
-			p(changedRoles)
 			local changes = table.concat(changedRoles, ", ")
 			channel:send{embed={
 				author = {name="Roles Changed", icon_url=member.avatarURL},
