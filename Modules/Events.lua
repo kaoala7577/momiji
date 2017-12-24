@@ -215,16 +215,11 @@ function Events.userBan(user, guild)
 			type = enums.actionType.memberBanAdd,
 			user = user.id,
 		}):iter()()
-		print(1)
-		if not audit then
-			if not audit.reason then
-				audit.reason=""
-			end
-		end
-		print(2)
+		if audit and audit:getTarget().id ~= user.id then audit = nil end
+		local reason = audit and audit.reason or nil
 		channel:send{embed={
 			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "User not found", audit.reason~="" and audit.reason or "None"),
+			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = discordia.Color.fromRGB(255, 0, 0).value,
 			timestamp = discordia.Date():toISO(),
