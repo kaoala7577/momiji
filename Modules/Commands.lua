@@ -461,7 +461,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	local desc = ""
 	if #rolesAdded > 0 then
-		desc = desc.."**Added "..member.mentionStringr.." to the following roles** \n"..table.concat(rolesAdded,"\n")
+		desc = desc.."**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesAdded,"\n")
 	end
 	if #rolesFailed > 0 then
 		local val = "**Failed to add "..member.mentionString.." to the following roles**\n"..table.concat(rolesFailed,"\n")
