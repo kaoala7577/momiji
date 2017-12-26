@@ -160,9 +160,9 @@ function Events.memberUpdate(member)
 	if users[member.id] and settings.audit and channel then
 		if users[member.id].nick~=member.nickname then
 			channel:send{embed={
-				author = "Nickname Changed",
+				title = "Nickname Changed",
 				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
-				thumbnail = member.avatarURL,
+				thumbnail = {url=member.avatarURL},
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
@@ -184,9 +184,9 @@ function Events.memberUpdate(member)
 		if changedRoles[1]~=nil then
 			local changes = table.concat(changedRoles, ", ")
 			channel:send{embed={
-				author = "Roles Changed",
+				title = "Roles Changed",
 				description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
-				thumbnail = member.avatarURL,
+				thumbnail = {url=member.avatarURL},
 				color = discordia.Color.fromHex('#5DA9FF').value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id}
