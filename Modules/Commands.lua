@@ -363,7 +363,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 	end
 end)
 
-addCommand('MAL Manga Search', "Search MyAnimeList for a mnaga", 'manga', '<search>', 0, false, true, function(message, args)
+addCommand('MAL Manga Search', "Search MyAnimeList for a manga", 'manga', '<search>', 0, false, true, function(message, args)
 	local substitutions = require('./htmlsubs')
 	local data, err = API.misc.Manga(args)
 	if data then

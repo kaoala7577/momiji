@@ -15,7 +15,7 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		if msg.guild.id~="110373943822540800" then
+		if msg.guild.id~="110373943822540800" and msg.guild.id~="264445053596991498" then
 			local roles = {}
 			for r in msg.member.roles:iter() do
 				table.insert(roles, r.id)
@@ -116,7 +116,7 @@ function Events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
-	if member.guild.id~="110373943822540800" then
+	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
 		local users = Database:get(member, "Users")
 		users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname}
 		Database:update(member, "Users", users)
@@ -191,7 +191,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	if member.guild.id~="110373943822540800" then
+	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
 		if users[member.id] then
 			users[member.id].nick = member.nickname
 			users[member.id].roles = newRoles
