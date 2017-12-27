@@ -212,7 +212,6 @@ function Events.userBan(user, guild)
 		local audit = guild:getAuditLogs({
 			limit = 1,
 			type = enums.actionType.memberBanAdd,
-			user = user.id,
 		}):iter()()
 		if audit and audit:getTarget().id ~= user.id then audit = nil end
 		local reason = audit and audit.reason or nil
