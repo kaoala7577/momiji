@@ -209,7 +209,7 @@ function Events.memberUpdate(member)
 end
 
 function Events.userBan(user, guild)
-	--Wait a second for the audit log to populate
+	--Wait a few seconds for the audit log to populate
 	local co = coroutine.running()
 	timer.setTimeout(3*1000, function() coroutine.resume(co) end)
 	coroutine.yield()

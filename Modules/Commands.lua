@@ -282,7 +282,7 @@ end)
 addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
 	local data, err = API.misc.Weather(args)
 	if data then
-		if data.cod==404 then
+		if data.cod~=200 then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
 		end
 		local t={}
@@ -304,7 +304,7 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 			windDir = "W"
 		elseif (deg>280 and deg<370) then
 			windDir = "NW"
-		elseif (deg>=370 and deg<=0) then
+		elseif (deg>=370 and deg<=10) then
 			windDir = "N"
 		end
 		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
