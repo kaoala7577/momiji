@@ -119,7 +119,7 @@ function Events.memberJoin(member)
 	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
 		local roles = {}
 		for role in member.roles:iter() do
-			table.insert(newRoles, role.id)
+			table.insert(roles, role.id)
 		end
 		local users = Database:get(member, "Users")
 		users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname, roles=roles}
