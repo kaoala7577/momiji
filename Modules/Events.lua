@@ -205,6 +205,11 @@ function Events.memberUpdate(member)
 end
 
 function Events.userBan(user, guild)
+	--Wait a second for the audit log to populate
+	local co = coroutine.running()
+	timer.setTimeout(3*1000, function() coroutine.resume(co) end)
+	coroutine.yield()
+	--End wait
 	local member = guild:getMember(user) or user
 	local settings = Database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
