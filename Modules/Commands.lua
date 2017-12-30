@@ -436,7 +436,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 				if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 					--This section is only relevant to my guild unless you somehow got a role with the same snowflake
 					if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
-						if (r == 'Gamer') or (r == '18+') or (r == 'D&D') then
+						if (r == 'Gamer') or (r == '18+') or (r == 'Mafia') then
 							rolesToAdd[#rolesToAdd+1] = r
 						else rolesFailed[#rolesFailed+1] = r.." is only available after cooldown" end
 					elseif (member:hasRole(member.guild:getRole('349051015758348289')) or member:hasRole(member.guild:getRole('349051017226354729'))) and (k == 'Opt-In Roles') then
@@ -871,7 +871,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				for _,role in ipairs(args) do
 					role=role:trim()
 					if string.lower(role) == string.lower(r)  or(table.search(a, string.lower(role))) then
-						if r=='Gamer' or r=='18+' or k~='Opt-In Roles' then
+						if r=='Gamer' or r=='18+' or k== 'Mafia' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
 							if (k == 'Gender Identity' or k == 'Gender') then
 								hasGender = true
