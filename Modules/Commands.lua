@@ -1053,12 +1053,16 @@ addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(m
 	if not role then
 		role = message.guild:createRole("Muted")
 	end
+	local count, status = 0
 	for c in message.guild.textChannels:iter() do
-		c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
+		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
+		count = status and count+1 or count
 	end
 	for c in message.guild.voiceChannels:iter() do
-		c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
+		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
+		count = status and count+1 or count
 	end
+	message.channel:sendf("Set up %s channels. If mute still doesn't work, please make sure your permissions are not overriding the Muted role.", count)
 	settings.mute_setup = true
 	Database:update(message, "Settings", settings)
 end)
