@@ -1,4 +1,5 @@
 # High Priority
+* Hackban
 * Advanced pruning
 * Warn command
 * Cases
