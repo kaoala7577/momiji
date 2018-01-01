@@ -34,7 +34,7 @@ end
 
 function Clocks.hour()
 	client:setGame({
-		name = string.format("m!help | %s guilds", #client.guilds),
+		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
 	})
 end
