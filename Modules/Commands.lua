@@ -523,9 +523,8 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 	if args~="" then
 		local found = false
 		for k,v in pairs(selfRoles) do
-			local t = sortByKeys(v)
 			if args:lower()==k:lower() then
-				for _,r in pairs(t) do
+				for r in pairsByKeys(v) do
 					if not roleList[k] then
 						roleList[k] = r.."\n"
 					else
@@ -542,8 +541,7 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 		end
 	else
 		for k,v in pairs(selfRoles) do
-			local t = sortByKeys(v)
-			for _,r in pairs(t) do
+			for r in pairsByKeys(v) do
 				if not roleList[k] then
 					roleList[k] = r.."\n"
 				else
