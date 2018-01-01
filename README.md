@@ -1,3 +1,5 @@
+[![Discord Bots](https://discordbots.org/api/widget/status/345316276098433025.svg)](https://discordbots.org/bot/345316276098433025)
+
 # Momiji, a general purpose bot for Discord
 
 Momiji is a general purpose Discord bot focused on supplying flexible commands for moderation and role management.
