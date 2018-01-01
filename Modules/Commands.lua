@@ -487,8 +487,7 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	if not selfRoles then return end
 	local rolesToRemove = {}
 	for _,l in pairs(selfRoles) do
-		local t = sortByKeys(l)
-		for r,a in pairs(t) do
+		for r,a in pairs(l) do
 			for _,role in pairs(roles) do
 				if (string.lower(role) == string.lower(r)) or (table.search(a, string.lower(role))) then
 					rolesToRemove[#rolesToRemove+1] = r
@@ -521,12 +520,12 @@ end)
 addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '[category]', 0, false, true, function(message, args)
 	local roleList, cats = {},{}
 	local selfRoles = Database:get(message, "Roles")
-	if not selfRoles then return end
 	if args~="" then
 		local found = false
 		for k,v in pairs(selfRoles) do
+			local t = sortByKeys(v)
 			if args:lower()==k:lower() then
-				for r,_ in pairs(v) do
+				for _,r in pairs(t) do
 					if not roleList[k] then
 						roleList[k] = r.."\n"
 					else
@@ -543,7 +542,8 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 		end
 	else
 		for k,v in pairs(selfRoles) do
-			for r,_ in pairs(v) do
+			local t = sortByKeys(v)
+			for _,r in pairs(t) do
 				if not roleList[k] then
 					roleList[k] = r.."\n"
 				else

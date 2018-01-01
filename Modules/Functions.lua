@@ -247,8 +247,8 @@ function registerAllEvents()
 	end
 end
 
-function pairsByKeys(t, f)
-	 local a = {}
-	 for n in pairs(t) do table.insert(a, n) end
-	 return table.sorted(a, f)
-   end
+function sortByKeys(t, f)
+	local a = {}
+	for n in pairs(t) do table.insert(a, n) end
+	return table.sorted(a, f)
+end
