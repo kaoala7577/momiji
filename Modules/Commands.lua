@@ -946,13 +946,11 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 				value = r.id
 			elseif args[2] == 'remove' then
 				local r = resolveRole(message.guild, args[3])
-				for i,j in ipairs(settings[v..'_roles']) do
-					if j==r.id then
-						table.remove(settings[v..'_roles'],i)
-					end
+				if r then
+					settings[v..'_roles'][r.id] = nil
+					operation = "remove"
+					value = r.id
 				end
-				operation = "remove"
-				value = r.id
 			end
 		end
 	end
@@ -991,17 +989,17 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 			settings['autorole'] = true
 			operation = "disable"
 		elseif args[2] == 'add' then
-			if args[3] then settings['autoroles'][#settings['autoroles']+1] = args[3] end
+			local r = resolveRole(message.guild, args[3])
+			settings['autoroles'][#settings['autoroles']+1] = r and r.id or nil
 			operation = "add"
 			value = args[3]
 		elseif args[2] == 'remove' then
-			for i,v in ipairs(settings['autoroles']) do
-				if v==args[3] then
-					table.remove(settings['autoroles'],i)
-				end
+			local r = resolveRole(message.guild, args[3])
+			if r then
+				settings['autoroles'][r.id] = nil
+				operation = "remove"
+				value = r.id
 			end
-			operation = "remove"
-			value = args[3]
 		end
 	elseif args[1] == 'help' then
 		local fields,roles,chans = {
