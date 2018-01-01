@@ -487,8 +487,8 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	if not selfRoles then return end
 	local rolesToRemove = {}
 	for _,l in pairs(selfRoles) do
-		l = table.sorted(l, function(a,b) return a < b end)
-		for r,a in pairs(l) do
+		local t = table.sorted(l, function(a,b) return a < b end)
+		for r,a in pairs(t) do
 			for _,role in pairs(roles) do
 				if (string.lower(role) == string.lower(r)) or (table.search(a, string.lower(role))) then
 					rolesToRemove[#rolesToRemove+1] = r
