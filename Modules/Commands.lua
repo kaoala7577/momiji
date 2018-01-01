@@ -941,13 +941,21 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 			section = v
 			if args[2] == 'add' then
 				local r = resolveRole(message.guild, args[3])
-				settings[v..'_roles'][#settings[v..'_roles']+1] = r and r.id or nil
+				settings[v..'_roles'][#settings[v..'_roles']+1] = r~=nil and r.id or nil
 				operation = "add"
 				value = r.id
 			elseif args[2] == 'remove' then
 				local r = resolveRole(message.guild, args[3])
-				if r then
-					settings[v..'_roles'][r.id] = nil
+				local name, id = table.search(settings[v..'_roles'], r.name), table.search(settings[v..'_roles'], r.id)
+				local removed = false
+				if name then
+					table.remove(settings[v..'_roles'], name)
+					removed = true
+				elseif id then
+					table.remove(settings[v..'_roles'], id)
+					removed = true
+				end
+				if removed then
 					operation = "remove"
 					value = r.id
 				end
@@ -990,13 +998,21 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 			operation = "disable"
 		elseif args[2] == 'add' then
 			local r = resolveRole(message.guild, args[3])
-			settings['autoroles'][#settings['autoroles']+1] = r and r.id or nil
+			settings['autoroles'][#settings['autoroles']+1] = r~=nil and r.id or nil
 			operation = "add"
 			value = args[3]
 		elseif args[2] == 'remove' then
 			local r = resolveRole(message.guild, args[3])
-			if r then
-				settings['autoroles'][r.id] = nil
+			local name, id = table.search(settings['autoroles'], r.name), table.search(settings['autoroles'], r.id)
+			local removed = false
+			if name then
+				table.remove(settings['autoroles'], name)
+				removed = true
+			elseif id then
+				table.remove(settings['autoroles'], id)
+				removed = true
+			end
+			if removed then
 				operation = "remove"
 				value = r.id
 			end
@@ -1019,7 +1035,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 		}}
 	elseif args[1]=="" then
 		local list = ""
-		for k,v in pairs(settings) do
+		for k,v in pairs(table.deepcopy(settings)) do
 			if type(v)=='table' and k:match('roles') then
 				for i,j in ipairs(v) do
 					local r = resolveRole(message.guild, j)
@@ -1040,6 +1056,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
 	end
+	p(settings)
 	Database:update(message, "Settings", settings)
 end)
 
