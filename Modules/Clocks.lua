@@ -31,3 +31,10 @@ function Clocks.min(time)
 		end
 	end
 end
+
+function Clocks.hour()
+	client:setGame({
+		name = string.format("m!help | %s guilds", #client.guilds),
+		type = 2,
+	})
+end

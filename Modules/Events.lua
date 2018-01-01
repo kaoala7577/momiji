@@ -351,7 +351,7 @@ function Events.ready()
 		Timing:load(g)
 	end
 	client:setGame({
-		name = "Awoo! | m!help",
+		name = string.format("m!help | %s guilds", #client.guilds),
 		type = 2,
 	})
 	errLog = client:getChannel('376422808852627457')

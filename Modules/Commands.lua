@@ -1046,7 +1046,6 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 	Database:update(message, "Settings", settings)
 end)
 
---TODO: Figure out why this hangs
 addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message)
 	local settings = Database:get(message, "Settings")
 	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
