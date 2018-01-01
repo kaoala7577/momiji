@@ -2,13 +2,16 @@
 
 # Momiji, a general purpose bot for Discord
 
-Momiji is a general purpose Discord bot focused on supplying flexible commands for moderation and role management.
-She also come packed with logging functionality and a multitude of informative commands, plus some fun stuff.
-
-She's written in Lua using the [Discordia library](https://github.com/SinisterRectus/Discordia) and all of her settings are stored using RethinkDB.
-
-In her current state, I cannot guarantee stability, but I use her with no major issues.
-
-[Invite](https://discordapp.com/oauth2/authorize?client_id=345316276098433025&scope=bot&permissions=268561624)
+[Full Documentation](https://docs.google.com/document/d/1i5p37MZHsLbJFxk9fRY1GzpdDZWYcKwPwWeMy7fGAJs/edit?usp=sharing)
 
 [Support Server](https://discord.gg/YYdpsNc)
+
+New Features added regularly, open-sourced, welcome to suggestions.
+
+## Feature List
+* Configurable prefix
+* Robust logging!
+* Configurable welcome message (embeds available too!)
+* Category-based self-role system with aliases
+* Lots of informative commands (weather, anime search, urbandictionary, and more)
+* Lots of moderation tools (mutes, role controls, bulk deletions, etc)
