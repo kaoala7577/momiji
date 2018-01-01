@@ -3,7 +3,7 @@
 API={
 	data={},
 	endpoints={
-		['DBots_Stats']='https://bots.discord.pw/api/bots/%s/stats', --TODO: Set this up
+		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats',
 		['Meow']='http://random.cat/meow',
 		['Bork']='https://dog.ceo/api/breeds/image/random',
 		['Urban']='https://api.urbandictionary.com/v0/define?term=%s',
@@ -47,7 +47,7 @@ function API.get(endpoint,fmt,...)
 end
 
 function API.misc.DBots_Stats_Update(info)
-	return API.post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBots_Auth}},json.encode(info))
+	return API.post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBotsToken}},json.encode(info))
 end
 
 function API.misc.Cats()

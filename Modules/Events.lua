@@ -299,6 +299,12 @@ function Events.messageDeleteUncached(channel, messageID)
 	end
 end
 
+function Events.guildCreate(guild)
+	API.misc.DBots_Stats_Update({server_count=#client.guilds})
+	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
+	comLog:sendf("Joined Guild: %s (%s)", guild.name, guild.id)
+end
+
 function Events.Timing(data)
 	local args = string.split(data,'||')
 	if args[1]=='REMINDER' then
@@ -354,6 +360,7 @@ function Events.ready()
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
 	})
+	API.misc.DBots_Stats_Update({server_count=#client.guilds})
 	errLog = client:getChannel('376422808852627457')
 	comLog = client:getChannel('376422940570419200')
 	logger:log(3, "Logged in as %s", client.user.fullname)
