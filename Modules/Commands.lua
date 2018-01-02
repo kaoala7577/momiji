@@ -1050,13 +1050,12 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 			list = list.."**"..k.."**: "..out.."\n"
 		end
 		message:reply{embed={
-			description = list.."\n".."For details on config usage, run `config help`"
+			description = list.."\n".."For details on config usage, run `"..settings.prefix.."config help`"
 		}}
 	end
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
 	end
-	p(settings)
 	Database:update(message, "Settings", settings)
 end)
 
