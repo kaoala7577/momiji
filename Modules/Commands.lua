@@ -1035,7 +1035,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 		}}
 	elseif args[1]=="" then
 		local list = ""
-		for k,v in pairs(table.deepcopy(settings)) do
+		for k,v in pairsByKeys(table.deepcopy(settings)) do
 			if type(v)=='table' and k:match('roles') then
 				for i,j in ipairs(v) do
 					local r = resolveRole(message.guild, j)
