@@ -65,6 +65,7 @@ coroutine.wrap(function()
 
 	-- Register Clock Events
 	clock:on('min', Clocks.min)
+	clock:on('hour', Clocks.hour)
 
 	-- Run
 	client:run(options.token)
