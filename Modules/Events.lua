@@ -351,6 +351,9 @@ function Events.raw(raw)
 end
 
 function Events.ready()
+	API.misc.DBots_Stats_Update({server_count=#client.guilds})
+	errLog = client:getChannel('376422808852627457')
+	comLog = client:getChannel('376422940570419200')
 	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
 		Database:get(g)
@@ -360,8 +363,5 @@ function Events.ready()
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
 	})
-	API.misc.DBots_Stats_Update({server_count=#client.guilds})
-	errLog = client:getChannel('376422808852627457')
-	comLog = client:getChannel('376422940570419200')
 	logger:log(3, "Logged in as %s", client.user.fullname)
 end
