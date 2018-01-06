@@ -757,7 +757,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 		for id,v in pairs(users) do
 			if v and v.watchlisted then
 				mention = message.guild:getMember(id) or client:getUser(id)
-				list = list..type(mention)=='table' and string.format("%s (%s)\n", mention.fullname, mention.id) or id.."\n"
+				list = type(mention)=='table' and list..string.format("%s (%s)\n", mention.fullname, mention.id) or list..id.."\n"
 			end
 		end
 		if list ~= "" then
