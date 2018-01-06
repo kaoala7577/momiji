@@ -1172,7 +1172,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 			ret = tostring(ret).."\n"..printresult
 		end
 		local result, len = {}, 1900
-		local count = math.floor(#ret/len)>0 and math.floor(#ret/len) or 1
+		local count = math.ceil(#ret/len)>1 and math.ceil(#ret/len) or 1
 		for i=1,count do
 			result[i] = string.sub(ret, (len*(i-1)), (len*(i)))
 		end
