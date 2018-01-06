@@ -753,10 +753,10 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 		end
 		message.channel:sendf("Removed %s from the watchlist",member.mentionString)
 	elseif args[1] == 'list' then
-		local list = ""
+		local list, mention = ""
 		for id,v in pairs(users) do
 			if v and v.watchlisted then
-				local mention = message.guild:getMember(id) or client:getUser(id)
+				mention = message.guild:getMember(id) or client:getUser(id)
 				list = list..type(mention)=='table' and string.format("%s (%s)\n", mention.fullname, mention.id) or id.."\n"
 			end
 		end
