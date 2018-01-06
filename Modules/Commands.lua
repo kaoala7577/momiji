@@ -738,18 +738,17 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 	local users = Database:get(message, "Users")
 	local member = resolveMember(message.guild, args)
 	args = args:gsub("<@!?%d+>",""):gsub(member and member.id or "",""):trim():split(' ')
-	if args~="list" and not discordia.class.isInstance(member, discordia.class.classes.Member) then message:reply("Could not find member with provided data: "..args); return end
 	if args[1] == 'add' then
-		if users[member.id] then
+		if member and users[member.id] then
 			users[member.id].watchlisted = true
-		else
+		elseif member then
 			users[member.id] = {watchlisted = true}
 		end
 		message.channel:sendf("Added %s to the watchlist",member.mentionString)
 	elseif args[1] == 'remove' then
-		if users[member.id] then
+		if member and users[member.id] then
 			users[member.id].watchlisted = false
-		else
+		elseif member then
 			users[member.id] = {watchlisted = false}
 		end
 		message.channel:sendf("Removed %s from the watchlist",member.mentionString)
