@@ -755,7 +755,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 	elseif args[1] == 'list' then
 		local list = ""
 		for id,v in pairs(users) do
-			if v.watchlisted then
+			if v and v.watchlisted then
 				local mention = message.guild:getMember(id).mentionString or client:getUser(id).mentionString or id
 				list = list..mention.."\n"
 			end
