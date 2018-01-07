@@ -746,12 +746,18 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 		end
 		message.channel:sendf("Added %s to the watchlist",member.mentionString)
 	elseif args[1] == 'remove' then
+		local oldS = false
 		if member and users[member.id] then
-			users[member.id].watchlisted = false
-		elseif member then
-			users[member.id] = {watchlisted = false}
+			if users[member.id].watchlisted==true then
+				users[member.id].watchlisted = false
+				oldS = true
+			end
 		end
-		message.channel:sendf("Removed %s from the watchlist",member.mentionString)
+		if oldS then
+			message.channel:sendf("Removed %s from the watchlist",member.mentionString)
+		else
+			message.channel:sendf("%s was not on the watchlist",member.mentionString)
+		end
 	elseif args[1] == 'list' then
 		local list, mention = ""
 		for id,v in pairs(users) do
