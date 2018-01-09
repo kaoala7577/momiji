@@ -89,7 +89,7 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 	}
 	if args == "" then
 		local help = {}
-		for _,tbl in pairs(cmds) do
+		for _,tbl in pairsByKeys(cmds) do
 			if not help[tbl.rank+1] then help[tbl.rank+1] = "" end
 			if type(tbl.commands)=='string' then
 				help[tbl.rank+1] = help[tbl.rank+1].."`"..tbl.name.." "..tbl.usage.."` - "..tbl.description.."\n"
