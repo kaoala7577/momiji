@@ -140,6 +140,10 @@ function Events.memberLeave(member)
 			footer = {text = "ID: "..member.id}
 		}}
 	end
+	--kill their entry in the DB
+	local users = Database:get(member, "Users")
+	users[member.id] = nil
+	Database:update(member, "Users", users)
 end
 
 function Events.presenceUpdate(member)

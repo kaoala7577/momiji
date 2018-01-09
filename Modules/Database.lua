@@ -100,7 +100,7 @@ function Database:update(guild,index,value) --luacheck: ignore self
 			Database.cache[id].id=id
 		end
 		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
-		--logger:log(err and 1 or 4, "GUILD: %s INDEX: %s\n%sDATA:\n%s", id, index, err and "ERROR:\n"..err.."\n" or "", json.encode(data))
+		logger:log(err and 1 or 4, "GUILD: %s INDEX: %s\n%sDATA:\n%s", id, index, err and "ERROR:\n"..err.."\n" or "", json.encode(data))
 		if err then
 			print('UPDATE')
 			print(err)
@@ -109,5 +109,21 @@ function Database:update(guild,index,value) --luacheck: ignore self
 		return data,err,edata
 	else
 		print("Fetch data before trying to update it.")
+	end
+end
+
+function Database:delete(guild) --luacheck: ignore self
+	if not guild then error"No ID/Guild/Message provided" end
+	local id=resolveGuild(guild)
+	if Database.cache[id] then
+		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').delete(id).run()
+		if err then
+			print('DELETE')
+			print(err)
+			p(edata)
+		end
+		return data,err,edata
+	else
+		print("Fetch data before trying to delete it.")
 	end
 end
