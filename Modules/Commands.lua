@@ -636,29 +636,34 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 end)
 
 --TODO: Prune with predicates
+--Concept: if no filter option provided, use current method. If filter is provided, get messages til count is met, then divide and prune
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	local guild,channel=message.guild,message.channel
-	if tonumber(args) > 0 then
-		message:delete()
-		args = tonumber(args)
-		local xHun, rem = math.floor(args/100), args%100
-		local numDel, deletions = 0
-		if xHun > 0 then
-			for i=1, xHun do --luacheck: ignore i
-				deletions = message.channel:getMessages(100)
+	local count, filter = args:match("(%d+)%s+(.*)")
+	count = tonumber(count)
+	local numDel = 0
+	if count > 0 then
+		if not filter then --TODO: add filter clauses
+			message:delete()
+			local xHun, rem = math.floor(count/100), count%100
+			local deletions
+			if xHun > 0 then
+				for i=1, xHun do --luacheck: ignore i
+					deletions = message.channel:getMessages(100)
+					local success = message.channel:bulkDelete(deletions)
+					if success then numDel = numDel+#deletions end
+				end
+			end
+			if rem > 0 then
+				deletions = message.channel:getMessages(rem)
 				local success = message.channel:bulkDelete(deletions)
 				if success then numDel = numDel+#deletions end
 			end
 		end
-		if rem > 0 then
-			deletions = message.channel:getMessages(rem)
-			local success = message.channel:bulkDelete(deletions)
-			if success then numDel = numDel+#deletions end
-		end
 		if settings.modlog then
-			guild:getChannel(settings.modlog_channel):send {embed={
+			guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Messages Pruned",
 				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
 				color = discordia.Color.fromRGB(255, 0, 0).value,

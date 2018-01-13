@@ -147,6 +147,7 @@ function Events.memberLeave(member)
 end
 
 function Events.presenceUpdate(member)
+	if member.user.bot == true then return end
 	local role = '370395740406546432'
 	if member.guild.id == '348660188951216129' then
 		if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
