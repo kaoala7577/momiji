@@ -641,7 +641,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	local guild,channel=message.guild,message.channel
-	local count, filter = args:match("(%d+)%s+(.*)")
+	local count, filter = args:match("(%d+)%s*(.*)")
 	count = tonumber(count)
 	local numDel = 0
 	if count > 0 then

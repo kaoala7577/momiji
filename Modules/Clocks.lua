@@ -33,6 +33,7 @@ function Clocks.min(time)
 end
 
 function Clocks.hour()
+	API.misc.DBots_Stats_Update({server_count=#client.guilds})
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
