@@ -645,7 +645,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	count = tonumber(count)
 	local numDel = 0
 	if count > 0 then
-		if not filter then --TODO: add filter clauses
+		if not filter or filter=="" then --TODO: add filter clauses
 			message:delete()
 			local xHun, rem = math.floor(count/100), count%100
 			local deletions
