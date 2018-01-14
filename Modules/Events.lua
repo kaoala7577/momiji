@@ -62,7 +62,7 @@ function Events.messageCreate(msg)
 						end
 					end
 					if comLog then
-						local g = not private and msg.guild or "Private"
+						local g = not private and msg.guild or {name="Private", id=""}
 						comLog:send{embed={
 							fields={
 								{name="Guild",value=g.name.."\n"..g.id,inline=true},
