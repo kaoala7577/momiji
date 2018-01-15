@@ -652,7 +652,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 		local member = resolveMember(guild, fsel)
 		filter = function(m) return m.author.id==member.id end
 	end
-	if fsel and not filter then
+	if fsel~="" and not filter then
 		return message:reply("The following filter is not valid: "..fsel)
 	end
 	count = tonumber(count)
