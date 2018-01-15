@@ -1,6 +1,5 @@
 # High Priority
 * Hackban
-* Advanced pruning
 * Warn command
 * Cases
 * Modinfo to use Cases
@@ -11,4 +10,4 @@
 * Kick/Ban commands
 * Document the code
 * Fine-tuned control over logging messages
-* Rewite Register to not suck ass
+* Rewite Register to not suck ass (it still sucks, ok?)
