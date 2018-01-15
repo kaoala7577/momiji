@@ -1176,7 +1176,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	local a = loadstring(args)
 	if a then
 		setfenv(a,getfenv())
-		local _,ret = pcall(a)
+		local s,ret = pcall(a)
 		if ret==nil then
 			ret = printresult
 		else
@@ -1190,7 +1190,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		for _,v in pairs(result) do
 			if v ~= "" then message:reply({
 				content = v,
-				code = "lua"
+				code = s and true or "lua"
 			}) end
 		end
 	else
@@ -1201,7 +1201,9 @@ end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
 	local loaded = false
-	if args ~= "" then loaded=loadModule(args) end
+	if args~="" then
+		loaded = loadModule(args)
+	end
 	if loaded and args=='Events' then
 		unregisterAllEvents()
 		registerAllEvents()
