@@ -676,15 +676,14 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 			end
 		else
 			deletions = channel:getMessages(100):toArray("createdAt", filter)
-			table.reverse(deletions)
 			while count>0 do
 				local len = #deletions
 				if len>count then
-					deletions = table.slice(deletions, 1, count, 1)
+					deletions = table.slice(deletions, len-count, len, 1)
 					len = count
 				end
 				count = count - len
-				local nextDeletions = channel:getMessagesBefore(deletions[len], 100):toArray("createdAt", filter)
+				local nextDeletions = channel:getMessagesBefore(deletions[1], 100):toArray("createdAt", filter)
 				local success = channel:bulkDelete(deletions)
 				if success then
 					numDel = numDel+len
