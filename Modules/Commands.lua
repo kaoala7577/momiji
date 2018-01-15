@@ -641,14 +641,27 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	local guild,channel=message.guild,message.channel
-	local count, filter = args:match("(%d+)%s*(.*)")
+	local count, fsel = args:match("(%d+)%s*(.*)")
+	if not count then
+		return message:reply("Please specify an amount.")
+	end
+	local filter
+	if fsel=="bot" then
+		filter = function(m) return m.author.bot==true end
+	elseif getIdFromString(fsel) then
+		local member = resolveMember(guild, fsel)
+		filter = function(m) return m.author.id==member.id end
+	end
+	if fsel and not filter then
+		return message:reply("The following filter is not valid: "..fsel)
+	end
 	count = tonumber(count)
 	local numDel = 0
 	if count > 0 then
-		if not filter or filter=="" then --TODO: add filter clauses
-			message:delete()
-			local xHun, rem = math.floor(count/100), count%100
-			local deletions
+		message:delete()
+		local xHun, rem = math.floor(count/100), count%100
+		local deletions
+		if not filter then
 			if xHun > 0 then
 				for i=1, xHun do --luacheck: ignore i
 					deletions = message.channel:getMessages(100)
@@ -660,6 +673,24 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 				deletions = message.channel:getMessages(rem)
 				local success = message.channel:bulkDelete(deletions)
 				if success then numDel = numDel+#deletions end
+			end
+		else
+			deletions = channel:getMessages(100):toArray("createdAt", filter)
+			while count>0 do
+				local len = #deletions
+				if len>count then
+					table.slice(deletions, 1, count, 1)
+					len = count
+				end
+				count = count - len
+				local nextDeletions = channel:getMessagesBefore(deletions[len], 100):toArray("createdAt", filter)
+				local success = channel:bulkDelete(deletions)
+				if success then
+					numDel = numDel+len
+				else
+					break
+				end
+				deletions = nextDeletions
 			end
 		end
 		if settings.modlog then
