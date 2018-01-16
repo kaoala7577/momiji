@@ -86,6 +86,13 @@ end
 
 
 function Events.memberJoin(member)
+	--Reference Hackban list
+	local hackbans = Database:get(member, "Hackbans")
+	if table.search(hackbans, member.id) then
+		member:ban("Hackban")
+		return
+	end
+	--Welcome message
 	local settings = Database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
@@ -116,6 +123,7 @@ function Events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
+	--Create user entry in DB
 	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
 		local roles = {}
 		for role in member.roles:iter() do

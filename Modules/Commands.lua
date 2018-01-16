@@ -726,21 +726,18 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}
 end)
 
 addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
-	--TODO: make this do something
-	message:reply("This command is not yet functional, please be patient")
-	if 1==2 then --placeholder so nothing gets run
-		local hackbans = Database:get(message, "Hackbans")
-		local id = getIdFromString(args)
-		if id then
-			local found = table.search(hackbans, id)
-			if not found then
-				table.insert(hackbans, id)
-			else
-				table.remove(hackbans, found)
-			end
-			message.channel:sendf("Added ID %s to the hackban list. If someone joins with this ID, they will be banned with reason \"Hackban.\"", id)
+	local hackbans = Database:get(message, "Hackbans")
+	local id = getIdFromString(args)
+	if id then
+		local found = table.search(hackbans, id)
+		if not found then
+			table.insert(hackbans, id)
+		else
+			table.remove(hackbans, found)
 		end
+		message.channel:sendf("%s the hackban list.%s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
 	end
+	Database:update(message, "Hackbans", hackbans)
 end)
 
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
