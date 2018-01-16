@@ -476,7 +476,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 			footer = {text = "ID: "..member.id}
 		}}
 	else
-		message:reply("I was unable to find any of those roles")
+		message:reply("I was unable to match any of the following requests to existing self roles: "..table.concat(roles, "\n"))
 	end
 end)
 
@@ -857,7 +857,7 @@ addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <r
 				}
 			}
 		else
-			message:reply("I was unable to find any of those roles")
+			message:reply("I was unable to match any of the following requests to existing roles: "..table.concat(args, "\n"))
 		end
 	end
 end)
