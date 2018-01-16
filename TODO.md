@@ -10,4 +10,5 @@
 * Kick/Ban commands
 * Document the code
 * Fine-tuned control over logging messages
-* Rewite Register to not suck ass (it still sucks, ok?)
+* Rewrite Register to not suck ass (it still sucks, ok?)
+* ...Other porn commands

@@ -635,8 +635,6 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 	Database:update(message, "Cases", cases)
 end)
 
---TODO: Prune with predicates
---Concept: if no filter option provided, use current method. If filter is provided, get messages til count is met, then divide and prune
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
 	local settings = Database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
@@ -723,6 +721,24 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}
 				color = m:getColor().value,
 				timestamp = discordia.Date():toISO()
 			}}
+		end
+	end
+end)
+
+addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
+	--TODO: make this do something
+	message:reply("This command is not yet functional, please be patient")
+	if 1==2 then --placeholder so nothing gets run
+		local hackbans = Database:get(message, "Hackbans")
+		local id = getIdFromString(args)
+		if id then
+			local found = table.search(hackbans, id)
+			if not found then
+				table.insert(hackbans, id)
+			else
+				table.remove(hackbans, found)
+			end
+			message.channel:sendf("Added ID %s to the hackban list. If someone joins with this ID, they will be banned with reason \"Hackban.\"", id)
 		end
 	end
 end)

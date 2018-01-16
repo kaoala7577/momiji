@@ -35,6 +35,7 @@ Database.default = {
 	Cases = {},
 	Timers = {},
 	Users = {},
+	Hackbans = {},
 }
 
 function Database:get(guild,index) --luacheck: ignore self
