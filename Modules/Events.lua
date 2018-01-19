@@ -89,8 +89,7 @@ function Events.memberJoin(member)
 	--Reference Hackban list
 	local hackbans = Database:get(member, "Hackbans")
 	if table.search(hackbans, member.id) then
-		member:ban("Hackban")
-		return
+		return member:ban("Hackban")
 	end
 	--Welcome message
 	local settings = Database:get(member, "Settings")

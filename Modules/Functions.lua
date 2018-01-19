@@ -88,7 +88,7 @@ end
 
 function prettyTime(t)
 	local out = ""
-	for k,v in pairs(t) do
+	for k,v in pairsByKeys(t) do
 		if type(v)=='number' then
 			if v~=0 and k~='wday' and k~='yday' then
 				out = out=="" and tostring(v).." "..k or out..", "..tostring(v).." "..k

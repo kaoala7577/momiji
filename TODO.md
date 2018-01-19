@@ -1,9 +1,9 @@
 # High Priority
-* Hackban
 * Warn command
 * Cases
 * Modinfo to use Cases
 * Modular Logging / Command options
+* Additional prune filters
 # Low Priority
 * Username logging
 * Web Panel?

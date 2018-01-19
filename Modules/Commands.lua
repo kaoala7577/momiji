@@ -607,7 +607,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 end)
 
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
-	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
+	local settings = Database:get(message, "Settings")
 	if not settings.mute_setup then
 		message:reply("Unmute cannot be used until `setup` has been run.")
 		return
@@ -616,11 +616,6 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:removeRole(role) then return end
-		if cases==nil or cases[member.id]==nil then
-			cases[member.id] = {type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
-		else
-			cases[member.id][#cases[member.id]+1] = {type="unmute", moderator=message.author.id, timestamp=discordia.Date():toISO()}
-		end
 		message.channel:sendf("Unmuting %s", member.mentionString)
 		if settings.modlog then
 			message.guild:getChannel(settings.modlog_channel):send{embed={
@@ -632,7 +627,6 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 			}}
 		end
 	end
-	Database:update(message, "Cases", cases)
 end)
 
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
@@ -735,7 +729,9 @@ addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'
 		else
 			table.remove(hackbans, found)
 		end
-		message.channel:sendf("%s the hackban list.%s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
+		message.channel:sendf("%s the hackban list. %s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
+	else
+		message:reply("Unable to resolve ID from input.")
 	end
 	Database:update(message, "Hackbans", hackbans)
 end)
