@@ -588,9 +588,10 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 			local r = table.concat(table.slice(args, strTime=="" and 1 or 2), " ")
 			local reason = r~="" and r or "None"
 			if cases==nil or cases[member.id]==nil then
-				cases[member.id] = {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()}
+				cases[member.id] = {}
+				table.insert(cases[member.id], {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()})
 			else
-				cases[member.id][#cases[member.id]+1] = {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()}
+				table.insert(cases[member.id], {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()})
 			end
 			message.guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Member Muted",
