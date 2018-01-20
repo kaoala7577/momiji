@@ -45,7 +45,7 @@ addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function
 end)
 
 addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 0, false, false, function(message, args)
-	local reminder, time = args:match("(.*)in(.*)")
+	local reminder, time = args:match("(.*)%sin%s(.*)")
 	local t = timeBetween(parseTime(time))
 	local t2 = t:toTableUTC()
 	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do

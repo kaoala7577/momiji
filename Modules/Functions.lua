@@ -58,10 +58,11 @@ function parseISOTime(time)
 	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
---TODO: make these compatible with discordia.Date
 function parseTime(message)
 	local t = discordia.Date():toTableUTC()
-	for time,unit in message:gmatch('(%d+)%s*([^%d]+)') do
+	p(message)
+	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
+		print(time, unit)
 		local u = unit:lower()
 		if u:startswith('y') then
 			t.year = t.year+time
