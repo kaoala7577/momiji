@@ -703,24 +703,15 @@ end)
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then
-		local users, cases = Database:get(message, "Users"), Database:get(message, "Cases")
+		local users = Database:get(message, "Users")
 		if users[m.id] then
 			local watchlisted = users[m.id].watchlisted
 			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
-			local caseList = {}
-			if cases[m.id] then
-				for i,case in ipairs(cases[m.id]) do
-					local o = ""
-					for k,v in pairs(case) do
-						o = o.."**"..k.."**: "..v.."\n"
-					end
-					table.insert(caseList, {name = "Case "..tostring(i), value = o, inline = true})
-				end
-			end
-			table.insert(caseList, 1, {name = "Watchlisted", value = watchlisted, inline = false})
 			message:reply {embed={
 				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
-				fields = caseList,
+				fields = {
+					{name = "Watchlisted", value = watchlisted, inline = true},
+				},
 				thumbnail = {url = m.avatarURL, height = 200, width = 200},
 				color = m:getColor().value,
 				timestamp = discordia.Date():toISO()
