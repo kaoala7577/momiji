@@ -699,7 +699,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 	end
 end)
 
---TODO: Pull from Cases
+--TODO: Make Case list output pretty
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then

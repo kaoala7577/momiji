@@ -15,7 +15,7 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		if msg.guild.id~="110373943822540800" and msg.guild.id~="264445053596991498" then
+		if msg.guild.totalMemberCount>900 then
 			local roles = {}
 			for r in msg.member.roles:iter() do
 				table.insert(roles, r.id)
@@ -123,7 +123,7 @@ function Events.memberJoin(member)
 		end
 	end
 	--Create user entry in DB
-	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
+	if member.guild.totalMemberCount>900 then --Temporary workaround until reql fixes its shit
 		local roles = {}
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
@@ -209,7 +209,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	if member.guild.id~="110373943822540800" and member.guild.id~="264445053596991498" then
+	if member.guild.totalMemberCount>900 then
 		if users[member.id] then
 			users[member.id].nick = member.nickname
 			users[member.id].roles = newRoles
