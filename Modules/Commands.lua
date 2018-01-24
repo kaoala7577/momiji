@@ -1255,7 +1255,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
 
-addCommand('Color', 'Show information on the color', {'color','colour'}, '<hexcolor>', 0, false, false, function(message,args)
+addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, function(message,args)
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
