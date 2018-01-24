@@ -36,7 +36,7 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
 			{name="Invite me!",value="[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)",inline=true},
 			{name="Contribute",value="[Github](https://github.com/Mishio595/momiji)\n[Patreon](https://www.patreon.com/momijibot)",inline=true},
 		},
-		color = discordia.Color.fromHex('#5DA9FF').value
+		color = Colors.blue.value
 	}}
 end)
 
@@ -77,7 +77,7 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, func
 			fields={
 				{name=string.format("%d 🎲 [1—%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
 			},
-			color = discordia.Color.fromHex('#5DA9FF').value,
+			color = Colors.blue.value,
 		}}
 	end
 end)
@@ -177,7 +177,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 
 			author = {name = guild.name, icon_url = guild.iconURL},
 			fields = fields,
 			thumbnail = {url = guild.iconURL, height = 200, width = 200},
-			color = discordia.Color.fromHex('#5DA9FF').value,
+			color = Colors.blue.value,
 			footer = { text = "Server Created : "..timestamp }
 		}
 	}
@@ -269,7 +269,7 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 				{name = "Definition", value = #data.list[1].definition<1000 and data.list[1].definition or string.sub(data.list[1].definition,1,1000).."..."},
 				{name = "Example", value = data.list[1].example~='' and data.list[1].example or "No examples"},
 			}
-			t.color = discordia.Color.fromHex('#5DA9FF').value
+			t.color = Colors.blue.value
 		else
 			t.title = 'No definitions found.'
 		end
@@ -309,7 +309,7 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 		end
 		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
 		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
-		t.color = discordia.Color.fromHex('#5DA9FF').value
+		t.color = Colors.blue.value
 		t.footer={text="Weather provided by OpenWeatherMap"}
 		message:reply{embed=t}
 	else
@@ -345,7 +345,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 	local data, err = API.misc.Anime(args)
 	if data then
 		local t={}
-		t.color = discordia.Color.fromHex('#5DA9FF').value
+		t.color = Colors.blue.value
 		local result = data.anime:children()[1]
 		if result then
 			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
@@ -368,7 +368,7 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a manga", 'manga', '<sear
 	local data, err = API.misc.Manga(args)
 	if data then
 		local t={}
-		t.color = discordia.Color.fromHex('#5DA9FF').value
+		t.color = Colors.blue.value
 		local result = data.manga:children()[1]
 		if result then
 			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
@@ -690,7 +690,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 			guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Messages Pruned",
 				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
-				color = discordia.Color.fromRGB(255, 0, 0).value,
+				color = Colors.red.value,
 				timestamp = discordia.Date():toISO()
 			}}
 		else

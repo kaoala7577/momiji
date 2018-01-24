@@ -18,6 +18,11 @@ clock = discordia.Clock()
 clock:start(true)
 discordia.storage.bulkDeletes = {}
 
+Colors = {
+	blue = discordia.Color.fromHex('#5DA9FF'),
+	red = discordia.Color.fromHex('#FF0000'),
+	green = discordia.Color.fromHex('#00FF00'),
+}
 ColorChange = {
 	me = true
 }

@@ -73,6 +73,7 @@ function Events.messageCreate(msg)
 							},
 							footer = {text="Message ID: "..msg.id},
 							timestamp=discordia.Date():toISO(),
+							color = Colors.blue.value,
 						}}
 					end
 				else
@@ -111,7 +112,7 @@ function Events.memberJoin(member)
 			author = {name = "Member Joined", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = discordia.Color.fromRGB(0, 255, 0).value,
+			color = Colors.green.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -142,7 +143,7 @@ function Events.memberLeave(member)
 			author = {name = "Member Left", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = discordia.Color.fromRGB(255, 0, 0).value,
+			color = Colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -179,7 +180,7 @@ function Events.memberUpdate(member)
 				title = "Nickname Changed",
 				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
 				thumbnail = {url=member.avatarURL},
-				color = discordia.Color.fromHex('#5DA9FF').value,
+				color = Colors.blue.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
 			}}
@@ -203,7 +204,7 @@ function Events.memberUpdate(member)
 				title = "Roles Changed",
 				description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
 				thumbnail = {url=member.avatarURL},
-				color = discordia.Color.fromHex('#5DA9FF').value,
+				color = Colors.blue.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id}
 			}}
@@ -240,7 +241,7 @@ function Events.userBan(user, guild)
 			author = {name = "Member Banned", icon_url = member.avatarURL},
 			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = discordia.Color.fromRGB(255, 0, 0).value,
+			color = Colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -256,7 +257,7 @@ function Events.userUnban(user, guild)
 			author = {name = "Member Unbanned", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = discordia.Color.fromRGB(0, 255, 0).value,
+			color = Colors.green.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -284,7 +285,7 @@ function Events.messageDelete(message)
 		channel:send {embed={
 			author = {name = "Message Deleted", icon_url = member.avatarURL},
 			description = body,
-			color = discordia.Color.fromRGB(255, 0, 0).value,
+			color = Colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -304,7 +305,7 @@ function Events.messageDeleteUncached(channel, messageID)
 		logChannel:send {embed={
 			author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
 			description = "**Channel:** "..channel.mentionString.." ("..channel.name..")",
-			color = discordia.Color.fromRGB(255, 0, 0).value,
+			color = Colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..channel.id}
 		}}
@@ -314,7 +315,7 @@ end
 function Events.guildCreate(guild)
 	API.misc.DBots_Stats_Update({server_count=#client.guilds})
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
-	comLog:sendf("Joined Guild: %s (%s)", guild.name, guild.id)
+	comLog:sendf("Joined Guild: %s (%s)", guild.name, guild.id) --TODO: change to embed
 end
 
 function Events.Timing(data)
@@ -328,7 +329,7 @@ function Events.Timing(data)
 				m:send{embed={
 					title='Reminder from '..time..' ago',
 					description=args[5],
-					color=discordia.Color.fromHex('#5DA9FF').value,
+					color=Colors.blue.value,
 				}}
 			end
 		end
