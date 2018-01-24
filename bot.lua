@@ -23,9 +23,6 @@ Colors = {
 	red = discordia.Color.fromHex('#FF0000'),
 	green = discordia.Color.fromHex('#00FF00'),
 }
-ColorChange = {
-	me = true
-}
 
 -- loadModule adapted from DannehSC/Electricity-2.0
 function loadModule(name)

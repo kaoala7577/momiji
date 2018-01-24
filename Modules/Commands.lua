@@ -1242,7 +1242,10 @@ end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
 	local loaded = false
-	if args~="" then
+	if args=="restart" then
+		client:stop()
+		os.exit()
+	elseif args~="" then
 		loaded = loadModule(args)
 	end
 	if loaded and args=='Events' then

@@ -1,14 +1,13 @@
 Clocks = {}
 
+--Currently, this file is entirely specific to my guild and I have no reason to expand it as of this time
 function Clocks.min(time)
 	--Color Change
 	local guild = client:getGuild('348660188951216129')
 	if guild and (math.fmod(time.min, 10) == 0) then
 		local role
-		if ColorChange.me then
-			role = guild:getRole('348665099550195713')
-			role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
-		end
+		role = guild:getRole('348665099550195713')
+		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 		role = guild:getRole('363398104491229184')
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
