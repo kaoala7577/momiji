@@ -722,6 +722,14 @@ end)
 
 addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
 	local hackbans = Database:get(message, "Hackbans")
+	if args=="list" then
+		message.channel:send({embed={
+			title = "Hackbans",
+			description = table.concat(hackbans, "\n"),
+			color = Colors.blue.value,
+		}})
+		return
+	end
 	local id = getIdFromString(args)
 	if id then
 		local found = table.search(hackbans, id)
