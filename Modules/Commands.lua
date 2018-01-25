@@ -44,7 +44,7 @@ addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function
 	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
 
-addCommand('Remind Me', 'Make a reminder!', 'remindme', '<reminder> in <time>', 0, false, false, function(message, args)
+addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder> in <time>', 0, false, false, function(message, args)
 	local reminder, time = args:match("(.*)%sin%s(.*)")
 	local t = timeBetween(parseTime(time))
 	local t2 = t:toTableUTC()
