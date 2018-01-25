@@ -1,7 +1,7 @@
 --[[ Adapted from DannehSC/Electricity-2.0 ]]
 
 Events = {}
-local errLog, comLog
+local errLog, comLog, guildLog
 
 function Events.messageCreate(msg)
 	if msg.author.bot then return end
@@ -315,7 +315,21 @@ end
 function Events.guildCreate(guild)
 	API.misc.DBots_Stats_Update({server_count=#client.guilds})
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
-	comLog:sendf("Joined Guild: %s (%s)", guild.name, guild.id) --TODO: change to embed
+	guildLog:send{embed={
+		title = "Joined Guild",
+		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
+		color = Colors.green.value,
+		timestamp = discordia.Date():toISO(),
+	}}
+end
+
+function Events.guildDelete(guild)
+	guildLog:send{embed={
+		title = "Left Guild",
+		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
+		color = Colors.red.value,
+		timestamp = discordia.Date():toISO(),
+	}}
 end
 
 function Events.Timing(data)
@@ -367,6 +381,7 @@ function Events.ready()
 	API.misc.DBots_Stats_Update({server_count=#client.guilds})
 	errLog = client:getChannel('376422808852627457')
 	comLog = client:getChannel('376422940570419200')
+	guildLog = client:getChannel('406115496833056789')
 	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
 		Database:get(g)
