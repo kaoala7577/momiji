@@ -59,7 +59,7 @@ addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder> 
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
 	if reminder and time then
 		Timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
-		message.channel:sendf("Got it! I'll remind %s to %sin %s.",message.author.name,reminder,strTime)
+		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
 	end
 end)
 
