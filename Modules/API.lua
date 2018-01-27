@@ -3,15 +3,16 @@
 API={
 	data={},
 	endpoints={
-		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats',
+		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats', --id: the bot ID
 		['Meow']='http://random.cat/meow',
 		['Bork']='https://dog.ceo/api/breeds/image/random',
-		['Urban']='https://api.urbandictionary.com/v0/define?term=%s',
+		['Urban']='https://api.urbandictionary.com/v0/define?term=%s', --term: a search term
 		['dadjoke']='https://icanhazdadjoke.com/',
-		['e621']='https://e621.net/post/index.json?limit=1&tags=%s',
-		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s',
-		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s',
-		['Weather']='http://api.openweathermap.org/data/2.5/weather?units=Metric&%s=%s&appid=%s'
+		['e621']='https://e621.net/post/index.json?limit=1&tags=%s', --limit: a number, tags: a tag string
+		['Animu']='https://myanimelist.net/api/anime/search.xml?q=%s', --q: a search query
+		['Mango']='https://myanimelist.net/api/manga/search.xml?q=%s', --q: a search query
+		['Weather']='http://api.openweathermap.org/data/2.5/weather?units=Metric&%s=%s&appid=%s', --s: a city, country code listing
+		['Danbooru']='https://danbooru.donmai.us/posts.json?limit=1&random=true&tags=%s' --limit: a number, random: true or false, tags: a tag string
 	},
 	misc={},
 }
@@ -124,6 +125,21 @@ function API.misc.Furry(input)
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata[1]
+		else
+			return nil,"ERROR: unable to json decode"
+		end
+	else
+		return nil,"ERROR: unable to urlencode"
+	end
+end
+
+function API.misc.Booru(input)
+	local request=query.urlencode(input:trim())
+	if request then
+		local _,data=API.get('Danbooru',{request}, {{'User-Agent','luvit'}})
+		local jdata=json.decode(data)
+		if jdata then
+			return jdata
 		else
 			return nil,"ERROR: unable to json decode"
 		end

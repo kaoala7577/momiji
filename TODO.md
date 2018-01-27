@@ -1,7 +1,7 @@
 # High Priority
 * Warn command
 * Cases
-* Modinfo to use Cases
+* Modinfo to use Cases in a non ugly way
 * Modular Logging / Command options
 * Additional prune filters
 # Low Priority
