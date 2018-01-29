@@ -1,4 +1,4 @@
--- local json = require('json')
+
 local processQuery = require('./query.lua')
 local cmanager = require('./coroutinemanager.lua')
 
@@ -10,6 +10,7 @@ function newReql(conn)
 			usable = true
 		}
 	}
+
 	if conn then reql.conn = conn end
 	function reql.db(name)
 		assert(reql._data.usable, 'ReQL instance unusable, please run or start a new instance.')
@@ -52,6 +53,12 @@ function newReql(conn)
 		assert(not reql.ran, 'ReQL instance already ran.')
 		reql._data.usable = false
 		reql._data.js = str
+		return reql
+	end
+	function reql.config()
+		assert(reql._data.usable, 'ReQL instance unusable, please run or start a new instance.')
+		assert(not reql.ran, 'ReQL instance already ran.')
+		reql._data.config = true
 		return reql
 	end
 	function reql.replace(tab)
@@ -209,11 +216,11 @@ function newReql(conn)
 		return reql
 	end
 	function reql.run(tab, callback)
-		if type(tab) == 'function'then
+		if type(tab) == 'function' then
 			callback = tab
 			tab = nil
 		end
-		tab= tab or {}
+		tab = tab or { }
 		assert(not reql.ran, 'ReQL instance already ran.')
 		reql.conn = reql.conn or tab.conn
 		assert(reql.conn ~= nil, 'No connection passed to reql.run()')
@@ -223,22 +230,24 @@ function newReql(conn)
 		reql._data.raw = tab.raw
 		local token = reql.conn._getToken()
 		local x, is = callback, cmanager:isCoro()
-		if is and not reql._data.changes then
+		local changes = reql._data.changes
+		if is and not changes then
 			x = function(...)
 				cmanager:resume(token,...)
 			end
 		end
 		assert(type(x) == 'function', 'bad argument #2 to reql.run(), function expected, got ' .. type(x))
+		reql.caller = debug.getinfo(2)
 		processQuery(reql, token, x)
 		reql.ran = not reql.conn._options.reusable
 		for i in pairs(reql._data) do
 			reql._data[i] = nil
 		end
-		if is then
+		if is and not changes then
 			return cmanager:yield(token)
 		end
 	end
-	for _, v in pairs({ 'continue', 'stop', 'noreplywait', 'server_info' })do
+	for _, v in pairs({ 'continue', 'stop', 'noreplywait', 'server_info' }) do
 		reql[v] = function()
 			assert(reql._data.usable, 'ReQL instance unusable, please run or start a new instance.')
 			reql._data.usable = false
