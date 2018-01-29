@@ -3,4 +3,3 @@ gateway.json
 rethinkdb_data/
 options.json
 .luacheckrc
-deps/luvit-reql
