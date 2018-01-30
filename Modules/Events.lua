@@ -15,7 +15,7 @@ function Events.messageCreate(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
-		--if msg.guild.totalMemberCount<600 then
+		if msg.guild.totalMemberCount<600 then
 			local roles = {}
 			for r in msg.member.roles:iter() do
 				table.insert(roles, r.id)
@@ -28,7 +28,7 @@ function Events.messageCreate(msg)
 				data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname, roles = roles}
 			end
 			Database:update(msg, "Users", data.Users)
-		--end
+		end
 	end
 	if msg.content:lower():match("i need a hug") then
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
@@ -124,7 +124,7 @@ function Events.memberJoin(member)
 		end
 	end
 	--Create user entry in DB
-	--if member.guild.totalMemberCount<600 then --Temporary workaround until reql fixes its shit
+	if member.guild.totalMemberCount<600 then --Temporary workaround until reql fixes its shit
 		local roles = {}
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
@@ -132,7 +132,7 @@ function Events.memberJoin(member)
 		local users = Database:get(member, "Users")
 		users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname, roles=roles}
 		Database:update(member, "Users", users)
-	--end
+	end
 end
 
 function Events.memberLeave(member)
@@ -210,7 +210,7 @@ function Events.memberUpdate(member)
 			}}
 		end
 	end
-	--if member.guild.totalMemberCount<600 then
+	if member.guild.totalMemberCount<600 then
 		if users[member.id] then
 			users[member.id].nick = member.nickname
 			users[member.id].roles = newRoles
@@ -218,7 +218,7 @@ function Events.memberUpdate(member)
 			users[member.id] = {nick = member.nickname, roles = newRoles}
 		end
 		Database:update(member, "Users", users)
-	--end
+	end
 end
 
 function Events.userBan(user, guild)
