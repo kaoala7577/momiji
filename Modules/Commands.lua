@@ -929,7 +929,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			for r,a in pairs(l) do
 				for _,role in ipairs(args) do
 					role=role:trim()
-					if string.lower(role) == string.lower(r)  or(table.search(a, string.lower(role))) then
+					if string.lower(role) == string.lower(r) or table.search(a, string.lower(role)) then
 						if r=='Gamer' or r=='18+' or k== 'Mafia' or k~='Opt-In Roles' then
 							rolesToAdd[#rolesToAdd+1] = r
 							if (k == 'Gender Identity' or k == 'Gender') then
@@ -1180,7 +1180,7 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<rol
 		local aliases = table.slice(args, 3, #args, 1)
 		if aliases ~= {} then
 			for _,v in ipairs(aliases) do
-				table.insert(roles[cat][r.name], v)
+				table.insert(roles[cat][r.name], string.lower(v))
 			end
 		end
 		if table.concat(aliases,', ')=='' then
