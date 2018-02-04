@@ -240,7 +240,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|
 			{name = 'Joined', value = joinTime, inline = false},
 			{name = 'Created', value = createTime, inline = false},
 		}
-		if message.guild.id=='348660188951216129' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
+		if message.guild.id=='348660188951216129' or message.guild.id=='407926063281209344' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
 		table.insert(fields, {name = 'Extras', value = "[Fullsize Avatar]("..member.avatarURL..")", inline = false})
 		table.insert(fields, {name = 'Roles ('..#member.roles..')', value = roles, inline = false})
 		message.channel:send {
@@ -917,7 +917,7 @@ end)
 
 -- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	if message.guild.id~="348660188951216129" and message.guild.id~='375797411819552769' then msg:reply("This command is not available in this guild");return end
+	if message.guild.id~="348660188951216129" and message.guild.id~='407926063281209344' then msg:reply("This command is not available in this guild");return end
 	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = resolveMember(message.guild, args)
@@ -953,8 +953,8 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 			end
 			if message.guild.id == "348660188951216129" then
 				member:addRole('348873284265312267')
-			elseif message.guild.id == '375797411819552769' then
-				member:addRole('375799736294178827')
+			elseif message.guild.id == '407926063281209344' then
+				member:addRole('409109782612672513')
 			end
 			if #rolesToAdd > 0 then
 				if channel then

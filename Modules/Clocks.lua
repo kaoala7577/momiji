@@ -4,6 +4,7 @@ Clocks = {}
 function Clocks.min(time)
 	--Color Change
 	local guild = client:getGuild('348660188951216129')
+	local guild2 = client:getGuild('409109782612672513')
 	if guild and (math.fmod(time.min, 10) == 0) then
 		local role
 		role = guild:getRole('348665099550195713')
@@ -12,8 +13,9 @@ function Clocks.min(time)
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
 	--Auto-remove Cooldown
-	if guild then
+	if guild or guild2 then
 		local users = Database:get(guild, "Users")
+		--Transcend
 		for member in guild.members:iter() do
 			if member:hasRole('348873284265312267') then
 				if users[member.id] then
@@ -23,6 +25,21 @@ function Clocks.min(time)
 						if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
 							member:addRole('348693274917339139')
 							member:removeRole('348873284265312267')
+						end
+					end
+				end
+			end
+		end
+		--Enby Folk
+		for member in guild.members:iter() do
+			if member:hasRole('409109782612672513') then
+				if users[member.id] then
+					local reg = users[member.id].registered
+					if parseISOTime(reg) ~= reg then
+						local date = parseISOTime(reg):toTableUTC()
+						if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
+							member:addRole('407928336094855168')
+							member:removeRole('409109782612672513')
 						end
 					end
 				end
