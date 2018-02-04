@@ -1215,12 +1215,23 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	msg = message
 	local printresult = ""
 	local oldPrint = print
+	local oldP = p
 	print = function(...)
 		local arg = {...}
 		for _,v in ipairs(arg) do
 			printresult = printresult..tostring(v).."\t"
 		end
 		printresult = printresult.."\n"
+	end
+	p = function(...)
+		local n = select('#', ...)
+		local arguments = {...}
+		for i = 1, n do
+			arguments[i] = pprint.dump(arguments[i],nil,true):gsub(options.token,'<Hidden for security>')
+		end
+		local txt=table.concat(arguments, "\t").."\n"
+		tx=tx..txt
+		printresult = printresult..txt.."\n"
 	end
 	local a = loadstring(args)
 	if a then
@@ -1246,6 +1257,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		message:reply("Error loading function")
 	end
 	print = oldPrint
+	p = oldP
 end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
