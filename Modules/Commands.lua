@@ -1213,15 +1213,13 @@ end)
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
 	args = string.gsub(args, "`", ""):trim()
 	msg = message
-	local printresult = ""
+	local tx = ""
 	local oldPrint = print
 	local oldP = p
 	print = function(...)
 		local arg = {...}
-		for _,v in ipairs(arg) do
-			printresult = printresult..tostring(v).."\t"
-		end
-		printresult = printresult.."\n"
+		local txt = table.concat(arg, "\t").."\n"
+		tx = tx..txt
 	end
 	p = function(...)
 		local n = select('#', ...)
@@ -1231,16 +1229,15 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		end
 		local txt=table.concat(arguments, "\t").."\n"
 		tx=tx..txt
-		printresult = printresult..txt.."\n"
 	end
 	local a = loadstring(args)
 	if a then
 		setfenv(a,getfenv())
 		local s,ret = pcall(a)
 		if ret==nil then
-			ret = printresult
+			ret = tx
 		else
-			ret = tostring(ret).."\n"..printresult
+			ret = tostring(ret).."\n"..tx
 		end
 		local result, len = {}, 1900
 		local count = math.ceil(#ret/len)>1 and math.ceil(#ret/len) or 1
