@@ -34,7 +34,7 @@ function Clocks.min(time)
 	if guild2 then
 		local users = Database:get(guild2, "Users")
 		--Enby Folk
-		for member in guild.members:iter() do
+		for member in guild2.members:iter() do
 			if member:hasRole('409109782612672513') then
 				if users[member.id] then
 					local reg = users[member.id].registered
