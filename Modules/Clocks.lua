@@ -6,8 +6,8 @@ function Clocks.min(time)
 	local guilds = { transcend = client:getGuild('348660188951216129'), enbyfolk = client:getGuild('407926063281209344')}
 	local roles = {
 		transcend = {
-			cooldown = '348693274917339139',
-			member = '348873284265312267'
+			cooldown = '348873284265312267',
+			member = '348693274917339139'
 		},
 		enbyfolk = {
 			cooldown = '409109782612672513',
@@ -28,6 +28,7 @@ function Clocks.min(time)
 			if member:hasRole(roles[name].cooldown) then
 				if users[member.id] then
 					local reg = users[member.id].registered
+					print(reg)
 					if parseISOTime(reg) ~= reg then
 						local date = parseISOTime(reg):toTableUTC()
 						if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
