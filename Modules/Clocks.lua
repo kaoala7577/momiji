@@ -4,7 +4,7 @@ Clocks = {}
 function Clocks.min(time)
 	--Color Change
 	local guild = client:getGuild('348660188951216129')
-	local guild2 = client:getGuild('409109782612672513')
+	local guild2 = client:getGuild('407926063281209344')
 	if guild and (math.fmod(time.min, 10) == 0) then
 		local role
 		role = guild:getRole('348665099550195713')
