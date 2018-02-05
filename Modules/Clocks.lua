@@ -30,8 +30,9 @@ function Clocks.min(time)
 					local reg = users[member.id].registered
 					print(reg)
 					if parseISOTime(reg) ~= reg then
-						local date = parseISOTime(reg):toTableUTC()
-						if (time.day > date.day) and (time.hour >= date.hour) and (time.min >= date.min) then
+						local old = parseISOTime(reg):toSeconds()
+						local new = discordia.Date.fromISO(reg):toSeconds()
+						if new-old>60*60*24 then
 							member:addRole(roles[name].member)
 							member:removeRole(roles[name].cooldown)
 						end
