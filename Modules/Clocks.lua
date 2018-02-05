@@ -13,7 +13,7 @@ function Clocks.min(time)
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
 	--Auto-remove Cooldown
-	if guild or guild2 then
+	if guild then
 		local users = Database:get(guild, "Users")
 		--Transcend
 		for member in guild.members:iter() do
@@ -30,6 +30,9 @@ function Clocks.min(time)
 				end
 			end
 		end
+	end
+	if guild2 then
+		local users = Database:get(guild2, "Users")
 		--Enby Folk
 		for member in guild.members:iter() do
 			if member:hasRole('409109782612672513') then
