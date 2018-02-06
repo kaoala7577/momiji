@@ -424,6 +424,45 @@ addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', 
 	}}
 end)
 
+addCommand('Danbooru', 'Posts a random image from danbooru with optional tags', {'danbooru', 'db'}, '[input]', 0, false, true, function(message, args)
+	if not message.channel.nsfw then
+		message:reply("This command can only be used in NSFW channels.")
+		return
+	end
+	local blacklist = {} --make the blacklist
+	for _,v in ipairs(blacklist) do
+		if args:match(v) then
+			message:reply("A tag you searched for is blacklisted: "..v)
+			return
+		end
+	end
+	message.channel:broadcastTyping()
+	local data
+	local count = 0
+	while not data do
+		local try = API.misc.Booru(args)
+		local bl = false
+		for _,v in ipairs(blacklist) do
+			if try and try.tags:match(v) then
+				bl = true
+			end
+		end
+		if try and not bl then
+			data=try[1]
+		end
+		count = count+1
+		if count >= 5 then
+			message:reply("Unable to find results after "..count.." attempts")
+			return
+		end
+	end
+	p(data)
+	message:reply{embed={
+		image={url=data.file_url:startswith("http") and data.file_url or "https://danbooru.donmai.us"..data.file_url},
+		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Uploader:** %s\n**Score:** %s", data.tag_string:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://danbooru.donmai.us/posts/"..data.id, data.uploader_name, data.up_score-data.down_score)
+	}}
+end)
+
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
 	local member = message.member or message.guild:getMember(message.author.id)
 	local selfRoles = Database:get(message, "Roles")
