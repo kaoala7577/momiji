@@ -113,6 +113,20 @@ function Database:update(guild,index,value) --luacheck: ignore self
 	end
 end
 
+function Database:getCached(guild,index) --luacheck: ignore self
+	local id = resolveGuild(guild)
+	if Database.cache[id] then
+		local cached=Database.cache[id]
+		if cached[index]then
+			return cached[index]
+		else
+			return cached
+		end
+	else
+		print("Cannot access cached data. Make sure it has been loaded")
+	end
+end
+
 function Database:delete(guild) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided" end
 	local id=resolveGuild(guild)
