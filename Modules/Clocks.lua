@@ -16,9 +16,9 @@ function Clocks.min(time)
 	}
 	if guilds.transcend and (math.fmod(time.min, 10) == 0) then
 		local role
-		role = guilds.trancend:getRole('348665099550195713')
+		role = guilds.transcend:getRole('348665099550195713')
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
-		role = guilds.transend:getRole('363398104491229184')
+		role = guilds.transcend:getRole('363398104491229184')
 		role:setColor(discordia.Color.fromRGB(math.floor(math.random(0, 255)), math.floor(math.random(0, 255)), math.floor(math.random(0, 255))))
 	end
 	--Auto-remove Cooldown
