@@ -101,7 +101,7 @@ function Database:update(guild,index,value) --luacheck: ignore self
 			Database.cache[id].id=id
 		end
 		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
-		logger:log(err and 1 or 4, "GUILD: %s INDEX: %s\n%sDATA: %s", id, index, err and "ERROR: "..err.."\n" or "", json.encode(data))
+		logger:log(err and 1 or 4, "GUILD: %s INDEX: %s%s DATA: %s", id, index, err and " ERROR: "..err.."\n" or "", json.encode(data))
 		if err then
 			print('UPDATE')
 			print(err)
