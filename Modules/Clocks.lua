@@ -28,7 +28,6 @@ function Clocks.min(time)
 			if member:hasRole(roles[name].cooldown) then
 				if users[member.id] then
 					local reg = users[member.id].registered
-					print(reg)
 					if parseISOTime(reg) ~= reg then
 						local old = parseISOTime(reg):toSeconds()
 						local new = discordia.Date.fromISO(reg):toSeconds()
