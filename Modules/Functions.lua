@@ -60,9 +60,7 @@ end
 
 function parseTime(message)
 	local t = discordia.Date():toTableUTC()
-	p(message)
 	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
-		print(time, unit)
 		local u = unit:lower()
 		if u:startswith('y') then
 			t.year = t.year+time
