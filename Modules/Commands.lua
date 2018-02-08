@@ -186,6 +186,20 @@ end)
 addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
 	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
+		local roles = Database:getCached(message, "Roles")
+		local aliases, selfAssignable
+		if roles then
+			for cat,t in pairs(roles) do
+				for r,a in pairs(t) do
+					if role.name == r then
+						aliases = a
+						selfAssignable = "Yes"
+					end
+				end
+			end
+		end
+		selfAssignable = not selfAssignable and "No" or selfAssignable
+		aliases = not aliases and "None" or table.concat(aliases, ", ")
 		local hex = string.match(role:getColor():toHex(), "%x+")
 		local count = 0
 		for m in message.guild.members:iter() do
@@ -205,6 +219,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 					{name = "Mentionable", value = mentionable, inline = true},
 					{name = "Position", value = role.position, inline = true},
 					{name = "Members", value = count, inline = true},
+					{name = "Self Role: "..selfAssignable, value = aliases, inline = true},
 				},
 				color = role:getColor().value,
 			}
