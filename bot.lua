@@ -23,6 +23,7 @@ Colors = {
 	blue = discordia.Color.fromHex('#5DA9FF'),
 	red = discordia.Color.fromHex('#FF0000'),
 	green = discordia.Color.fromHex('#00FF00'),
+	altBlue = discordia.Color.fromHex('#7979FF'),
 }
 
 -- loadModule adapted from DannehSC/Electricity-2.0
