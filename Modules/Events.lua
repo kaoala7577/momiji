@@ -27,7 +27,9 @@ function Events.messageCreate(msg)
 			else
 				data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname, roles = roles}
 			end
-			Database:update(msg, "Users", data.Users)
+			coroutine.wrap(function()
+				Database:update(msg, "Users", data.Users)
+			end)()
 		end
 	end
 	if msg.content:lower():match("i need a hug") then
