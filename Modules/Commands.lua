@@ -1316,11 +1316,15 @@ addCommand('Git', 'Run a git command', 'git', '<options>', 4, false, false, func
 	if args=='pull' then
 		com = "pull origin master"
 	end
-	local stat = os.execute(string.format("git %s", com))
-	if stat then
-		message:reply("Command completed successfully")
+	if com then
+		local stat = os.execute(string.format("git %s", com))
+		if stat then
+			message:reply("Command completed successfully")
+		else
+			message.channel:sendf("Error: %s", stat)
+		end
 	else
-		message.channel:sendf("Error: %s", stat)
+		message:reply("Invalid command")
 	end
 end)
 
