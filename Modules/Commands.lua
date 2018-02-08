@@ -1311,6 +1311,19 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
 
+addCommand('Git', 'Run a git command', 'git', '<options>', 4, false, false, function(message, args)
+	local com
+	if args=='pull' then
+		com = "pull origin master"
+	end
+	local stat = os.execute(string.format("git %s", com))
+	if stat then
+		message:reply("Command completed successfully")
+	else
+		message.channel:sendf("Error: %s", stat)
+	end
+end)
+
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, function(message,args)
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
