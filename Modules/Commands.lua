@@ -189,7 +189,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 		local roles = Database:getCached(message, "Roles")
 		local aliases, selfAssignable
 		if roles then
-			for cat,t in pairs(roles) do
+			for _,t in pairs(roles) do
 				for r,a in pairs(t) do
 					if role.name == r then
 						aliases = a

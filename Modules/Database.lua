@@ -48,12 +48,12 @@ function Database:get(guild,index) --luacheck: ignore self
 			return cached
 		end
 	else
-		local data,err = Database._conn.reql().db('momiji').table('guilds').get(id).run()
+		local data,err = Database._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
 		if err then
 			print('GET',err)
 		else
 			local u
-			if data==nil then
+			if data==nil or data==json.null then
 				data = table.deepcopy(Database.default)
 				data.id = id
 				Database.cache[id] = data
@@ -75,17 +75,10 @@ function Database:get(guild,index) --luacheck: ignore self
 					end
 				end
 			end
-			local cached = Database.cache[id]
-			if u and (type(cached)=='table') then
+			if u then
 				Database:update(id)
-			else
-				logger:log(2, "Received raw string from database, likely bad JSON. GUILD: %s", id)
 			end
-			if cached[index] then
-				return cached[index]
-			else
-				return cached
-			end
+			return data
 		end
 	end
 end
@@ -127,18 +120,18 @@ function Database:getCached(guild,index) --luacheck: ignore self
 	end
 end
 
-function Database:delete(guild) --luacheck: ignore self
-	if not guild then error"No ID/Guild/Message provided" end
-	local id=resolveGuild(guild)
+function Database:delete(guild,index) --luacheck: ignore self
+	if not guild then error"No ID/Guild/Message provided"end
+	local id = resolveGuild(guild)
 	if Database.cache[id] then
-		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').delete(id).run()
-		if err then
-			print('DELETE')
-			print(err)
-			p(edata)
+		local cached = Database.cache[id]
+		if cached[index] then
+			cached[index] = nil
+		elseif cached.Timers[index] then
+			cached.Timers[index] = nil
+		elseif cached.Roles[index] then
+			cached.Roles[index] = nil
 		end
-		return data,err,edata
-	else
-		print("Fetch data before trying to delete it.")
 	end
+	Database:Update(guild)
 end
