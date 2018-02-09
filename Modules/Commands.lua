@@ -199,7 +199,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 			end
 		end
 		selfAssignable = not selfAssignable and "No" or selfAssignable
-		aliases = table.concat(aliases, ", ")
+		aliases = aliases and table.concat(aliases, ", ") or nil
 		local hex = string.match(role:getColor():toHex(), "%x+")
 		local count = 0
 		for m in message.guild.members:iter() do
