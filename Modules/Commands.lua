@@ -199,7 +199,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 			end
 		end
 		selfAssignable = not selfAssignable and "No" or selfAssignable
-		aliases = not aliases and "None" or table.concat(aliases, ", ")
+		aliases = table.concat(aliases, ", ")
 		local hex = string.match(role:getColor():toHex(), "%x+")
 		local count = 0
 		for m in message.guild.members:iter() do
@@ -208,22 +208,24 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 		local hoisted, mentionable
 		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
 		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-		message.channel:send {
-			embed = {
-				thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
-				fields = {
-					{name = "Name", value = role.name, inline = true},
-					{name = "ID", value = role.id, inline = true},
-					{name = "Hex", value = role:getColor():toHex(), inline = true},
-					{name = "Hoisted", value = hoisted, inline = true},
-					{name = "Mentionable", value = mentionable, inline = true},
-					{name = "Position", value = role.position, inline = true},
-					{name = "Members", value = count, inline = true},
-					{name = "Self Role: "..selfAssignable, value = aliases, inline = true},
-				},
-				color = role:getColor().value,
-			}
+		local embed = {
+			thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
+			fields = {
+				{name = "Name", value = role.name, inline = true},
+				{name = "ID", value = role.id, inline = true},
+				{name = "Hex", value = role:getColor():toHex(), inline = true},
+				{name = "Hoisted", value = hoisted, inline = true},
+				{name = "Mentionable", value = mentionable, inline = true},
+				{name = "Position", value = role.position, inline = true},
+				{name = "Members", value = count, inline = true},
+				{name = "Self Assignable", value = selfAssignable, inline = true},
+			},
+			color = role:getColor().value,
 		}
+		if selfAssignable=="Yes" and aliases~=nil and aliases~="" then
+			table.insert(embed.fields, {name = "Self Role Aliases", value = aliases, inline = false})
+		end
+		message.channel:send{embed=embed}
 	end
 end)
 
