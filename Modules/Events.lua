@@ -21,15 +21,14 @@ function Events.messageCreate(msg)
 				table.insert(roles, r.id)
 			end
 			if data.Users[sender.id] then
-				data.Users[sender.id].last_message = discordia.Date():toISO()
 				data.Users[sender.id].nick = sender.nickname
 				data.Users[sender.id].roles = roles
 			else
-				data.Users[sender.id] = {last_message = discordia.Date():toISO(), nick = sender.nickname, roles = roles}
+				data.Users[sender.id] = {nick = sender.nickname, roles = roles}
 			end
-			coroutine.wrap(function()
+			if data~=Database.cache[msg.guild.id] then
 				Database:update(msg, "Users", data.Users)
-			end)()
+			end
 		end
 	end
 	if msg.content:lower():match("i need a hug") then

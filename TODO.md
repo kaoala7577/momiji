@@ -2,10 +2,11 @@
 * Warn command
 * Cases
 * Modinfo to use Cases
-* Modular Logging / Command options
-* Additional prune filters
 # Low Priority
+* Modular Logging / Command options
+* Temp message channel
 * Username logging
+* Additional prune filters
 * Web Panel?
 * Kick/Ban commands
 * Document the code
