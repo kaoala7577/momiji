@@ -1295,10 +1295,10 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		else
 			ret = tostring(ret).."\n"..tx
 		end
-		local result, len = {}, 1900
+		local result, len = {}, 1990
 		local count = math.ceil(#ret/len)>1 and math.ceil(#ret/len) or 1
 		for i=1,count do
-			result[i] = string.sub(ret, (len*(i-1)), (len*(i)))
+			result[i] = string.sub(ret, (len*(i-1)), (len*(i)-1))
 		end
 		for _,v in pairs(result) do
 			if v ~= "" then message:reply({
