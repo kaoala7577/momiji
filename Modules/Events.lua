@@ -150,6 +150,8 @@ function Events.memberLeave(member)
 		}):iter()()
 		if audit and audit:getTarget().id~=member.id then
 			return
+		elseif audit and discordia.Date():toSeconds()-audit.createdAt>5 then
+			return
 		end
 		local reason = audit and audit.reason or nil
 		if audit then
