@@ -146,14 +146,16 @@ function Events.memberLeave(member)
 		}):iter()()
 		if audit and audit:getTarget().id ~= member.id then audit = nil end
 		local reason = audit and audit.reason or nil
-		channel:send{embed={
-			author = {name = "Member Kicked", icon_url = member.avatarURL},
-			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = Colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
+		if audit then
+			channel:send{embed={
+				author = {name = "Member Kicked", icon_url = member.avatarURL},
+				description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = Colors.red.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..member.id}
+			}}
+		end
 	end
 	--kill their entry in the DB
 	local users = Database:get(member, "Users")
