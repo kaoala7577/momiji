@@ -16,7 +16,7 @@ function Events.messageCreate(msg)
 			return
 		end
 	end
-	if msg.content:lower():match("%s?i need a hug%s?") then
+	if msg.content:lower():match("^i need a hug$") then
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
