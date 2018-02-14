@@ -6,6 +6,8 @@ query = require('querystring')
 http = require('coro-http')
 xml = require("xmlSimple").newParser()
 pprint = require("pretty-print")
+uv = require("uv")
+ffi = require("ffi")
 
 options = json.parse(fs.readFileSync('options.json'))
 discordia = require('discordia')

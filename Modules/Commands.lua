@@ -22,7 +22,7 @@ addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, tr
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
-addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(message)
+addCommand('Info', 'Info on the bot', {'binfo','info'}, '', 0, false, false, function(message)
 	message:reply{embed={
 		author = {name=client.user.name, icon_url=client.user.avatarURL},
 		thumbnail = {url=client.user.avatarURL},
@@ -39,6 +39,26 @@ addCommand('Info', 'Info on the bot', 'info', '', 0, false, false, function(mess
 		color = Colors.blue.value
 	}}
 end)
+
+--Command adapted from DannehSC/Electricity-2.0
+addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni'}, '', 0, false, false, function(message)
+	local ts = tostring
+	local cpu = uv.cpu_info()
+	local threads = #cpu
+	local cpumodel = cpu[1].model
+	local mem = math.floor(collectgarbage('count')/1000)
+	message:reply{embed={
+		title = 'Nerdy Info',
+		color = Colors.blue.value,
+		fields = {
+			{name = 'OS:', value = ts(ffi.os)},
+			{name = 'CPU Threads:', value = ts(threads)},
+			{name = 'CPU Model:', value = ts(cpumodel)},
+			{name = 'Memory usage:', value = ts(mem)..' MB'},
+		},
+	}}
+end)
+
 
 addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message)
 	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
@@ -145,7 +165,7 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 	end
 end)
 
-addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, '[serverID]', 0, false, true, function(message, args)
+addCommand('Server Info', "Get information on the server", {'serverinfo','si', 'sinfo'}, '[serverID]', 0, false, true, function(message, args)
 	local guild = message.guild
 	if client:getGuild(args) then
 		guild = client:getGuild(args)
@@ -183,7 +203,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si'}, 
 	}
 end)
 
-addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleName>', 0, false, true, function(message, args)
+addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri', 'rinfo'}, '<roleName>', 0, false, true, function(message, args)
 	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
 		local roles = Database:getCached(message, "Roles")
@@ -229,7 +249,7 @@ addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri'}, '<roleN
 	end
 end)
 
-addCommand('User Info', "Get information on a user", {'userinfo','ui'}, '[@user|userID]', 0, false, true, function(message, args)
+addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'}, '[@user|userID]', 0, false, true, function(message, args)
 	local member = resolveMember(message.guild, args)
 	if args=="" then
 		member = message.member
@@ -756,7 +776,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 end)
 
 --TODO: Make Case list output pretty
-addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo'}, '<@user|userID>', 1, false, true, function(message, args)
+addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then
 		local users = Database:get(message, "Users")
