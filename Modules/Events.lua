@@ -134,6 +134,27 @@ function Events.memberLeave(member)
 			footer = {text = "ID: "..member.id}
 		}}
 	end
+	--Wait a few seconds for the audit log to populate
+	timer.sleep(3*1000)
+	--End wait
+	local guild = member.guild
+	channel = guild:getChannel(settings.modlog_channel)
+	if channel and member and settings.modlog then
+		local audit = guild:getAuditLogs({
+			limit = 1,
+			type = enums.actionType.memberKick,
+		}):iter()()
+		if audit and audit:getTarget().id ~= member.id then audit = nil end
+		local reason = audit and audit.reason or nil
+		channel:send{embed={
+			author = {name = "Member Kicked", icon_url = member.avatarURL},
+			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+			thumbnail = {url = member.avatarURL, height = 200, width = 200},
+			color = Colors.red.value,
+			timestamp = discordia.Date():toISO(),
+			footer = {text = "ID: "..member.id}
+		}}
+	end
 	--kill their entry in the DB
 	local users = Database:get(member, "Users")
 	users[member.id] = nil
@@ -209,9 +230,7 @@ end
 
 function Events.userBan(user, guild)
 	--Wait a few seconds for the audit log to populate
-	local co = coroutine.running()
-	timer.setTimeout(3*1000, function() coroutine.resume(co) end)
-	coroutine.yield()
+	timer.sleep(3*1000)
 	--End wait
 	local member = guild:getMember(user) or user
 	local settings = Database:get(guild, "Settings")
