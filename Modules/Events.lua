@@ -134,9 +134,13 @@ function Events.memberLeave(member)
 			footer = {text = "ID: "..member.id}
 		}}
 	end
+	--kill their entry in the DB
+	local users = Database:get(member, "Users")
+	users[member.id] = nil
+	Database:update(member, "Users", users)
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
-	--End wait
+	--Check if they were kicked
 	local guild = member.guild
 	channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
@@ -144,7 +148,9 @@ function Events.memberLeave(member)
 			limit = 1,
 			type = enums.actionType.memberKick,
 		}):iter()()
-		if audit and audit:getTarget().id ~= member.id then audit = nil end
+		if audit and audit:getTarget().id~=member.id then
+			return
+		end
 		local reason = audit and audit.reason or nil
 		if audit then
 			channel:send{embed={
@@ -157,10 +163,6 @@ function Events.memberLeave(member)
 			}}
 		end
 	end
-	--kill their entry in the DB
-	local users = Database:get(member, "Users")
-	users[member.id] = nil
-	Database:update(member, "Users", users)
 end
 
 function Events.presenceUpdate(member)
