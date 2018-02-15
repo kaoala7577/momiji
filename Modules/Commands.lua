@@ -1293,8 +1293,9 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	local oldPrint = print
 	local oldP = p
 	print = function(...)
-		local arg = {...}
-		local txt = table.concat(tostring(arg), "\t").."\n"
+		local arguments = {...}
+		for k,v in pairs(arguments) do arguments[k] = tostring(v) end
+		local txt = table.concat(arguments, "\t").."\n"
 		tx = tx..txt
 	end
 	p = function(...)
