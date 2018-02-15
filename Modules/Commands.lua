@@ -131,9 +131,13 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 			end
 			sorted[c] = sorted[c].."**"..v.."**\n"..help[i]
 		end
-		message.author:send("**How to read this doc:**\nWhen reading the commands, arguments in angle brackets (`<>`) are mandatory\nwhile arguments in square brackets (`[]`) are optional.\nA pipe character `|` means or, so `a|b` means a **or** b.\nNo brackets should be included in the commands")
-		for _,v in ipairs(sorted) do message.author:send(v) end
-		message:reply("I've DM'd you the help page!")
+		local reply = message.author:send("**How to read this doc:**\nWhen reading the commands, arguments in angle brackets (`<>`) are mandatory\nwhile arguments in square brackets (`[]`) are optional.\nA pipe character `|` means or, so `a|b` means a **or** b.\nNo brackets should be included in the commands")
+		if reply then
+			for _,v in ipairs(sorted) do message.author:send(v) end
+			message:reply("I've DM'd you the help page!")
+		else
+			message:reply("I couldn't DM you. Please check your privacy settings.")
+		end
 	else
 		local cmd = nil
 		for _,v in pairs(cmds) do
