@@ -116,7 +116,7 @@ function Events.memberJoin(member)
 			table.insert(roles, role.id)
 		end
 		local users = Database:get(member, "Users")
-		users[member.id] = {last_message=discordia.Date():toISO(), nick=member.nickname, roles=roles}
+		users[member.id] = {nick=member.nickname, roles=roles}
 		Database:update(member, "Users", users)
 	end
 end
@@ -395,8 +395,17 @@ function Events.ready()
 	guildLog = client:getChannel('406115496833056789')
 	Timing:on(Events.Timing)
 	for g in client.guilds:iter() do
-		Database:get(g)
+		local data = Database:get(g)
 		Timing:load(g)
+		local users = data.Users
+		for m in g.members:iter() do
+			local roles = {}
+			for role in m.roles:iter() do
+				table.insert(roles, role.id)
+			end
+			users[m.id] = {nick=m.nickname, roles=roles}
+		end
+		Database:update(g,"Users",users)
 	end
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
