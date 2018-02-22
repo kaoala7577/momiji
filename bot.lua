@@ -23,8 +23,8 @@ discordia.storage.bulkDeletes = {}
 
 Colors = {
 	blue = discordia.Color.fromHex('#5DA9FF'),
-	red = discordia.Color.fromHex('#FF0000'),
-	green = discordia.Color.fromHex('#00FF00'),
+	red = discordia.Color.fromHex('#ff4040'),
+	green = discordia.Color.fromHex('#00ff7f'),
 	altBlue = discordia.Color.fromHex('#7979FF'),
 }
 
