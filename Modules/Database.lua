@@ -53,13 +53,14 @@ function Database:get(guild,index) --luacheck: ignore self
 			print('GET',err)
 		else
 			local u
-			if data==nil or data==json.null then
+			if data==nil then
 				data = table.deepcopy(Database.default)
 				data.id = id
 				Database.cache[id] = data
 				u = true
 			else
 				data.id = id
+				Database.cache[id] = data
 				for i,v in pairs(Database.default) do
 					if not data[i] then
 						data[i] = v
@@ -72,7 +73,6 @@ function Database:get(guild,index) --luacheck: ignore self
 						u = true
 					end
 				end
-				Database.cache[id] = data
 			end
 			if u then
 				Database:update(id)
