@@ -1003,7 +1003,7 @@ end)
 
 -- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	if message.guild.id~="348660188951216129" and message.guild.id~='407926063281209344' then msg:reply("This command is not available in this guild");return end
+	if message.guild.id~="348660188951216129" and message.guild.id~='407926063281209344' then message:reply("This command is not available in this guild");return end
 	local users, settings, roles = database:get(message, "Users"), database:get(message, "Settings"), database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = resolveMember(message.guild, args)
@@ -1297,29 +1297,50 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 end)
 
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
-	args = string.gsub(args, "`", ""):trim()
-	msg = message
-	local tx = ""
-	local oldPrint = print
-	local oldP = p
-	print = function(...)
-		local arguments = {...}
-		for k,v in pairs(arguments) do arguments[k] = tostring(v) end
-		local txt = table.concat(arguments, "\t").."\n"
-		tx = tx..txt
-	end
-	p = function(...)
-		local n = select('#', ...)
-		local arguments = {...}
-		for i = 1, n do
-			arguments[i] = pprint.dump(arguments[i],nil,true):gsub(storage.options.token,'<Hidden for security>')
+	if args:startswith("```") then
+		args = args:sub(4,-4)
+		if args:startswith("lua") then
+			args = args:sub(4)
 		end
-		local txt=table.concat(arguments, "\t").."\n"
-		tx=tx..txt
+	elseif args:startswith("`") then
+		args = args:sub(2,-2)
+	end
+	local tx = ""
+	local env = setmetatable({
+		require = require, --luvit custom require
+		discordia = discordia,
+		client = client,
+		enums = enums,
+		modules = modules,
+		uptime = uptime,
+		clock = clock,
+		storage = storage,
+		colors = colors,
+		message = message,
+		channel = message.channel,
+		guild = message.guild,
+		print = function(...)
+			local arguments = {...}
+			for k,v in pairs(arguments) do arguments[k] = tostring(v) end
+			local txt = table.concat(arguments, "\t").."\n"
+			tx = tx..txt
+		end,
+		p = function(...)
+			local n = select('#', ...)
+			local arguments = {...}
+			for i = 1, n do
+				arguments[i] = pprint.dump(arguments[i],nil,true):gsub(storage.options.token,'<Hidden for security>')
+			end
+			local txt=table.concat(arguments, "\t").."\n"
+			tx=tx..txt
+		end
+	}, {__index = _G})
+	for k,v in pairs(modules) do
+		env[k]=v
 	end
 	local a = loadstring(args)
 	if a then
-		setfenv(a,getfenv())
+		setfenv(a, env)
 		local s,ret = pcall(a)
 		if ret==nil then
 			ret = tx
@@ -1340,8 +1361,6 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 	else
 		message:reply("Error loading function")
 	end
-	print = oldPrint
-	p = oldP
 end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
