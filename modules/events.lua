@@ -203,7 +203,7 @@ function events.messageCreate(msg)
 	local rank = getRank(sender, not private)
 	if not private then
 		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
-		data = database:getCachedCached(msg)
+		data = database:getCached(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
