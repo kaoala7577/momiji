@@ -92,7 +92,6 @@ addCommand('Danbooru', 'Posts a random image from danbooru with optional tags', 
 			return
 		end
 	end
-	p(data)
 	message:reply{embed={
 		image={url=data.file_url:startswith("http") and data.file_url or "https://danbooru.donmai.us"..data.file_url},
 		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Uploader:** %s\n**Score:** %s", data.tag_string:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://danbooru.donmai.us/posts/"..data.id, data.uploader_name, data.up_score-data.down_score)
@@ -452,7 +451,7 @@ end)
 addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri', 'rinfo'}, '<roleName>', 0, false, true, function(message, args)
 	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
-		local roles = database:getCachedCached(message, "Roles")
+		local roles = database:getCached(message, "Roles")
 		local aliases, selfAssignable
 		if roles then
 			for _,t in pairs(roles) do
@@ -667,15 +666,24 @@ end)
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then
-		local users = database:getCached(message, "Users")
+		local users, cases = database:get(message, "Users"), database:get(message, "Cases")
 		if users[m.id] then
 			local watchlisted = users[m.id].watchlisted
 			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
+			local caseList = {}
+			if cases[m.id] then
+				for i,case in ipairs(cases[m.id]) do
+					local o = ""
+					for k,v in pairs(case) do
+						o = o.."**"..k.."**: "..v.."\n"
+					end
+					table.insert(caseList, {name = "Case "..tostring(i), value = o, inline = true})
+				end
+			end
+			table.insert(caseList, 1, {name = "Watchlisted", value = watchlisted, inline = false})
 			message:reply {embed={
 				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
-				fields = {
-					{name = "Watchlisted", value = watchlisted, inline = true},
-				},
+				fields = caseList,
 				thumbnail = {url = m.avatarURL, height = 200, width = 200},
 				color = m:getColor().value,
 				timestamp = discordia.Date():toISO()
@@ -684,6 +692,7 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo',
 	end
 end)
 
+--TODO check if member is muted already
 addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, false, true, function(message, args)
 	local settings, cases = database:getCached(message, "Settings"), database:getCached(message, "Cases")
 	if not settings.mute_setup then
@@ -732,6 +741,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 	database:update(message, "Cases", cases)
 end)
 
+--TODO check if member is muted before unmuting
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
 	local settings = database:getCached(message, "Settings")
 	if not settings.mute_setup then

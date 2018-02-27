@@ -2,15 +2,6 @@
 local fs = require('fs')
 local json = require('json')
 local pathjoin = require('pathjoin')
--- local ssl = require('openssl')
--- local timer = require("timer")
--- local query = require('querystring')
--- local http = require('coro-http')
--- local xml = require("xmlSimple").newParser()
--- local pprint = require("pretty-print")
--- local uv = require("uv")
--- local ffi = require("ffi")
-
 local discordia = require('discordia') -- load discordia
 discordia.extensions() --load extensions
 local enums = discordia.enums -- load enumerations
@@ -20,7 +11,6 @@ local client = discordia.Client({
 local modules = {}
 local uptime = discordia.Stopwatch() -- stopwatch to count uptime
 local clock = discordia.Clock() -- clock emitter
---local logger = discordia.Logger(4, '%F %T', 'discordia.log')
 local storage = discordia.storage
 storage.bulkDeletes = {} -- initalize storage table and bulkDeletes
 storage.options = json.parse(fs.readFileSync('options.json')) -- Static config file containing key-value pairs
