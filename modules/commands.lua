@@ -1,14 +1,16 @@
 local uv = require("uv")
 local pprint = require("pretty-print")
 local ffi = require("ffi")
-
-commands = {}
+local database = modules.database
+local timing = modules.timing
+local api = modules.api
+local commands = {}
 
 -- addCommand adapted from DannehSC/Electricity-2.0
 function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
 	local bool,expected,number,got = checkArgs({'string', 'string', {'table','string'}, 'string', 'number', 'boolean', 'boolean', 'function'}, {name,desc,cmds, usage, rank,multiArg,serverOnly,func})
 	if not bool then
-		logger:log(1, "<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,expected,number,got)
+		client:error("<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,expected,number,got)
 		return
 	end
 	commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
@@ -1353,7 +1355,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 		client:stop()
 		client:run(storage.options.token)
 	elseif args~="" then
-		loaded = loadModule(args)
+		loaded = storage.utils.loadModule(args)
 	end
 	if loaded and args=='Events' then
 		unregisterAllEvents()
@@ -1393,3 +1395,5 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		message:reply("Invalid Hex Color")
 	end
 end)
+
+return commands

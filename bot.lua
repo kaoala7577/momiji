@@ -1,6 +1,7 @@
 -- Deps
 local fs = require('fs')
 local json = require('json')
+local pathjoin = require('pathjoin')
 -- local ssl = require('openssl')
 -- local timer = require("timer")
 -- local query = require('querystring')
@@ -10,69 +11,99 @@ local json = require('json')
 -- local uv = require("uv")
 -- local ffi = require("ffi")
 
--- Globals
-discordia = require('discordia') -- load discordia
-enums = discordia.enums -- load enumerations
-client = discordia.Client({
+local discordia = require('discordia') -- load discordia
+discordia.extensions() --load extensions
+local enums = discordia.enums -- load enumerations
+local client = discordia.Client({
 	cacheAllMembers = true,
 }) -- create client
-uptime = discordia.Stopwatch() -- stopwatch to count uptime
-clock = discordia.Clock() -- clock emitter
-logger = discordia.Logger(4, '%F %T', 'discordia.log')
-storage = discordia.storage
+local modules = {}
+local uptime = discordia.Stopwatch() -- stopwatch to count uptime
+local clock = discordia.Clock() -- clock emitter
+--local logger = discordia.Logger(4, '%F %T', 'discordia.log')
+local storage = discordia.storage
 storage.bulkDeletes = {} -- initalize storage table and bulkDeletes
 storage.options = json.parse(fs.readFileSync('options.json')) -- Static config file containing key-value pairs
-colors = {
+local colors = {
 	blue = discordia.Color.fromHex('#5DA9FF'),
 	red = discordia.Color.fromHex('#ff4040'),
 	green = discordia.Color.fromHex('#00ff7f'),
 	altBlue = discordia.Color.fromHex('#7979FF'),
 } -- preset colors
 
--- loadModule adapted from DannehSC/Electricity-2.0
-function loadModule(name)
-	name = name..'.lua'
-	local data,others = fs.readFileSync('./Modules/'..name)
-	if data then
-		local f, err = loadstring(data,name)
-		if not f then
-			logger:log(1, "<SYNTAX> Error loading %s (%s)", name, err)
-			return false
-		else
-			setfenv(f, getfenv())
-			local stat, ret = pcall(f)
-			if not stat then
-				logger:log(1, "<RUNTIME> Error loading %s (%s)", name, ret)
-				return false
-			else
-				client:info('Module online: '..name)
-			end
+-- modules adapted from SinisterRectus/Luna
+local env = setmetatable({
+	require = require, --luvit custom require
+	discordia = discordia,
+	client = client,
+	enums = enums,
+	modules = modules,
+	uptime = uptime,
+	clock = clock,
+	storage = storage,
+	colors = colors
+}, {__index = _G})
+
+local utils = {}
+
+function utils.loadModule(path, silent)
+	local name = table.remove(pathjoin.splitPath(path)):gsub(".lua","")
+	local success, err = pcall(function()
+		local code = assert(fs.readFileSync(path))
+		local fn = assert(loadstring(code, name, 't', env))
+		modules[name] = fn()
+	end)
+	if success then
+		if not silent then
+			client:info('Module online: '..name)
 		end
 	else
-		logger:log(1, "<LOADING> Error loading %s (%s)", name, tostring(others))
-		return false
+		client:error("Error loading %s (%s)", name, err)
 	end
-	return true
 end
+
+function utils.unloadModule(name)
+	if modules[name] then
+		modules[name] = nil
+		client:info("Module unloaded: %s", name)
+	else
+		client:info("Module not found: %s", name)
+	end
+end
+
+function utils.loadModules(path)
+	for k, v in fs.scandirSync(path) do
+		local joined = pathjoin.pathJoin(path, k)
+		if v == 'file' then
+			if k:find('.lua', -4, true) then
+				utils.loadModule(joined)
+			end
+		else
+			utils.loadModules(joined)
+		end
+	end
+end
+
+storage.utils = utils
 
 coroutine.wrap(function()
 	-- Load Modules
-	loadModule('utilities')
-	loadModule('functions')
-	loadModule('database')
-	loadModule('events')
-	loadModule('clocks')
-	loadModule('timing')
-	loadModule('api')
-	loadModule('commands')
+	-- These need to be loaded in a specific order
+	utils.loadModule('./modules/functions.lua')
+	utils.loadModule('./modules/api.lua')
+	utils.loadModule('./modules/clocks.lua')
+	utils.loadModule('./modules/database.lua')
+	utils.loadModule('./modules/timing.lua')
+	utils.loadModule('./modules/events.lua')
+	utils.loadModule('./modules/commands.lua')
 
 	-- Register Client Events
 	registerAllEvents()
 	client:once('ready', function() dispatcher('ready') end)
 
 	-- Register Clock Events
-	clock:on('min', clocks.min)
-	clock:on('hour', clocks.hour)
+	clock:on('min', modules.clocks.min)
+	clock:on('hour', modules.clocks.hour)
 
 	-- Run
 	client:run(storage.options.token)

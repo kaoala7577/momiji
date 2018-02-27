@@ -3,8 +3,7 @@
 local json = require('json')
 local rethink=require('luvit-reql')
 local conn=rethink:connect(storage.options.database)
-
-database={
+local database={
 	_raw_database=rethink,
 	_conn=conn,
 	cache={},
@@ -94,8 +93,9 @@ function database:update(guild,index,value) --luacheck: ignore self
 			database.cache[id].id=id
 		end
 		local data,err,edata=database._conn.reql().db('momiji').table('guilds').inOrRe(database.cache[id]).run()
-		logger:log(err and 1 or 4, "GUILD: %s INDEX: %s%s DATA: %s", id, index, err and " ERROR: "..err.."\n" or "", json.encode(data))
+		client:debug("GUILD: %s INDEX: %s DATA: %s", id, index, json.encode(data))
 		if err then
+			client:error("GUILD: %s INDEX: %s ERROR: %s\nDATA: %s", id, index, err, json.encode(data))
 			print('UPDATE')
 			print(err)
 			p(edata)
@@ -135,3 +135,5 @@ function database:delete(guild,index) --luacheck: ignore self
 	end
 	database:Update(guild)
 end
+
+return database

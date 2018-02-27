@@ -3,8 +3,8 @@
 local ssl = require('openssl')
 local timer = require("timer")
 local fmt = string.format
-
-timing = {
+local database = modules.database
+local timing = {
 	_callbacks = {},
 	_timers = {},
 }
@@ -85,3 +85,5 @@ function timing:getTimers(txt)
 	end
 	return t
 end
+
+return timing

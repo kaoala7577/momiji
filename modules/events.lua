@@ -2,7 +2,10 @@
 
 local json = require('json')
 local timer = require("timer")
-events = {}
+local database = modules.database
+local api = modules.api
+local timing = modules.timing
+local events = {}
 
 function events.messageCreate(msg)
 	if msg.author.bot then return end
@@ -22,7 +25,7 @@ function events.messageCreate(msg)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
-	for _,tab in pairs(commands) do
+	for _,tab in pairs(modules.commands) do
 		for _,cmd in pairs(tab.commands) do
 			if command:lower() == cmd:lower() then
 				if tab.serverOnly and private then
@@ -412,5 +415,7 @@ function events.ready()
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
 	})
-	logger:log(3, "Logged in as %s", client.user.fullname)
+	client:info("Logged in as %s", client.user.fullname)
 end
+
+return events

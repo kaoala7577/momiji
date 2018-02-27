@@ -1,5 +1,4 @@
 --[[ Several functions adapted from DannehSC/Electricity-2.0 ]]
-
 local functions = {}
 
 function functions.checkArgs(types, vals)
@@ -27,7 +26,7 @@ function functions.getRank(member, server)
 	if not member then return 0 end
 	local rank = 0
 	if server then
-		local settings = database:get(member, "Settings")
+		local settings = modules.database:get(member, "Settings")
 		for _,v in ipairs(settings['mod_roles']) do
 			if member:hasRole(v) then
 				rank = 1
@@ -214,13 +213,13 @@ end
 function functions.dispatcher(name, ...)
 	local b,e,n,g = checkArgs({'string'}, {name})
 	if not b then
-		logger:log(1, "<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
+		client:error("<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
 		return
 	end
-	local ret, err = pcall(events[name], ...)
+	local ret, err = pcall(modules.events[name], ...)
 	if not ret then
-		if storage.errLog then
-			storage.errLog:send {embed = {
+		if discordia.storage.errLog then
+			discordia.storage.errLog:send {embed = {
 				description = err,
 				footer = {text="DISPATCHER: "..name},
 				timestamp = discordia.Date():toISO(),
@@ -230,9 +229,9 @@ function functions.dispatcher(name, ...)
 	end
 end
 
-function functions.unregisterAllevents()
-	if not events then return end
-	for k,_ in pairs(events) do
+function functions.unregisterAllEvents()
+	if not modules.events then return end
+	for k,_ in pairs(modules.events) do
 		if k~="Timing" and k~="ready" then
 			client:removeAllListeners(k)
 		end
@@ -240,8 +239,8 @@ function functions.unregisterAllevents()
 end
 
 function functions.registerAllEvents()
-	if not events then return end
-	for k,_ in pairs(events) do
+	if not modules.events then return end
+	for k,_ in pairs(modules.events) do
 		if k~="Timing" and k~="ready" then
 			client:on(k,function(...) functions.dispatcher(k,...) end)
 		end

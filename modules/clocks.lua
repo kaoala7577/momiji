@@ -1,4 +1,6 @@
-clocks = {}
+local database = modules.database
+local api = modules.api
+local clocks = {}
 
 --Currently, this file is entirely specific to my guild and I have no reason to expand it as of this time
 function clocks.min(time)
@@ -49,3 +51,5 @@ function clocks.hour()
 		type = 2,
 	})
 end
+
+return clocks
