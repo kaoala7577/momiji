@@ -7,74 +7,29 @@ local api = modules.api
 local timing = modules.timing
 local events = {}
 
-function events.messageCreate(msg)
-	if msg.author.bot then return end
-	local private, data
-	if msg.guild then private=false else private=true end
-	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-	local rank = getRank(sender, not private)
-	if not private then
-		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
-		data = database:getCached(msg)
-		if data.Ignore[msg.channel.id] and rank<3 then
-			return
-		end
-	end
-	if msg.content:lower():match("^i need a hug$") then
-		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
-	end
-	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
-	if not command then return end --If the prefix isn't there, don't bother with anything else
-	for _,tab in pairs(modules.commands) do
-		for _,cmd in pairs(tab.commands) do
-			if command:lower() == cmd:lower() then
-				if tab.serverOnly and private then
-					msg:reply("This command is not available in private messages.")
-					return
-				end
-				if rank>=tab.rank then
-					local args
-					if tab.multi then
-						args = string.split(rest, ',')
-						for i,v in ipairs(args) do args[i]=v:trim() end
-					else
-						args = rest
-					end
-					local a,b = pcall(tab.action, msg, args)
-					if not a then
-						if storage.errLog then
-							storage.errLog:send {embed = {
-								description = b,
-								footer = {text="ID: "..msg.id},
-								timestamp = discordia.Date():toISO(),
-								color = discordia.Color.fromRGB(255, 0 ,0).value,
-							}}
-						end
-					end
-					if storage.comLog then
-						local g = not private and msg.guild or {name="Private", id=""}
-						storage.comLog:send{embed={
-							fields={
-								{name="Guild",value=g.name.."\n"..g.id,inline=true},
-								{name="Author",value=msg.author.fullname.."\n"..msg.author.id,inline=true},
-								{name="Channel",value=msg.channel.name.."\n"..msg.channel.id,inline=true},
-								{name="Command",value=tab.name,inline=true},
-								{name="Message Content",value=msg.cleanContent},
-							},
-							footer = {text="Message ID: "..msg.id},
-							timestamp=discordia.Date():toISO(),
-							color = colors.blue.value,
-						}}
-					end
-				else
-					local ranks = {"Everyone", "Mod", "Admin", "Guild Owner", "Bot Owner"}
-					msg.channel:sendf("Insufficient permission to execute command: **%s**\nRank expected: **%s**\nYour Rank: **%s**", tab.name, ranks[tab.rank+1], ranks[rank+1])
-				end
-			end
-		end
-	end
+--[[ Guild Events ]]
+
+function events.guildCreate(guild)
+	api.misc.DBots_Stats_Update({server_count=#client.guilds})
+	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
+	storage.guildLog:send{embed={
+		title = "Joined Guild",
+		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
+		color = colors.green.value,
+		timestamp = discordia.Date():toISO(),
+	}}
 end
 
+function events.guildDelete(guild)
+	storage.guildLog:send{embed={
+		title = "Left Guild",
+		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
+		color = colors.red.value,
+		timestamp = discordia.Date():toISO(),
+	}}
+end
+
+--[[ Member Events ]]
 
 function events.memberJoin(member)
 	--Reference Hackban list
@@ -171,18 +126,6 @@ function events.memberLeave(member)
 	end
 end
 
-function events.presenceUpdate(member)
-	if member.user.bot == true then return end
-	local role = '370395740406546432'
-	if member.guild.id == '348660188951216129' then
-		if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
-			member:addRole(role)
-		elseif member:hasRole(role) then
-			member:removeRole(role)
-		end
-	end
-end
-
 function events.memberUpdate(member)
 	local users = database:get(member, "Users")
 	local settings = database:get(member, "Settings")
@@ -238,44 +181,85 @@ function events.memberUpdate(member)
 	end
 end
 
-function events.userBan(user, guild)
-	--Wait a few seconds for the audit log to populate
-	timer.sleep(3*1000)
-	--End wait
-	local member = guild:getMember(user) or user
-	local settings = database:get(guild, "Settings")
-	local channel = guild:getChannel(settings.modlog_channel)
-	if channel and member and settings.modlog then
-		local audit = guild:getAuditLogs({
-			limit = 1,
-			type = enums.actionType.memberBanAdd,
-		}):iter()()
-		if audit and audit:getTarget().id ~= user.id then audit = nil end
-		local reason = audit and audit.reason or nil
-		channel:send{embed={
-			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
+function events.presenceUpdate(member)
+	if member.user.bot == true then return end
+	local role = '370395740406546432'
+	if member.guild.id == '348660188951216129' then
+		if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
+			member:addRole(role)
+		elseif member:hasRole(role) then
+			member:removeRole(role)
+		end
 	end
 end
 
-function events.userUnban(user, guild)
-	local member = guild:getMember(user) or user
-	local settings = database:get(guild, "Settings")
-	local channel = guild:getChannel(settings.modlog_channel)
-	if channel and member and settings.modlog then
-		channel:send {embed={
-			author = {name = "Member Unbanned", icon_url = member.avatarURL},
-			description = member.mentionString.."\n"..member.fullname,
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.green.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
+--[[ Message Events ]]
+
+function events.messageCreate(msg)
+	if msg.author.bot then return end
+	local private, data
+	if msg.guild then private=false else private=true end
+	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
+	local rank = getRank(sender, not private)
+	if not private then
+		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
+		data = database:getCached(msg)
+		if data.Ignore[msg.channel.id] and rank<3 then
+			return
+		end
+	end
+	if msg.content:lower():match("^i need a hug$") then
+		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
+	end
+	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
+	if not command then return end --If the prefix isn't there, don't bother with anything else
+	for _,tab in pairs(modules.commands) do
+		for _,cmd in pairs(tab.commands) do
+			if command:lower() == cmd:lower() then
+				if tab.serverOnly and private then
+					msg:reply("This command is not available in private messages.")
+					return
+				end
+				if rank>=tab.rank then
+					local args
+					if tab.multi then
+						args = string.split(rest, ',')
+						for i,v in ipairs(args) do args[i]=v:trim() end
+					else
+						args = rest
+					end
+					local a,b = pcall(tab.action, msg, args)
+					if not a then
+						if storage.errLog then
+							storage.errLog:send {embed = {
+								description = b,
+								footer = {text="ID: "..msg.id},
+								timestamp = discordia.Date():toISO(),
+								color = discordia.Color.fromRGB(255, 0 ,0).value,
+							}}
+						end
+					end
+					if storage.comLog then
+						local g = not private and msg.guild or {name="Private", id=""}
+						storage.comLog:send{embed={
+							fields={
+								{name="Guild",value=g.name.."\n"..g.id,inline=true},
+								{name="Author",value=msg.author.fullname.."\n"..msg.author.id,inline=true},
+								{name="Channel",value=msg.channel.name.."\n"..msg.channel.id,inline=true},
+								{name="Command",value=tab.name,inline=true},
+								{name="Message Content",value=msg.cleanContent},
+							},
+							footer = {text="Message ID: "..msg.id},
+							timestamp=discordia.Date():toISO(),
+							color = colors.blue.value,
+						}}
+					end
+				else
+					local ranks = {"Everyone", "Mod", "Admin", "Guild Owner", "Bot Owner"}
+					msg.channel:sendf("Insufficient permission to execute command: **%s**\nRank expected: **%s**\nYour Rank: **%s**", tab.name, ranks[tab.rank+1], ranks[rank+1])
+				end
+			end
+		end
 	end
 end
 
@@ -327,25 +311,50 @@ function events.messageDeleteUncached(channel, messageID)
 	end
 end
 
-function events.guildCreate(guild)
-	api.misc.DBots_Stats_Update({server_count=#client.guilds})
-	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
-	storage.guildLog:send{embed={
-		title = "Joined Guild",
-		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
-		color = colors.green.value,
-		timestamp = discordia.Date():toISO(),
-	}}
+--[[ User Events ]]
+
+function events.userBan(user, guild)
+	--Wait a few seconds for the audit log to populate
+	timer.sleep(3*1000)
+	--End wait
+	local member = guild:getMember(user) or user
+	local settings = database:get(guild, "Settings")
+	local channel = guild:getChannel(settings.modlog_channel)
+	if channel and member and settings.modlog then
+		local audit = guild:getAuditLogs({
+			limit = 1,
+			type = enums.actionType.memberBanAdd,
+		}):iter()()
+		if audit and audit:getTarget().id ~= user.id then audit = nil end
+		local reason = audit and audit.reason or nil
+		channel:send{embed={
+			author = {name = "Member Banned", icon_url = member.avatarURL},
+			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+			thumbnail = {url = member.avatarURL, height = 200, width = 200},
+			color = colors.red.value,
+			timestamp = discordia.Date():toISO(),
+			footer = {text = "ID: "..member.id}
+		}}
+	end
 end
 
-function events.guildDelete(guild)
-	storage.guildLog:send{embed={
-		title = "Left Guild",
-		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
-		color = colors.red.value,
-		timestamp = discordia.Date():toISO(),
-	}}
+function events.userUnban(user, guild)
+	local member = guild:getMember(user) or user
+	local settings = database:get(guild, "Settings")
+	local channel = guild:getChannel(settings.modlog_channel)
+	if channel and member and settings.modlog then
+		channel:send {embed={
+			author = {name = "Member Unbanned", icon_url = member.avatarURL},
+			description = member.mentionString.."\n"..member.fullname,
+			thumbnail = {url = member.avatarURL, height = 200, width = 200},
+			color = colors.green.value,
+			timestamp = discordia.Date():toISO(),
+			footer = {text = "ID: "..member.id}
+		}}
+	end
 end
+
+--[[ Other Events ]]
 
 function events.timing(data)
 	local args = string.split(data,'||')
