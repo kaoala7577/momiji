@@ -57,6 +57,7 @@ function utils.loadModule(path, silent)
 		if not silent then
 			client:info('Module online: '..name)
 		end
+		return true
 	else
 		client:error("Error loading %s (%s)", name, err)
 	end

@@ -1347,7 +1347,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		else
 			ret = tostring(ret).."\n"..tx
 		end
-		local result, len = {}, 1990
+		local result, len = {}, 1991
 		local count = math.ceil(#ret/len)>1 and math.ceil(#ret/len) or 1
 		for i=1,count do
 			result[i] = string.sub(ret, (len*(i-1)), (len*(i)-1))
@@ -1364,23 +1364,33 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
+	local loadModule, unloadModule = storage.utils.loadModule, storage.utils.unloadModule
 	local loaded = false
-	if args=="restart" then
-		client:setStatus("invisible")
-		client:stop()
+	local path = "./modules/"
+	if args~="" then
+		path = path..args..".lua"
+		unloadModule(args)
+		loaded = loadModule(path)
+	end
+	if loaded then
+		if path=="./modules/events.lua" then
+			unregisterAllEvents()
+			registerAllEvents()
+		end
+		message:reply("Module successfully reloaded from "..path)
+	else
+		message:reply("Unable to locate module at "..path)
+	end
+end)
+
+addCommand('Restart', 'Restart the bot', 'restart', '[true|false]', 4, false, false, function(message, args)
+	if args=="" then args="true" end
+	message:reply("Restarting bot script...")
+	client:setStatus("invisible")
+	client:stop()
+	if args == 'true' then
 		os.exit()
-	elseif args=="recon" then
-		client:setStatus("invisible")
-		client:stop()
-		client:run(storage.options.token)
-	elseif args~="" then
-		loaded = storage.utils.loadModule(args)
 	end
-	if loaded and args=='Events' then
-		unregisterAllEvents()
-		registerAllEvents()
-	end
-	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
 
 addCommand('Git', 'Run a git command', 'git', '<storage.options>', 4, false, false, function(message, args)
