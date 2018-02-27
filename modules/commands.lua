@@ -16,19 +16,9 @@ function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
 	commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
 end
 
-addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message)
-	local response = message:reply("Pong!")
-	if response then
-		response:setContent("Pong!".."`"..math.abs(math.round((response.createdAt - message.createdAt)*1000)).." ms`")
-	end
-end)
+-- [[ Rank 0 Commands ]]
 
-addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message)
-	local settings = database:get(message, "Settings")
-	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
-end)
-
-addCommand('Info', 'Info on the bot', {'binfo','info'}, '', 0, false, false, function(message)
+addCommand('Bot Info', 'Info on the bot', {'binfo','botinfo','bi'}, '', 0, false, false, function(message)
 	message:reply{embed={
 		author = {name=client.user.name, icon_url=client.user.avatarURL},
 		thumbnail = {url=client.user.avatarURL},
@@ -46,69 +36,117 @@ addCommand('Info', 'Info on the bot', {'binfo','info'}, '', 0, false, false, fun
 	}}
 end)
 
---Command adapted from DannehSC/Electricity-2.0
-addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni'}, '', 0, false, false, function(message)
-	local ts = tostring
-	local cpu = uv.cpu_info()
-	local threads = #cpu
-	local cpumodel = cpu[1].model
-	local mem = math.floor(collectgarbage('count')/1000)
-	message:reply{embed={
-		title = 'Nerdy Info',
-		color = colors.blue.value,
-		fields = {
-			{name = 'OS:', value = ts(ffi.os)},
-			{name = 'CPU Threads:', value = ts(threads)},
-			{name = 'CPU Model:', value = ts(cpumodel)},
-			{name = 'Memory usage:', value = ts(mem)..' MB'},
-		},
-	}}
-end)
-
-
-addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message)
-	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
-end)
-
-addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder> in <time>', 0, false, false, function(message, args)
-	local reminder, time = args:match("(.*)%sin%s(.*)")
-	local t = timeBetween(parseTime(time))
-	local t2 = t:toTableUTC()
-	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
-		if type(v)=='number' then
-			local val = t2[k]-v
-			t2[k] = val~=0 and val or nil
-		else
-			t2[k] = nil
-		end
-	end
-	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
-	if reminder and time then
-		timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
-		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
-	end
-end)
-
-addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, function(message, args)
-	local count, sides = args:match("(%d+)d(%d+)")
-	count,sides = tonumber(count) or 0, tonumber(sides) or 0
-	if count>0 and sides>0 then
-		local roll, pretty = 0,{}
-		for i=1,count do
-			local cur = math.round(math.random(1,sides))
-			pretty[i]=tostring(cur)
-			roll = roll+cur
-		end
-		message.channel:send{embed={
-			fields={
-				{name=string.format("%d 🎲 [1—%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
-			},
-			color = colors.blue.value,
+addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message)
+	local data = api.misc.Cats()
+	if data then
+		message:reply{embed={
+			image={url=data}
 		}}
 	end
 end)
 
-addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
+addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, function(message,args)
+	local hex = args:match("#?([0-9a-fA-F]*)")
+	local ntc = require('./ntc')
+	if #hex==6 then
+		local color,name = ntc.name(hex)
+		message:reply{embed={
+			thumbnail = {url = "http://www.colorhexa.com/"..color:lower()..".png", height = 150, width = 150},
+			description = string.format("**%s**\n%s", name, "#"..color),
+			color = discordia.Color.fromHex(color).value,
+		}}
+	else
+		message:reply("Invalid Hex Color")
+	end
+end)
+
+addCommand('Danbooru', 'Posts a random image from danbooru with optional tags', {'danbooru', 'db'}, '[input]', 0, false, true, function(message, args)
+	if not message.channel.nsfw then
+		message:reply("This command can only be used in NSFW channels.")
+		return
+	end
+	local blacklist = {} --make the blacklist
+	for _,v in ipairs(blacklist) do
+		if args:match(v) then
+			message:reply("A tag you searched for is blacklisted: "..v)
+			return
+		end
+	end
+	message.channel:broadcastTyping()
+	local data
+	local count = 0
+	while not data do
+		local try = api.misc.Booru(args)
+		local bl = false
+		for _,v in ipairs(blacklist) do
+			if try and try.tags:match(v) then
+				bl = true
+			end
+		end
+		if try and not bl then
+			data=try[1]
+		end
+		count = count+1
+		if count >= 5 then
+			message:reply("Unable to find results after "..count.." attempts")
+			return
+		end
+	end
+	p(data)
+	message:reply{embed={
+		image={url=data.file_url:startswith("http") and data.file_url or "https://danbooru.donmai.us"..data.file_url},
+		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Uploader:** %s\n**Score:** %s", data.tag_string:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://danbooru.donmai.us/posts/"..data.id, data.uploader_name, data.up_score-data.down_score)
+	}}
+end)
+
+addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message)
+	local data = api.misc.Dogs()
+	if data then
+		message:reply{embed={
+			image={url=data}
+		}}
+	end
+end)
+
+addCommand('E621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, true, function(message, args)
+	if not message.channel.nsfw then
+		message:reply("This command can only be used in NSFW channels.")
+		return
+	end
+	local blacklist = {'cub', 'young', 'small_cub'}
+	for _,v in ipairs(blacklist) do
+		if args:match(v) then
+			message:reply("A tag you searched for is blacklisted: "..v)
+			return
+		end
+	end
+	message.channel:broadcastTyping()
+	local data
+	local count = 0
+	while not data do
+		local try = api.misc.Furry(args)
+		local bl = false
+		for _,v in ipairs(blacklist) do
+			if try and try.tags:match(v) then
+				bl = true
+			end
+		end
+		if try and try.file_ext~='swf' and try.file_ext~='webm' and not bl then
+			data=try
+		end
+		count = count+1
+		if count >= 5 then
+			message:reply("Unable to find results after "..count.." attempts")
+			return
+		end
+	end
+	message:reply{embed={
+		image={url=data.file_url},
+		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Author:** %s\n**Score:** %s", data.tags:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://e621.net/post/show/"..data.id, data.author, data.score)
+	}}
+end)
+
+addCommand('Help', 'Display help information', {'help', 'cmds', 'commands'}, '[command]', 0, false, false, function(message, args)
 	local cmds = commands
 	local order = {
 		"Everyone", "Mod", "Admin", "Guild Owner", "Bot Owner",
@@ -175,213 +213,6 @@ addCommand('Help', 'Display help information', 'help', '[command]', 0, false, fa
 	end
 end)
 
-addCommand('Server Info', "Get information on the server", {'serverinfo','si', 'sinfo'}, '[serverID]', 0, false, true, function(message, args)
-	local guild = message.guild
-	if client:getGuild(args) then
-		guild = client:getGuild(args)
-	end
-	local humans, bots, online = 0,0,0
-	for member in guild.members:iter() do
-		if member.bot then
-			bots = bots+1
-		else
-			humans = humans+1
-		end
-		if not (member.status == 'offline') then
-			online = online+1
-		end
-	end
-	local timestamp = humanReadableTime(parseISOTime(guild.timestamp):toTable())
-	fields = {
-		{name = 'ID', value = guild.id, inline = true},
-		{name = 'Name', value = guild.name, inline = true},
-		{name = 'Owner', value = guild.owner.mentionString, inline = true},
-		{name = 'Region', value = guild.region, inline = true},
-		{name = 'Channels ['..#guild.textChannels+#guild.voiceChannels..']', value = "Text: "..#guild.textChannels.."\nVoice: "..#guild.voiceChannels, inline = true},
-		{name = 'Members ['..online.."/"..#guild.members..']', value = "Humans: "..humans.."\nBots: "..bots, inline = true},
-		{name = 'Roles', value = #guild.roles, inline = true},
-		{name = 'Emojis', value = #guild.emojis, inline = true},
-	}
-	message:reply {
-		embed = {
-			author = {name = guild.name, icon_url = guild.iconURL},
-			fields = fields,
-			thumbnail = {url = guild.iconURL, height = 200, width = 200},
-			color = colors.blue.value,
-			footer = { text = "Server Created : "..timestamp }
-		}
-	}
-end)
-
-addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri', 'rinfo'}, '<roleName>', 0, false, true, function(message, args)
-	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
-	if role then
-		local roles = database:getCached(message, "Roles")
-		local aliases, selfAssignable
-		if roles then
-			for _,t in pairs(roles) do
-				for r,a in pairs(t) do
-					if role.name == r then
-						aliases = a
-						selfAssignable = "Yes"
-					end
-				end
-			end
-		end
-		selfAssignable = not selfAssignable and "No" or selfAssignable
-		aliases = aliases and table.concat(aliases, ", ") or nil
-		local hex = string.match(role:getColor():toHex(), "%x+")
-		local count = 0
-		for m in message.guild.members:iter() do
-			if m:hasRole(role) then count = count + 1 end
-		end
-		local hoisted, mentionable
-		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
-		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
-		local embed = {
-			thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
-			fields = {
-				{name = "Name", value = role.name, inline = true},
-				{name = "ID", value = role.id, inline = true},
-				{name = "Hex", value = role:getColor():toHex(), inline = true},
-				{name = "Hoisted", value = hoisted, inline = true},
-				{name = "Mentionable", value = mentionable, inline = true},
-				{name = "Position", value = role.position, inline = true},
-				{name = "Members", value = count, inline = true},
-				{name = "Self Assignable", value = selfAssignable, inline = true},
-			},
-			color = role:getColor().value,
-		}
-		if selfAssignable=="Yes" and aliases~=nil and aliases~="" then
-			table.insert(embed.fields, {name = "Self Role Aliases", value = aliases, inline = false})
-		end
-		message.channel:send{embed=embed}
-	end
-end)
-
-addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'}, '[@user|userID]', 0, false, true, function(message, args)
-	local member = resolveMember(message.guild, args)
-	if args=="" then
-		member = message.member
-	end
-	if member then
-		local roles = ""
-		for i in member.roles:iter() do
-			if roles == "" then roles = i.name else roles = roles..", "..i.name end
-		end
-		if roles == "" then roles = "None" end
-		local joinTime = humanReadableTime(parseISOTime(member.joinedAt):toTableUTC())
-		local createTime = humanReadableTime(parseISOTime(member.timestamp):toTableUTC())
-		local users = database:get(message, "Users")
-		local registerTime = "N/A"
-		if users[member.id] then
-			if users[member.id].registered and users[member.id].registered ~= "" then
-				registerTime = humanReadableTime(parseISOTime(users[member.id].registered):toTableUTC())
-			end
-		end
-		local fields = {
-			{name = 'ID', value = member.id, inline = true},
-			{name = 'Mention', value = member.mentionString, inline = true},
-			{name = 'Nickname', value = member.name, inline = true},
-			{name = 'Status', value = member.status, inline = true},
-			{name = 'Joined', value = joinTime, inline = false},
-			{name = 'Created', value = createTime, inline = false},
-		}
-		if message.guild.id=='348660188951216129' or message.guild.id=='407926063281209344' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
-		table.insert(fields, {name = 'Extras', value = "[Fullsize Avatar]("..member.avatarURL..")", inline = false})
-		table.insert(fields, {name = 'Roles ('..#member.roles..')', value = roles, inline = false})
-		message.channel:send {
-			embed = {
-				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
-				fields = fields,
-				thumbnail = {url = member.avatarURL, height = 200, width = 200},
-				color = member:getColor().value,
-				timestamp = discordia.Date():toISO()
-			}
-		}
-	else
-		message.channel:send("Sorry, I couldn't find that user.")
-	end
-end)
-
-addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-	local data, err = api.misc.Urban(args)
-	if data then
-		local t={}
-		if data.list[1] then
-			t.description = string.format('**Definition of "%s" by %s**\n%s',data.list[1].word,data.list[1].author,data.list[1].permalink)
-			t.fields = {
-				{name = "Thumbs up", value = data.list[1].thumbs_up or "0", inline=true},
-				{name = "Thumbs down", value = data.list[1].thumbs_down or "0", inline=true},
-				{name = "Definition", value = #data.list[1].definition<1000 and data.list[1].definition or string.sub(data.list[1].definition,1,1000).."..."},
-				{name = "Example", value = data.list[1].example~='' and data.list[1].example or "No examples"},
-			}
-			t.color = colors.blue.value
-		else
-			t.title = 'No definitions found.'
-		end
-		message:reply{embed=t}
-	else
-		message:reply(err)
-	end
-end)
-
-addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
-	local data, err = api.misc.Weather(args)
-	if data then
-		if data.cod~=200 then
-			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
-		end
-		local t={}
-		local tempC, tempF = tostring(math.round(data.main.temp)), tostring(math.round(data.main.temp*1.8+32))
-		local windImperial, windMetric = tostring(math.round(data.wind.speed*0.62137)), tostring(math.round(data.wind.speed))
-		local deg = data.wind.deg
-		local windDir
-		if (deg>10 and deg<80) then
-			windDir = "NE"
-		elseif (deg>=80 and deg<=100) then
-			windDir = "E"
-		elseif (deg>100 and deg<170) then
-			windDir = "SE"
-		elseif (deg>=170 and deg<=190) then
-			windDir = "S"
-		elseif (deg>190 and deg<260) then
-			windDir = "SW"
-		elseif (deg>=260 and deg<=280) then
-			windDir = "W"
-		elseif (deg>280 and deg<370) then
-			windDir = "NW"
-		elseif (deg>=370 and deg<=10) then
-			windDir = "N"
-		end
-		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
-		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
-		t.color = colors.blue.value
-		t.footer={text="Weather provided by OpenWeatherMap"}
-		message:reply{embed=t}
-	else
-		message:reply(err)
-	end
-end)
-
-addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message)
-	local data = api.misc.Cats()
-	if data then
-		message:reply{embed={
-			image={url=data}
-		}}
-	end
-end)
-
-addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message)
-	local data = api.misc.Dogs()
-	if data then
-		message:reply{embed={
-			image={url=data}
-		}}
-	end
-end)
-
 addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message)
 	local data, err = api.misc.Joke()
 	message:reply(data or err)
@@ -433,81 +264,54 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a manga", 'manga', '<sear
 	end
 end)
 
-addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', '[input]', 0, false, true, function(message, args)
-	if not message.channel.nsfw then
-		message:reply("This command can only be used in NSFW channels.")
-		return
-	end
-	local blacklist = {'cub', 'young', 'small_cub'}
-	for _,v in ipairs(blacklist) do
-		if args:match(v) then
-			message:reply("A tag you searched for is blacklisted: "..v)
-			return
-		end
-	end
-	message.channel:broadcastTyping()
-	local data
-	local count = 0
-	while not data do
-		local try = api.misc.Furry(args)
-		local bl = false
-		for _,v in ipairs(blacklist) do
-			if try and try.tags:match(v) then
-				bl = true
-			end
-		end
-		if try and try.file_ext~='swf' and try.file_ext~='webm' and not bl then
-			data=try
-		end
-		count = count+1
-		if count >= 5 then
-			message:reply("Unable to find results after "..count.." attempts")
-			return
-		end
-	end
+--Command adapted from DannehSC/Electricity-2.0
+addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni','nerdyinfo'}, '', 0, false, false, function(message)
+	local ts = tostring
+	local cpu = uv.cpu_info()
+	local threads = #cpu
+	local cpumodel = cpu[1].model
+	local mem = math.floor(collectgarbage('count')/1000)
 	message:reply{embed={
-		image={url=data.file_url},
-		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Author:** %s\n**Score:** %s", data.tags:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://e621.net/post/show/"..data.id, data.author, data.score)
+		title = 'Nerdy Info',
+		color = colors.blue.value,
+		fields = {
+			{name = 'OS:', value = ts(ffi.os)},
+			{name = 'CPU Threads:', value = ts(threads)},
+			{name = 'CPU Model:', value = ts(cpumodel)},
+			{name = 'Memory usage:', value = ts(mem)..' MB'},
+		},
 	}}
 end)
 
-addCommand('Danbooru', 'Posts a random image from danbooru with optional tags', {'danbooru', 'db'}, '[input]', 0, false, true, function(message, args)
-	if not message.channel.nsfw then
-		message:reply("This command can only be used in NSFW channels.")
-		return
+addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message)
+	local response = message:reply("Pong!")
+	if response then
+		response:setContent("Pong!".."`"..math.abs(math.round((response.createdAt - message.createdAt)*1000)).." ms`")
 	end
-	local blacklist = {} --make the blacklist
-	for _,v in ipairs(blacklist) do
-		if args:match(v) then
-			message:reply("A tag you searched for is blacklisted: "..v)
-			return
-		end
-	end
-	message.channel:broadcastTyping()
-	local data
-	local count = 0
-	while not data do
-		local try = api.misc.Booru(args)
-		local bl = false
-		for _,v in ipairs(blacklist) do
-			if try and try.tags:match(v) then
-				bl = true
-			end
-		end
-		if try and not bl then
-			data=try[1]
-		end
-		count = count+1
-		if count >= 5 then
-			message:reply("Unable to find results after "..count.." attempts")
-			return
+end)
+
+addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message)
+	local settings = database:get(message, "Settings")
+	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
+end)
+
+addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder> in <time>', 0, false, false, function(message, args)
+	local reminder, time = args:match("(.*)%sin%s(.*)")
+	local t = timeBetween(parseTime(time))
+	local t2 = t:toTableUTC()
+	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
+		if type(v)=='number' then
+			local val = t2[k]-v
+			t2[k] = val~=0 and val or nil
+		else
+			t2[k] = nil
 		end
 	end
-	p(data)
-	message:reply{embed={
-		image={url=data.file_url:startswith("http") and data.file_url or "https://danbooru.donmai.us"..data.file_url},
-		description=string.format("**Tags:** %s\n**Post:** [%s](%s)\n**Uploader:** %s\n**Score:** %s", data.tag_string:gsub('%_','\\_'):gsub(' ',', '), data.id, "https://danbooru.donmai.us/posts/"..data.id, data.uploader_name, data.up_score-data.down_score)
-	}}
+	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
+	if reminder and time then
+		timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
+		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
+	end
 end)
 
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
@@ -645,6 +449,241 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 	}
 end)
 
+addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri', 'rinfo'}, '<roleName>', 0, false, true, function(message, args)
+	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
+	if role then
+		local roles = database:getCached(message, "Roles")
+		local aliases, selfAssignable
+		if roles then
+			for _,t in pairs(roles) do
+				for r,a in pairs(t) do
+					if role.name == r then
+						aliases = a
+						selfAssignable = "Yes"
+					end
+				end
+			end
+		end
+		selfAssignable = not selfAssignable and "No" or selfAssignable
+		aliases = aliases and table.concat(aliases, ", ") or nil
+		local hex = string.match(role:getColor():toHex(), "%x+")
+		local count = 0
+		for m in message.guild.members:iter() do
+			if m:hasRole(role) then count = count + 1 end
+		end
+		local hoisted, mentionable
+		if role.hoisted then hoisted = "Yes" else hoisted = "No" end
+		if role.mentionable then mentionable = "Yes" else mentionable = "No" end
+		local embed = {
+			thumbnail = {url = "http://www.colorhexa.com/"..hex:lower()..".png", height = 150, width = 150},
+			fields = {
+				{name = "Name", value = role.name, inline = true},
+				{name = "ID", value = role.id, inline = true},
+				{name = "Hex", value = role:getColor():toHex(), inline = true},
+				{name = "Hoisted", value = hoisted, inline = true},
+				{name = "Mentionable", value = mentionable, inline = true},
+				{name = "Position", value = role.position, inline = true},
+				{name = "Members", value = count, inline = true},
+				{name = "Self Assignable", value = selfAssignable, inline = true},
+			},
+			color = role:getColor().value,
+		}
+		if selfAssignable=="Yes" and aliases~=nil and aliases~="" then
+			table.insert(embed.fields, {name = "Self Role Aliases", value = aliases, inline = false})
+		end
+		message.channel:send{embed=embed}
+	end
+end)
+
+addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, function(message, args)
+	local count, sides = args:match("(%d+)d(%d+)")
+	count,sides = tonumber(count) or 0, tonumber(sides) or 0
+	if count>0 and sides>0 then
+		local roll, pretty = 0,{}
+		for i=1,count do
+			local cur = math.round(math.random(1,sides))
+			pretty[i]=tostring(cur)
+			roll = roll+cur
+		end
+		message.channel:send{embed={
+			fields={
+				{name=string.format("%d 🎲 [1—%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
+			},
+			color = colors.blue.value,
+		}}
+	end
+end)
+
+addCommand('Server Info', "Get information on the server", {'serverinfo','si', 'sinfo'}, '[serverID]', 0, false, true, function(message, args)
+	local guild = message.guild
+	if client:getGuild(args) then
+		guild = client:getGuild(args)
+	end
+	local humans, bots, online = 0,0,0
+	for member in guild.members:iter() do
+		if member.bot then
+			bots = bots+1
+		else
+			humans = humans+1
+		end
+		if not (member.status == 'offline') then
+			online = online+1
+		end
+	end
+	local timestamp = humanReadableTime(parseISOTime(guild.timestamp):toTable())
+	fields = {
+		{name = 'ID', value = guild.id, inline = true},
+		{name = 'Name', value = guild.name, inline = true},
+		{name = 'Owner', value = guild.owner.mentionString, inline = true},
+		{name = 'Region', value = guild.region, inline = true},
+		{name = 'Channels ['..#guild.textChannels+#guild.voiceChannels..']', value = "Text: "..#guild.textChannels.."\nVoice: "..#guild.voiceChannels, inline = true},
+		{name = 'Members ['..online.."/"..#guild.members..']', value = "Humans: "..humans.."\nBots: "..bots, inline = true},
+		{name = 'Roles', value = #guild.roles, inline = true},
+		{name = 'Emojis', value = #guild.emojis, inline = true},
+	}
+	message:reply {
+		embed = {
+			author = {name = guild.name, icon_url = guild.iconURL},
+			fields = fields,
+			thumbnail = {url = guild.iconURL, height = 200, width = 200},
+			color = colors.blue.value,
+			footer = { text = "Server Created : "..timestamp }
+		}
+	}
+end)
+
+addCommand('Time', 'Get the current time', 'time', '', 0, false, false, function(message)
+	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
+end)
+
+addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
+	local data, err = api.misc.Urban(args)
+	if data then
+		local t={}
+		if data.list[1] then
+			t.description = string.format('**Definition of "%s" by %s**\n%s',data.list[1].word,data.list[1].author,data.list[1].permalink)
+			t.fields = {
+				{name = "Thumbs up", value = data.list[1].thumbs_up or "0", inline=true},
+				{name = "Thumbs down", value = data.list[1].thumbs_down or "0", inline=true},
+				{name = "Definition", value = #data.list[1].definition<1000 and data.list[1].definition or string.sub(data.list[1].definition,1,1000).."..."},
+				{name = "Example", value = data.list[1].example~='' and data.list[1].example or "No examples"},
+			}
+			t.color = colors.blue.value
+		else
+			t.title = 'No definitions found.'
+		end
+		message:reply{embed=t}
+	else
+		message:reply(err)
+	end
+end)
+
+addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'}, '[@user|userID]', 0, false, true, function(message, args)
+	local member = resolveMember(message.guild, args)
+	if args=="" then
+		member = message.member
+	end
+	if member then
+		local roles = ""
+		for i in member.roles:iter() do
+			if roles == "" then roles = i.name else roles = roles..", "..i.name end
+		end
+		if roles == "" then roles = "None" end
+		local joinTime = humanReadableTime(parseISOTime(member.joinedAt):toTableUTC())
+		local createTime = humanReadableTime(parseISOTime(member.timestamp):toTableUTC())
+		local users = database:get(message, "Users")
+		local registerTime = "N/A"
+		if users[member.id] then
+			if users[member.id].registered and users[member.id].registered ~= "" then
+				registerTime = humanReadableTime(parseISOTime(users[member.id].registered):toTableUTC())
+			end
+		end
+		local fields = {
+			{name = 'ID', value = member.id, inline = true},
+			{name = 'Mention', value = member.mentionString, inline = true},
+			{name = 'Nickname', value = member.name, inline = true},
+			{name = 'Status', value = member.status, inline = true},
+			{name = 'Joined', value = joinTime, inline = false},
+			{name = 'Created', value = createTime, inline = false},
+		}
+		if message.guild.id=='348660188951216129' or message.guild.id=='407926063281209344' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
+		table.insert(fields, {name = 'Extras', value = "[Fullsize Avatar]("..member.avatarURL..")", inline = false})
+		table.insert(fields, {name = 'Roles ('..#member.roles..')', value = roles, inline = false})
+		message.channel:send {
+			embed = {
+				author = {name = member.username.."#"..member.discriminator, icon_url = member.avatarURL},
+				fields = fields,
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = member:getColor().value,
+				timestamp = discordia.Date():toISO()
+			}
+		}
+	else
+		message.channel:send("Sorry, I couldn't find that user.")
+	end
+end)
+
+addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
+	local data, err = api.misc.Weather(args)
+	if data then
+		if data.cod~=200 then
+			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
+		end
+		local t={}
+		local tempC, tempF = tostring(math.round(data.main.temp)), tostring(math.round(data.main.temp*1.8+32))
+		local windImperial, windMetric = tostring(math.round(data.wind.speed*0.62137)), tostring(math.round(data.wind.speed))
+		local deg = data.wind.deg
+		local windDir
+		if (deg>10 and deg<80) then
+			windDir = "NE"
+		elseif (deg>=80 and deg<=100) then
+			windDir = "E"
+		elseif (deg>100 and deg<170) then
+			windDir = "SE"
+		elseif (deg>=170 and deg<=190) then
+			windDir = "S"
+		elseif (deg>190 and deg<260) then
+			windDir = "SW"
+		elseif (deg>=260 and deg<=280) then
+			windDir = "W"
+		elseif (deg>280 and deg<370) then
+			windDir = "NW"
+		elseif (deg>=370 and deg<=10) then
+			windDir = "N"
+		end
+		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
+		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
+		t.color = colors.blue.value
+		t.footer={text="Weather provided by OpenWeatherMap"}
+		message:reply{embed=t}
+	else
+		message:reply(err)
+	end
+end)
+
+--[[ Rank 1 Commands ]]
+
+--TODO: Make Case list output pretty
+addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, true, function(message, args)
+	local m = resolveMember(message.guild, args)
+	if m then
+		local users = database:get(message, "Users")
+		if users[m.id] then
+			local watchlisted = users[m.id].watchlisted
+			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
+			message:reply {embed={
+				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
+				fields = {
+					{name = "Watchlisted", value = watchlisted, inline = true},
+				},
+				thumbnail = {url = m.avatarURL, height = 200, width = 200},
+				color = m:getColor().value,
+				timestamp = discordia.Date():toISO()
+			}}
+		end
+	end
+end)
+
 addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, false, true, function(message, args)
 	local settings, cases = database:get(message, "Settings"), database:get(message, "Cases")
 	if not settings.mute_setup then
@@ -716,121 +755,6 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 	end
 end)
 
-addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
-	local settings = database:get(message, "Settings")
-	local author = message.member or message.guild:getMember(message.author.id)
-	local guild,channel=message.guild,message.channel
-	local count, fsel = args:match("(%d+)%s*(.*)")
-	if not count then
-		return message:reply("Please specify an amount.")
-	end
-	local filter
-	if fsel=="bot" then
-		filter = function(m) return m.author.bot==true end
-	elseif getIdFromString(fsel) then
-		local member = resolveMember(guild, fsel)
-		filter = function(m) return m.author.id==member.id end
-	end
-	if fsel~="" and not filter then
-		return message:reply("The following filter is not valid: "..fsel)
-	end
-	count = tonumber(count)
-	local numDel = 0
-	if count > 0 then
-		message:delete()
-		local xHun, rem = math.floor(count/100), count%100
-		local deletions
-		if not filter then
-			if xHun > 0 then
-				for i=1, xHun do --luacheck: ignore i
-					deletions = message.channel:getMessages(100)
-					local success = message.channel:bulkDelete(deletions)
-					if success then numDel = numDel+#deletions end
-				end
-			end
-			if rem > 0 then
-				deletions = message.channel:getMessages(rem)
-				local success = message.channel:bulkDelete(deletions)
-				if success then numDel = numDel+#deletions end
-			end
-		else
-			deletions = channel:getMessages(100):toArray("createdAt", filter)
-			while count>0 do
-				local len = #deletions
-				if len>count then
-					deletions = table.slice(deletions, len-count, len, 1)
-					len = count
-				end
-				count = count - len
-				local nextDeletions = channel:getMessagesBefore(deletions[1], 100):toArray("createdAt", filter)
-				local success = channel:bulkDelete(deletions)
-				if success then
-					numDel = numDel+len
-				else
-					break
-				end
-				deletions = nextDeletions
-			end
-		end
-		if settings.modlog then
-			guild:getChannel(settings.modlog_channel):send{embed={
-				title = "Messages Pruned",
-				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
-				color = colors.red.value,
-				timestamp = discordia.Date():toISO()
-			}}
-		else
-			channel:sendf("Deleted %s messages", numDel)
-		end
-	end
-end)
-
---TODO: Make Case list output pretty
-addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, true, function(message, args)
-	local m = resolveMember(message.guild, args)
-	if m then
-		local users = database:get(message, "Users")
-		if users[m.id] then
-			local watchlisted = users[m.id].watchlisted
-			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
-			message:reply {embed={
-				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
-				fields = {
-					{name = "Watchlisted", value = watchlisted, inline = true},
-				},
-				thumbnail = {url = m.avatarURL, height = 200, width = 200},
-				color = m:getColor().value,
-				timestamp = discordia.Date():toISO()
-			}}
-		end
-	end
-end)
-
-addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
-	local hackbans = database:get(message, "Hackbans")
-	if args=="list" then
-		message.channel:send({embed={
-			title = "Hackbans",
-			description = table.concat(hackbans, "\n"),
-			color = colors.blue.value,
-		}})
-		return
-	end
-	local id = getIdFromString(args)
-	if id then
-		local found = table.search(hackbans, id)
-		if not found then
-			table.insert(hackbans, id)
-		else
-			table.remove(hackbans, found)
-		end
-		message.channel:sendf("%s the hackban list. %s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
-	else
-		message:reply("Unable to resolve ID from input.")
-	end
-	database:update(message, "Hackbans", hackbans)
-end)
-
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
 	local a = message.member or message.guild:getMember(message.author.id)
 	local m = resolveMember(message.guild, args)
@@ -872,133 +796,6 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 		message:reply("Please specify add, del, or view")
 	end
 	database:update(message, "Notes", notes)
-end)
-
-addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
-	local users = database:get(message, "Users")
-	local member = resolveMember(message.guild, args)
-	args = args:gsub("<@!?%d+>",""):gsub(member and member.id or "",""):trim():split(' ')
-	if args[1] == 'add' then
-		if member and users[member.id] then
-			users[member.id].watchlisted = true
-		elseif member then
-			users[member.id] = {watchlisted = true}
-		end
-		message.channel:sendf("Added %s to the watchlist",member.mentionString)
-	elseif args[1] == 'remove' then
-		local oldS = false
-		if member and users[member.id] then
-			if users[member.id].watchlisted==true then
-				users[member.id].watchlisted = false
-				oldS = true
-			end
-		end
-		if oldS then
-			message.channel:sendf("Removed %s from the watchlist",member.mentionString)
-		else
-			message.channel:sendf("%s was not on the watchlist",member.mentionString)
-		end
-	elseif args[1] == 'list' then
-		local list, mention = ""
-		for id,v in pairs(users) do
-			if v and v.watchlisted then
-				mention = message.guild:getMember(id) or client:getUser(id)
-				list = type(mention)=='table' and list..string.format("%s (%s)\n", mention.fullname, mention.id) or list..id.."\n"
-			end
-		end
-		if list ~= "" then
-			message:reply {embed={
-				title="Watchlist",
-				description=list,
-			}}
-		end
-	end
-	database:update(message, "Users", users)
-end)
-
-addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
-	local color = args:match("%#([0-9a-fA-F]*)")
-	local role = resolveRole(message.guild,args:gsub("%#"..color,""):trim())
-	if #color==6 then
-		if type(role)=='table' then
-			role:setColor(discordia.Color.fromHex(color))
-			message.channel:sendf("Changed the color of %s to #%s",role.name,color)
-		else
-			message:reply("Invalid role provided")
-		end
-	else
-		message:reply("Invalid color provided")
-	end
-end)
-
-addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	local member = resolveMember(message.guild, args)
-	if member then
-		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
-		args = string.split(args, ",")
-		local rolesToAdd = {}
-		for _,role in ipairs(args) do
-			role=role:trim()
-			local r = resolveRole(message.guild, role)
-			if r then
-				if not member:hasRole(r) then
-					if member:addRole(r) then
-						rolesToAdd[#rolesToAdd+1] = r.name
-					end
-				else
-					rolesToAdd[#rolesToAdd+1] = member.fullname.." already has "..r.name
-				end
-			end
-		end
-		if #rolesToAdd > 0 then
-			message.channel:send {
-				embed = {
-					author = {name = "Roles Added", icon_url = member.avatarURL},
-					description = "**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesToAdd,"\n"),
-					color = member:getColor().value,
-					timestamp = discordia.Date():toISO(),
-					footer = {text = "ID: "..member.id}
-				}
-			}
-		else
-			message:reply("I was unable to match any of the following requests to existing roles: "..table.concat(args, "\n"))
-		end
-	end
-end)
-
-addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
-	local member = resolveMember(message.guild, args)
-	if member then
-		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
-		args = string.split(args, ",")
-		local rolesToRemove = {}
-		for _,role in ipairs(args) do
-			role=role:trim()
-			local r = resolveRole(message.guild, role)
-			if r then
-				if member:hasRole(r) then
-					if member:removeRole(r) then
-						rolesToRemove[#rolesToRemove+1] = r.name
-					end
-				else
-					rolesToRemove[#rolesToRemove+1] = member.fullname.." does not have "..r.name
-				end
-			end
-		end
-		if #rolesToRemove > 0 then
-			message.channel:send {
-				embed = {
-					author = {name = "Roles Removed", icon_url = member.avatarURL},
-					description = "**Removed "..member.mentionString.." from the following roles** \n"..table.concat(rolesToRemove,"\n"),
-					color = member:getColor().value,
-					timestamp = discordia.Date():toISO(),
-					footer = {text = "ID: "..member.id}
-				}
-			}
-		else
-			message:reply("I was unable to find any of those roles")
-		end
-	end
 end)
 
 -- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
@@ -1072,6 +869,135 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 		end
 	end
 end)
+
+addCommand('Add Role', 'Add role(s) to the given user', 'ar', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
+	local member = resolveMember(message.guild, args)
+	if member then
+		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
+		args = string.split(args, ",")
+		local rolesToAdd = {}
+		for _,role in ipairs(args) do
+			role=role:trim()
+			local r = resolveRole(message.guild, role)
+			if r then
+				if not member:hasRole(r) then
+					if member:addRole(r) then
+						rolesToAdd[#rolesToAdd+1] = r.name
+					end
+				else
+					rolesToAdd[#rolesToAdd+1] = member.fullname.." already has "..r.name
+				end
+			end
+		end
+		if #rolesToAdd > 0 then
+			message.channel:send {
+				embed = {
+					author = {name = "Roles Added", icon_url = member.avatarURL},
+					description = "**Added "..member.mentionString.." to the following roles** \n"..table.concat(rolesToAdd,"\n"),
+					color = member:getColor().value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}
+			}
+		else
+			message:reply("I was unable to match any of the following requests to existing roles: "..table.concat(args, "\n"))
+		end
+	end
+end)
+
+addCommand('Remove Role', 'Removes role(s) from the given user', 'rr', '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
+	local member = resolveMember(message.guild, args)
+	if member then
+		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
+		args = string.split(args, ",")
+		local rolesToRemove = {}
+		for _,role in ipairs(args) do
+			role=role:trim()
+			local r = resolveRole(message.guild, role)
+			if r then
+				if member:hasRole(r) then
+					if member:removeRole(r) then
+						rolesToRemove[#rolesToRemove+1] = r.name
+					end
+				else
+					rolesToRemove[#rolesToRemove+1] = member.fullname.." does not have "..r.name
+				end
+			end
+		end
+		if #rolesToRemove > 0 then
+			message.channel:send {
+				embed = {
+					author = {name = "Roles Removed", icon_url = member.avatarURL},
+					description = "**Removed "..member.mentionString.." from the following roles** \n"..table.concat(rolesToRemove,"\n"),
+					color = member:getColor().value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}
+			}
+		else
+			message:reply("I was unable to find any of those roles")
+		end
+	end
+end)
+
+addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
+	local color = args:match("%#([0-9a-fA-F]*)")
+	local role = resolveRole(message.guild,args:gsub("%#"..color,""):trim())
+	if #color==6 then
+		if type(role)=='table' then
+			role:setColor(discordia.Color.fromHex(color))
+			message.channel:sendf("Changed the color of %s to #%s",role.name,color)
+		else
+			message:reply("Invalid role provided")
+		end
+	else
+		message:reply("Invalid color provided")
+	end
+end)
+
+addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
+	local users = database:get(message, "Users")
+	local member = resolveMember(message.guild, args)
+	args = args:gsub("<@!?%d+>",""):gsub(member and member.id or "",""):trim():split(' ')
+	if args[1] == 'add' then
+		if member and users[member.id] then
+			users[member.id].watchlisted = true
+		elseif member then
+			users[member.id] = {watchlisted = true}
+		end
+		message.channel:sendf("Added %s to the watchlist",member.mentionString)
+	elseif args[1] == 'remove' then
+		local oldS = false
+		if member and users[member.id] then
+			if users[member.id].watchlisted==true then
+				users[member.id].watchlisted = false
+				oldS = true
+			end
+		end
+		if oldS then
+			message.channel:sendf("Removed %s from the watchlist",member.mentionString)
+		else
+			message.channel:sendf("%s was not on the watchlist",member.mentionString)
+		end
+	elseif args[1] == 'list' then
+		local list, mention = ""
+		for id,v in pairs(users) do
+			if v and v.watchlisted then
+				mention = message.guild:getMember(id) or client:getUser(id)
+				list = type(mention)=='table' and list..string.format("%s (%s)\n", mention.fullname, mention.id) or list..id.."\n"
+			end
+		end
+		if list ~= "" then
+			message:reply {embed={
+				title="Watchlist",
+				description=list,
+			}}
+		end
+	end
+	database:update(message, "Users", users)
+end)
+
+--[[ Rank 2 Commands ]]
 
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
 	args = args:split(' ')
@@ -1205,24 +1131,29 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 	database:update(message, "Settings", settings)
 end)
 
-addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message)
-	local settings = database:get(message, "Settings")
-	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
-	if not role then
-		role = message.guild:createRole("Muted")
+addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
+	local hackbans = database:get(message, "Hackbans")
+	if args=="list" then
+		message.channel:send({embed={
+			title = "Hackbans",
+			description = table.concat(hackbans, "\n"),
+			color = colors.blue.value,
+		}})
+		return
 	end
-	local count, status = 0
-	for c in message.guild.textChannels:iter() do
-		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
-		count = status and count+1 or count
+	local id = getIdFromString(args)
+	if id then
+		local found = table.search(hackbans, id)
+		if not found then
+			table.insert(hackbans, id)
+		else
+			table.remove(hackbans, found)
+		end
+		message.channel:sendf("%s the hackban list. %s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
+	else
+		message:reply("Unable to resolve ID from input.")
 	end
-	for c in message.guild.voiceChannels:iter() do
-		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
-		count = status and count+1 or count
-	end
-	message.channel:sendf("Set up %s channels. If mute still doesn't work, please make sure your permissions are not overriding the Muted role.", count)
-	settings.mute_setup = true
-	database:update(message, "Settings", settings)
+	database:update(message, "Hackbans", hackbans)
 end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
@@ -1294,6 +1225,116 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 	end
 	if removed then message.channel:sendf("Removed %s from the rolelist", args) else message:reply("I couldn't find that role.") end
 	database:update(message, "Roles", roles)
+end)
+
+addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
+	local settings = database:get(message, "Settings")
+	local author = message.member or message.guild:getMember(message.author.id)
+	local guild,channel=message.guild,message.channel
+	local count, fsel = args:match("(%d+)%s*(.*)")
+	if not count then
+		return message:reply("Please specify an amount.")
+	end
+	local filter
+	if fsel=="bot" then
+		filter = function(m) return m.author.bot==true end
+	elseif getIdFromString(fsel) then
+		local member = resolveMember(guild, fsel)
+		filter = function(m) return m.author.id==member.id end
+	end
+	if fsel~="" and not filter then
+		return message:reply("The following filter is not valid: "..fsel)
+	end
+	count = tonumber(count)
+	local numDel = 0
+	if count > 0 then
+		message:delete()
+		local xHun, rem = math.floor(count/100), count%100
+		local deletions
+		if not filter then
+			if xHun > 0 then
+				for i=1, xHun do --luacheck: ignore i
+					deletions = message.channel:getMessages(100)
+					local success = message.channel:bulkDelete(deletions)
+					if success then numDel = numDel+#deletions end
+				end
+			end
+			if rem > 0 then
+				deletions = message.channel:getMessages(rem)
+				local success = message.channel:bulkDelete(deletions)
+				if success then numDel = numDel+#deletions end
+			end
+		else
+			deletions = channel:getMessages(100):toArray("createdAt", filter)
+			while count>0 do
+				local len = #deletions
+				if len>count then
+					deletions = table.slice(deletions, len-count, len, 1)
+					len = count
+				end
+				count = count - len
+				local nextDeletions = channel:getMessagesBefore(deletions[1], 100):toArray("createdAt", filter)
+				local success = channel:bulkDelete(deletions)
+				if success then
+					numDel = numDel+len
+				else
+					break
+				end
+				deletions = nextDeletions
+			end
+		end
+		if settings.modlog then
+			guild:getChannel(settings.modlog_channel):send{embed={
+				title = "Messages Pruned",
+				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
+				color = colors.red.value,
+				timestamp = discordia.Date():toISO()
+			}}
+		else
+			channel:sendf("Deleted %s messages", numDel)
+		end
+	end
+end)
+
+--[[ Rank 3 Commands ]]
+
+addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message)
+	local settings = database:get(message, "Settings")
+	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
+	if not role then
+		role = message.guild:createRole("Muted")
+	end
+	local count, status = 0
+	for c in message.guild.textChannels:iter() do
+		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.sendMessages, enums.permission.addReactions)
+		count = status and count+1 or count
+	end
+	for c in message.guild.voiceChannels:iter() do
+		status = c:getPermissionOverwriteFor(role):denyPermissions(enums.permission.speak)
+		count = status and count+1 or count
+	end
+	message.channel:sendf("Set up %s channels. If mute still doesn't work, please make sure your permissions are not overriding the Muted role.", count)
+	settings.mute_setup = true
+	database:update(message, "Settings", settings)
+end)
+
+--[[ Rank 4 Commands ]]
+
+addCommand('Git', 'Run a git command', 'git', '<storage.options>', 4, false, false, function(message, args)
+	local com
+	if args=='pull' then
+		com = "pull origin master"
+	end
+	if com then
+		local stat = os.execute(string.format("git %s", com))
+		if stat then
+			message:reply("Command completed successfully")
+		else
+			message.channel:sendf("Error: %s", stat)
+		end
+	else
+		message:reply("Invalid command")
+	end
 end)
 
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
@@ -1390,38 +1431,6 @@ addCommand('Restart', 'Restart the bot', 'restart', '[true|false]', 4, false, fa
 	client:stop()
 	if args == 'true' then
 		os.exit()
-	end
-end)
-
-addCommand('Git', 'Run a git command', 'git', '<storage.options>', 4, false, false, function(message, args)
-	local com
-	if args=='pull' then
-		com = "pull origin master"
-	end
-	if com then
-		local stat = os.execute(string.format("git %s", com))
-		if stat then
-			message:reply("Command completed successfully")
-		else
-			message.channel:sendf("Error: %s", stat)
-		end
-	else
-		message:reply("Invalid command")
-	end
-end)
-
-addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, function(message,args)
-	local hex = args:match("#?([0-9a-fA-F]*)")
-	local ntc = require('./ntc')
-	if #hex==6 then
-		local color,name = ntc.name(hex)
-		message:reply{embed={
-			thumbnail = {url = "http://www.colorhexa.com/"..color:lower()..".png", height = 150, width = 150},
-			description = string.format("**%s**\n%s", name, "#"..color),
-			color = discordia.Color.fromHex(color).value,
-		}}
-	else
-		message:reply("Invalid Hex Color")
 	end
 end)
 
