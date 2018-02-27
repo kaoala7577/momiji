@@ -1,7 +1,7 @@
-Clocks = {}
+clocks = {}
 
 --Currently, this file is entirely specific to my guild and I have no reason to expand it as of this time
-function Clocks.min(time)
+function clocks.min(time)
 	--Color Change
 	local guilds = { transcend = client:getGuild('348660188951216129'), enbyfolk = client:getGuild('407926063281209344')}
 	local roles = {
@@ -23,7 +23,7 @@ function Clocks.min(time)
 	end
 	--Auto-remove Cooldown
 	for name,guild in pairs(guilds) do
-		local users = Database:get(guild, "Users")
+		local users = database:get(guild, "Users")
 		for member in guild.members:iter() do
 			if member:hasRole(roles[name].cooldown) then
 				if users[member.id] then
@@ -42,8 +42,8 @@ function Clocks.min(time)
 	end
 end
 
-function Clocks.hour()
-	API.misc.DBots_Stats_Update({server_count=#client.guilds})
+function clocks.hour()
+	api.misc.DBots_Stats_Update({server_count=#client.guilds})
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,

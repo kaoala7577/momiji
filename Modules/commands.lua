@@ -1,4 +1,8 @@
-Commands = {}
+local uv = require("uv")
+local pprint = require("pretty-print")
+local ffi = require("ffi")
+
+commands = {}
 
 -- addCommand adapted from DannehSC/Electricity-2.0
 function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
@@ -7,7 +11,7 @@ function addCommand(name, desc, cmds, usage, rank, multiArg, serverOnly, func)
 		logger:log(1, "<COMMAND LOADING> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,expected,number,got)
 		return
 	end
-	Commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
+	commands[name] = {name=name, description=desc,commands=(type(cmds)=='table' and cmds or {cmds}),usage=usage,rank=rank,multi=multiArg,serverOnly=serverOnly,action=func}
 end
 
 addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message)
@@ -18,7 +22,7 @@ addCommand('Ping', 'Ping!', 'ping', '', 0, false, false, function(message)
 end)
 
 addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, true, function(message)
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
@@ -36,7 +40,7 @@ addCommand('Info', 'Info on the bot', {'binfo','info'}, '', 0, false, false, fun
 			{name="Invite me!",value="[Invite](https://discordapp.com/oauth2/authorize/?permissions=335670488&scope=bot&client_id=345316276098433025)",inline=true},
 			{name="Contribute",value="[Github](https://github.com/Mishio595/momiji)\n[Patreon](https://www.patreon.com/momijibot)",inline=true},
 		},
-		color = Colors.blue.value
+		color = colors.blue.value
 	}}
 end)
 
@@ -49,7 +53,7 @@ addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni'}, '', 0, false, false,
 	local mem = math.floor(collectgarbage('count')/1000)
 	message:reply{embed={
 		title = 'Nerdy Info',
-		color = Colors.blue.value,
+		color = colors.blue.value,
 		fields = {
 			{name = 'OS:', value = ts(ffi.os)},
 			{name = 'CPU Threads:', value = ts(threads)},
@@ -78,7 +82,7 @@ addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder> 
 	end
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
 	if reminder and time then
-		Timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
+		timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
 		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
 	end
 end)
@@ -97,13 +101,13 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, func
 			fields={
 				{name=string.format("%d 🎲 [1—%d]",count, sides), value=string.format("You rolled **%s** = **%d**",table.concat(pretty,","),roll)},
 			},
-			color = Colors.blue.value,
+			color = colors.blue.value,
 		}}
 	end
 end)
 
 addCommand('Help', 'Display help information', 'help', '[command]', 0, false, false, function(message, args)
-	local cmds = Commands
+	local cmds = commands
 	local order = {
 		"Everyone", "Mod", "Admin", "Guild Owner", "Bot Owner",
 	}
@@ -201,7 +205,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 			author = {name = guild.name, icon_url = guild.iconURL},
 			fields = fields,
 			thumbnail = {url = guild.iconURL, height = 200, width = 200},
-			color = Colors.blue.value,
+			color = colors.blue.value,
 			footer = { text = "Server Created : "..timestamp }
 		}
 	}
@@ -210,7 +214,7 @@ end)
 addCommand('Role Info', "Get information on a role", {'roleinfo', 'ri', 'rinfo'}, '<roleName>', 0, false, true, function(message, args)
 	local role = message.guild.roles:find(function(r) return r.name:lower() == args:lower() end)
 	if role then
-		local roles = Database:getCached(message, "Roles")
+		local roles = database:getCached(message, "Roles")
 		local aliases, selfAssignable
 		if roles then
 			for _,t in pairs(roles) do
@@ -266,7 +270,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 		if roles == "" then roles = "None" end
 		local joinTime = humanReadableTime(parseISOTime(member.joinedAt):toTableUTC())
 		local createTime = humanReadableTime(parseISOTime(member.timestamp):toTableUTC())
-		local users = Database:get(message, "Users")
+		local users = database:get(message, "Users")
 		local registerTime = "N/A"
 		if users[member.id] then
 			if users[member.id].registered and users[member.id].registered ~= "" then
@@ -299,7 +303,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, function(message, args)
-	local data, err = API.misc.Urban(args)
+	local data, err = api.misc.Urban(args)
 	if data then
 		local t={}
 		if data.list[1] then
@@ -310,7 +314,7 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 				{name = "Definition", value = #data.list[1].definition<1000 and data.list[1].definition or string.sub(data.list[1].definition,1,1000).."..."},
 				{name = "Example", value = data.list[1].example~='' and data.list[1].example or "No examples"},
 			}
-			t.color = Colors.blue.value
+			t.color = colors.blue.value
 		else
 			t.title = 'No definitions found.'
 		end
@@ -321,7 +325,7 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 end)
 
 addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, function(message, args)
-	local data, err = API.misc.Weather(args)
+	local data, err = api.misc.Weather(args)
 	if data then
 		if data.cod~=200 then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
@@ -350,7 +354,7 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 		end
 		t.title=string.format("**Weather for %s, %s (ID: %s)**",data.name, data.sys.country, data.id)
 		t.description=string.format("**Condition:** %s\n**Temperature:** %s °C (%s °F)\n**Humidity:** %s%%\n**Barometric Pressure:** %s Torr\n**Wind:** %s kmph (%s mph) %s\n**Coordinates:** %s, %s",data.weather[1].description:sub(0,1):upper()..data.weather[1].description:sub(2),tempC,tempF,data.main.humidity,math.round(data.main.pressure*0.750062),windMetric,windImperial,windDir,data.coord.lat,data.coord.lon)
-		t.color = Colors.blue.value
+		t.color = colors.blue.value
 		t.footer={text="Weather provided by OpenWeatherMap"}
 		message:reply{embed=t}
 	else
@@ -359,7 +363,7 @@ addCommand('Weather', 'Get weather information on a given city', 'weather', '<ci
 end)
 
 addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message)
-	local data = API.misc.Cats()
+	local data = api.misc.Cats()
 	if data then
 		message:reply{embed={
 			image={url=data}
@@ -368,7 +372,7 @@ addCommand('Cat', 'Meow', 'cat', '', 0, false, false, function(message)
 end)
 
 addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message)
-	local data = API.misc.Dogs()
+	local data = api.misc.Dogs()
 	if data then
 		message:reply{embed={
 			image={url=data}
@@ -377,16 +381,16 @@ addCommand('Dog', 'Bork', 'dog', '', 0, false, false, function(message)
 end)
 
 addCommand('Joke', 'Tell a joke', 'joke', '', 0, false, false, function(message)
-	local data, err = API.misc.Joke()
+	local data, err = api.misc.Joke()
 	message:reply(data or err)
 end)
 
 addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<search>', 0, false, true, function(message, args)
 	local substitutions = require('./htmlsubs')
-	local data, err = API.misc.Anime(args)
+	local data, err = api.misc.Anime(args)
 	if data then
 		local t={}
-		t.color = Colors.blue.value
+		t.color = colors.blue.value
 		local result = data.anime:children()[1]
 		if result then
 			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
@@ -406,10 +410,10 @@ end)
 
 addCommand('MAL Manga Search', "Search MyAnimeList for a manga", 'manga', '<search>', 0, false, true, function(message, args)
 	local substitutions = require('./htmlsubs')
-	local data, err = API.misc.Manga(args)
+	local data, err = api.misc.Manga(args)
 	if data then
 		local t={}
-		t.color = Colors.blue.value
+		t.color = colors.blue.value
 		local result = data.manga:children()[1]
 		if result then
 			local syn = result.synopsis:value():gsub("<br />",""):gsub("%[/?i%]","*"):gsub("%[/?b%]","**")
@@ -443,7 +447,7 @@ addCommand('e621', 'Posts a random image from e621 with optional tags', 'e621', 
 	local data
 	local count = 0
 	while not data do
-		local try = API.misc.Furry(args)
+		local try = api.misc.Furry(args)
 		local bl = false
 		for _,v in ipairs(blacklist) do
 			if try and try.tags:match(v) then
@@ -481,7 +485,7 @@ addCommand('Danbooru', 'Posts a random image from danbooru with optional tags', 
 	local data
 	local count = 0
 	while not data do
-		local try = API.misc.Booru(args)
+		local try = api.misc.Booru(args)
 		local bl = false
 		for _,v in ipairs(blacklist) do
 			if try and try.tags:match(v) then
@@ -506,7 +510,7 @@ end)
 
 addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {'role', 'asr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
 	local member = message.member or message.guild:getMember(message.author.id)
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = database:get(message, "Roles")
 	if not selfRoles then return end
 	local roles = args
 	local rolesToAdd, rolesFailed = {}, {}
@@ -563,7 +567,7 @@ end)
 addCommand('Remove Self Role', 'Remove role(s) from the self role list from yourself', {'derole','rsr'}, '<role[, role, ...]>', 0, true, true, function(message, args)
 	local roles = args
 	local member = message.member or message.guild:getMember(message.author.id)
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = database:get(message, "Roles")
 	if not selfRoles then return end
 	local rolesToRemove = {}
 	for _,l in pairs(selfRoles) do
@@ -599,7 +603,7 @@ end)
 
 addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '[category]', 0, false, true, function(message, args)
 	local roleList, cats = {},{}
-	local selfRoles = Database:get(message, "Roles")
+	local selfRoles = database:get(message, "Roles")
 	if args~="" then
 		local found = false
 		for k,v in pairs(selfRoles) do
@@ -640,7 +644,7 @@ addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '
 end)
 
 addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, false, true, function(message, args)
-	local settings, cases = Database:get(message, "Settings"), Database:get(message, "Cases")
+	local settings, cases = database:get(message, "Settings"), database:get(message, "Cases")
 	if not settings.mute_setup then
 		message:reply("Mute cannot be used until `setup` has been run.")
 		return
@@ -660,7 +664,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 	end
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
 	if member then
-		Timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
+		timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:addRole(role) then return end
 		message.channel:sendf("Muting %s", member.mentionString)
@@ -684,11 +688,11 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 			}}
 		end
 	end
-	Database:update(message, "Cases", cases)
+	database:update(message, "Cases", cases)
 end)
 
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, true, function(message, args)
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	if not settings.mute_setup then
 		message:reply("Unmute cannot be used until `setup` has been run.")
 		return
@@ -711,7 +715,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, tru
 end)
 
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true, function(message, args)
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	local guild,channel=message.guild,message.channel
 	local count, fsel = args:match("(%d+)%s*(.*)")
@@ -770,7 +774,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, true,
 			guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Messages Pruned",
 				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
-				color = Colors.red.value,
+				color = colors.red.value,
 				timestamp = discordia.Date():toISO()
 			}}
 		else
@@ -783,7 +787,7 @@ end)
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then
-		local users = Database:get(message, "Users")
+		local users = database:get(message, "Users")
 		if users[m.id] then
 			local watchlisted = users[m.id].watchlisted
 			if watchlisted then watchlisted = 'Yes' else watchlisted = 'No' end
@@ -801,12 +805,12 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo',
 end)
 
 addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, true, function(message, args)
-	local hackbans = Database:get(message, "Hackbans")
+	local hackbans = database:get(message, "Hackbans")
 	if args=="list" then
 		message.channel:send({embed={
 			title = "Hackbans",
 			description = table.concat(hackbans, "\n"),
-			color = Colors.blue.value,
+			color = colors.blue.value,
 		}})
 		return
 	end
@@ -822,7 +826,7 @@ addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'
 	else
 		message:reply("Unable to resolve ID from input.")
 	end
-	Database:update(message, "Hackbans", hackbans)
+	database:update(message, "Hackbans", hackbans)
 end)
 
 addCommand('Notes', 'Add the note to, delete a note from, or view all notes for the mentioned user', 'note', '<add|del|view> [@user|userID] [note|index]', 1, false, true, function(message, args)
@@ -830,7 +834,7 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 	local m = resolveMember(message.guild, args)
 	if (args == "") or not m then return end
 	args = args:gsub("<@!?%d+>",""):gsub(m.id,""):trim()
-	local notes = Database:get(message, "Notes")
+	local notes = database:get(message, "Notes")
 	if args:startswith("add") then
 		args = args:gsub("^add",""):trim()
 		if args and args ~= "" then
@@ -865,11 +869,11 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 	else
 		message:reply("Please specify add, del, or view")
 	end
-	Database:update(message, "Notes", notes)
+	database:update(message, "Notes", notes)
 end)
 
 addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone on it", "wl", '<add|remove|list> [@user|userID]', 1, false, true, function(message, args)
-	local users = Database:get(message, "Users")
+	local users = database:get(message, "Users")
 	local member = resolveMember(message.guild, args)
 	args = args:gsub("<@!?%d+>",""):gsub(member and member.id or "",""):trim():split(' ')
 	if args[1] == 'add' then
@@ -907,7 +911,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			}}
 		end
 	end
-	Database:update(message, "Users", users)
+	database:update(message, "Users", users)
 end)
 
 addCommand('Role Color', 'Change the color of a role', {'rolecolor', 'rolecolour', 'rc'}, '<roleName|roleID> <#hexcolor>', 1, false, true, function(message, args)
@@ -998,7 +1002,7 @@ end)
 -- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, true, function(message, args)
 	if message.guild.id~="348660188951216129" and message.guild.id~='407926063281209344' then msg:reply("This command is not available in this guild");return end
-	local users, settings, roles = Database:get(message, "Users"), Database:get(message, "Settings"), Database:get(message, "Roles")
+	local users, settings, roles = database:get(message, "Users"), database:get(message, "Settings"), database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = resolveMember(message.guild, args)
 	if member then
@@ -1059,7 +1063,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				else
 					users[member.id].registered = discordia.Date():toISO()
 				end
-				Database:update(message, "Users", users)
+				database:update(message, "Users", users)
 			end
 		else
 			message:reply("Invalid registration command. Make sure to include at least one of gender identity and pronouns.")
@@ -1070,7 +1074,7 @@ end)
 addCommand('Config', 'Update configuration for the current guild', 'config', '<category> <option> [value]', 2, false, true, function(message, args)
 	args = args:split(' ')
 	for i,v in pairs(args) do args[i] = v:trim() end
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	local switches = {
 		roles = {'admin', 'mod'},
 		channels = {'audit', 'modlog', 'welcome', 'introduction'},
@@ -1196,11 +1200,11 @@ addCommand('Config', 'Update configuration for the current guild', 'config', '<c
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
 	end
-	Database:update(message, "Settings", settings)
+	database:update(message, "Settings", settings)
 end)
 
 addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(message)
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 	if not role then
 		role = message.guild:createRole("Muted")
@@ -1216,11 +1220,11 @@ addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, true, function(m
 	end
 	message.channel:sendf("Set up %s channels. If mute still doesn't work, please make sure your permissions are not overriding the Muted role.", count)
 	settings.mute_setup = true
-	Database:update(message, "Settings", settings)
+	database:update(message, "Settings", settings)
 end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
-	local ignores = Database:get(message, 'Ignore')
+	local ignores = database:get(message, 'Ignore')
 	local channel = resolveChannel(message.guild, args)
 	if channel and not ignores[channel.id] then
 		ignores[channel.id] = true
@@ -1235,11 +1239,11 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 		return
 	end
 	message.channel:sendf("I will %s for commands in %s",ignores[channel.id] and "no longer listen" or "now listen",channel.mentionString)
-	Database:update(message, 'Ignore', ignores)
+	database:update(message, 'Ignore', ignores)
 end)
 
 addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
-	local roles = Database:get(message, "Roles")
+	local roles = database:get(message, "Roles")
 	function fn(r) return r.name == args[1] end
 	local r = message.guild.roles:find(fn)
 	if r then
@@ -1271,11 +1275,11 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<rol
 	else
 		message:reply(args[1].." is not a role. Please make it first.")
 	end
-	Database:update(message, "Roles", roles)
+	database:update(message, "Roles", roles)
 end)
 
 addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, true, function(message, args)
-	local roles = Database:get(message, "Roles")
+	local roles = database:get(message, "Roles")
 	local removed = false
 	for cat,v in pairs(roles) do
 		if v[args] then
@@ -1287,7 +1291,7 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 		end
 	end
 	if removed then message.channel:sendf("Removed %s from the rolelist", args) else message:reply("I couldn't find that role.") end
-	Database:update(message, "Roles", roles)
+	database:update(message, "Roles", roles)
 end)
 
 addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false, function(message, args)
@@ -1306,7 +1310,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		local n = select('#', ...)
 		local arguments = {...}
 		for i = 1, n do
-			arguments[i] = pprint.dump(arguments[i],nil,true):gsub(options.token,'<Hidden for security>')
+			arguments[i] = pprint.dump(arguments[i],nil,true):gsub(storage.options.token,'<Hidden for security>')
 		end
 		local txt=table.concat(arguments, "\t").."\n"
 		tx=tx..txt
@@ -1341,8 +1345,13 @@ end)
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, function(message, args)
 	local loaded = false
 	if args=="restart" then
+		client:setStatus("invisible")
 		client:stop()
 		os.exit()
+	elseif args=="recon" then
+		client:setStatus("invisible")
+		client:stop()
+		client:run(storage.options.token)
 	elseif args~="" then
 		loaded = loadModule(args)
 	end
@@ -1353,7 +1362,7 @@ addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, f
 	if loaded then message:reply("Reloaded module: "..args) else message:reply("Failed to load module") end
 end)
 
-addCommand('Git', 'Run a git command', 'git', '<options>', 4, false, false, function(message, args)
+addCommand('Git', 'Run a git command', 'git', '<storage.options>', 4, false, false, function(message, args)
 	local com
 	if args=='pull' then
 		com = "pull origin master"

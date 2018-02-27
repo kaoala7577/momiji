@@ -1,32 +1,33 @@
-fs = require('fs')
-json = require('json')
-ssl = require('openssl')
-timer = require("timer")
-query = require('querystring')
-http = require('coro-http')
-xml = require("xmlSimple").newParser()
-pprint = require("pretty-print")
-uv = require("uv")
-ffi = require("ffi")
+-- Deps
+local fs = require('fs')
+local json = require('json')
+-- local ssl = require('openssl')
+-- local timer = require("timer")
+-- local query = require('querystring')
+-- local http = require('coro-http')
+-- local xml = require("xmlSimple").newParser()
+-- local pprint = require("pretty-print")
+-- local uv = require("uv")
+-- local ffi = require("ffi")
 
-options = json.parse(fs.readFileSync('options.json'))
-discordia = require('discordia')
-enums = discordia.enums
+-- Globals
+discordia = require('discordia') -- load discordia
+enums = discordia.enums -- load enumerations
 client = discordia.Client({
 	cacheAllMembers = true,
-})
+}) -- create client
+uptime = discordia.Stopwatch() -- stopwatch to count uptime
+clock = discordia.Clock() -- clock emitter
 logger = discordia.Logger(4, '%F %T', 'discordia.log')
-uptime = discordia.Stopwatch()
-clock = discordia.Clock()
-clock:start(true)
-discordia.storage.bulkDeletes = {}
-
-Colors = {
+storage = discordia.storage
+storage.bulkDeletes = {} -- initalize storage table and bulkDeletes
+storage.options = json.parse(fs.readFileSync('options.json')) -- Static config file containing key-value pairs
+colors = {
 	blue = discordia.Color.fromHex('#5DA9FF'),
 	red = discordia.Color.fromHex('#ff4040'),
 	green = discordia.Color.fromHex('#00ff7f'),
 	altBlue = discordia.Color.fromHex('#7979FF'),
-}
+} -- preset colors
 
 -- loadModule adapted from DannehSC/Electricity-2.0
 function loadModule(name)
@@ -56,23 +57,23 @@ end
 
 coroutine.wrap(function()
 	-- Load Modules
-	loadModule('Utilities')
-	loadModule('Functions')
-	loadModule('Database')
-	loadModule('Events')
-	loadModule('Clocks')
-	loadModule('Timing')
-	loadModule('API')
-	loadModule('Commands')
+	loadModule('utilities')
+	loadModule('functions')
+	loadModule('database')
+	loadModule('events')
+	loadModule('clocks')
+	loadModule('timing')
+	loadModule('api')
+	loadModule('commands')
 
 	-- Register Client Events
 	registerAllEvents()
 	client:once('ready', function() dispatcher('ready') end)
 
 	-- Register Clock Events
-	clock:on('min', Clocks.min)
-	clock:on('hour', Clocks.hour)
+	clock:on('min', clocks.min)
+	clock:on('hour', clocks.hour)
 
 	-- Run
-	client:run(options.token)
+	client:run(storage.options.token)
 end)()

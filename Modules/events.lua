@@ -1,17 +1,18 @@
 --[[ Adapted from DannehSC/Electricity-2.0 ]]
 
-Events = {}
-local errLog, comLog, guildLog
+local json = require('json')
+local timer = require("timer")
+events = {}
 
-function Events.messageCreate(msg)
+function events.messageCreate(msg)
 	if msg.author.bot then return end
 	local private, data
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
 	local rank = getRank(sender, not private)
 	if not private then
-		--Load settings for the guild, Database.lua keeps a cache of requests to avoid making excessive queries
-		data = Database:getCached(msg)
+		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
+		data = database:getCached(msg)
 		if data.Ignore[msg.channel.id] and rank<3 then
 			return
 		end
@@ -21,7 +22,7 @@ function Events.messageCreate(msg)
 	end
 	local command, rest = resolveCommand(msg.content, (not private and data.Settings.prefix or ""))
 	if not command then return end --If the prefix isn't there, don't bother with anything else
-	for _,tab in pairs(Commands) do
+	for _,tab in pairs(commands) do
 		for _,cmd in pairs(tab.commands) do
 			if command:lower() == cmd:lower() then
 				if tab.serverOnly and private then
@@ -38,8 +39,8 @@ function Events.messageCreate(msg)
 					end
 					local a,b = pcall(tab.action, msg, args)
 					if not a then
-						if errLog then
-							errLog:send {embed = {
+						if storage.errLog then
+							storage.errLog:send {embed = {
 								description = b,
 								footer = {text="ID: "..msg.id},
 								timestamp = discordia.Date():toISO(),
@@ -47,9 +48,9 @@ function Events.messageCreate(msg)
 							}}
 						end
 					end
-					if comLog then
+					if storage.comLog then
 						local g = not private and msg.guild or {name="Private", id=""}
-						comLog:send{embed={
+						storage.comLog:send{embed={
 							fields={
 								{name="Guild",value=g.name.."\n"..g.id,inline=true},
 								{name="Author",value=msg.author.fullname.."\n"..msg.author.id,inline=true},
@@ -59,7 +60,7 @@ function Events.messageCreate(msg)
 							},
 							footer = {text="Message ID: "..msg.id},
 							timestamp=discordia.Date():toISO(),
-							color = Colors.blue.value,
+							color = colors.blue.value,
 						}}
 					end
 				else
@@ -72,14 +73,14 @@ function Events.messageCreate(msg)
 end
 
 
-function Events.memberJoin(member)
+function events.memberJoin(member)
 	--Reference Hackban list
-	local hackbans = Database:get(member, "Hackbans")
+	local hackbans = database:get(member, "Hackbans")
 	if table.search(hackbans, member.id) then
 		return member:ban("Hackban")
 	end
 	--Welcome message
-	local settings = Database:get(member, "Settings")
+	local settings = database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
@@ -98,7 +99,7 @@ function Events.memberJoin(member)
 			author = {name = "Member Joined", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = Colors.green.value,
+			color = colors.green.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
@@ -115,29 +116,29 @@ function Events.memberJoin(member)
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
 		end
-		local users = Database:get(member, "Users")
+		local users = database:get(member, "Users")
 		users[member.id] = {nick=member.nickname, roles=roles}
-		Database:update(member, "Users", users)
+		database:update(member, "Users", users)
 	end
 end
 
-function Events.memberLeave(member)
-	local settings = Database:get(member, "Settings")
+function events.memberLeave(member)
+	local settings = database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Left", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = Colors.red.value,
+			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
 	end
 	--kill their entry in the DB
-	local users = Database:get(member, "Users")
+	local users = database:get(member, "Users")
 	users[member.id] = nil
-	Database:update(member, "Users", users)
+	database:update(member, "Users", users)
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
 	--Check if they were kicked
@@ -159,7 +160,7 @@ function Events.memberLeave(member)
 				author = {name = "Member Kicked", icon_url = member.avatarURL},
 				description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
-				color = Colors.red.value,
+				color = colors.red.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}
 			}}
@@ -167,7 +168,7 @@ function Events.memberLeave(member)
 	end
 end
 
-function Events.presenceUpdate(member)
+function events.presenceUpdate(member)
 	if member.user.bot == true then return end
 	local role = '370395740406546432'
 	if member.guild.id == '348660188951216129' then
@@ -179,9 +180,9 @@ function Events.presenceUpdate(member)
 	end
 end
 
-function Events.memberUpdate(member)
-	local users = Database:get(member, "Users")
-	local settings = Database:get(member, "Settings")
+function events.memberUpdate(member)
+	local users = database:get(member, "Users")
+	local settings = database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	local newRoles = {}
 	for role in member.roles:iter() do
@@ -193,7 +194,7 @@ function Events.memberUpdate(member)
 				title = "Nickname Changed",
 				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
 				thumbnail = {url=member.avatarURL},
-				color = Colors.blue.value,
+				color = colors.blue.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id},
 			}}
@@ -217,7 +218,7 @@ function Events.memberUpdate(member)
 				title = "Roles Changed",
 				description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
 				thumbnail = {url=member.avatarURL},
-				color = Colors.blue.value,
+				color = colors.blue.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text="ID: "..member.id}
 			}}
@@ -230,16 +231,16 @@ function Events.memberUpdate(member)
 		else
 			users[member.id] = {nick = member.nickname, roles = newRoles}
 		end
-		Database:update(member, "Users", users)
+		database:update(member, "Users", users)
 	end
 end
 
-function Events.userBan(user, guild)
+function events.userBan(user, guild)
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
 	--End wait
 	local member = guild:getMember(user) or user
-	local settings = Database:get(guild, "Settings")
+	local settings = database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		local audit = guild:getAuditLogs({
@@ -252,39 +253,39 @@ function Events.userBan(user, guild)
 			author = {name = "Member Banned", icon_url = member.avatarURL},
 			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = Colors.red.value,
+			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
 	end
 end
 
-function Events.userUnban(user, guild)
+function events.userUnban(user, guild)
 	local member = guild:getMember(user) or user
-	local settings = Database:get(guild, "Settings")
+	local settings = database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		channel:send {embed={
 			author = {name = "Member Unbanned", icon_url = member.avatarURL},
 			description = member.mentionString.."\n"..member.fullname,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = Colors.green.value,
+			color = colors.green.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
 	end
 end
 
-function Events.messageDelete(message)
-	for i,v in ipairs(discordia.storage.bulkDeletes) do
+function events.messageDelete(message)
+	for i,v in ipairs(storage.bulkDeletes) do
 		if message.id==v then
-			table.remove(discordia.storage.bulkDeletes,i)
+			table.remove(storage.bulkDeletes,i)
 			return
 		end
 	end
 	local member = message.member or message.guild:getMember(message.author.id) or message.author
 	if message.author.bot then return end
-	local settings = Database:get(message, "Settings")
+	local settings = database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
 		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n**Content:**\n"..message.content
@@ -296,54 +297,54 @@ function Events.messageDelete(message)
 		channel:send {embed={
 			author = {name = "Message Deleted", icon_url = member.avatarURL},
 			description = body,
-			color = Colors.red.value,
+			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..member.id}
 		}}
 	end
 end
 
-function Events.messageDeleteUncached(channel, messageID)
-	for i,v in ipairs(discordia.storage.bulkDeletes) do
+function events.messageDeleteUncached(channel, messageID)
+	for i,v in ipairs(storage.bulkDeletes) do
 		if messageID==v then
-			table.remove(discordia.storage.bulkDeletes,i)
+			table.remove(storage.bulkDeletes,i)
 			return
 		end
 	end
-	local settings = Database:get(channel, "Settings")
+	local settings = database:get(channel, "Settings")
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
 			author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
 			description = "**Channel:** "..channel.mentionString.." ("..channel.name..")",
-			color = Colors.red.value,
+			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..channel.id}
 		}}
 	end
 end
 
-function Events.guildCreate(guild)
-	API.misc.DBots_Stats_Update({server_count=#client.guilds})
+function events.guildCreate(guild)
+	api.misc.DBots_Stats_Update({server_count=#client.guilds})
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
-	guildLog:send{embed={
+	storage.guildLog:send{embed={
 		title = "Joined Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
-		color = Colors.green.value,
+		color = colors.green.value,
 		timestamp = discordia.Date():toISO(),
 	}}
 end
 
-function Events.guildDelete(guild)
-	guildLog:send{embed={
+function events.guildDelete(guild)
+	storage.guildLog:send{embed={
 		title = "Left Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
-		color = Colors.red.value,
+		color = colors.red.value,
 		timestamp = discordia.Date():toISO(),
 	}}
 end
 
-function Events.Timing(data)
+function events.timing(data)
 	local args = string.split(data,'||')
 	if args[1]=='REMINDER' then
 		local g = client:getGuild(args[2])
@@ -354,14 +355,14 @@ function Events.Timing(data)
 				m:send{embed={
 					title='Reminder from '..time..' ago',
 					description=args[5],
-					color=Colors.blue.value,
+					color=colors.blue.value,
 				}}
 			end
 		end
 	elseif args[1]=='UNMUTE' then
 		local g = client:getGuild(args[2])
 		if g then
-			local settings = Database:get(g, "Settings")
+			local settings = database:get(g, "Settings")
 			local m = g:getMember(args[3])
 			local time = args[4]
 			if m then
@@ -381,22 +382,22 @@ function Events.Timing(data)
 	end
 end
 
-function Events.raw(raw)
+function events.raw(raw)
 	local payload = json.parse(raw)
 	if payload.t == 'MESSAGE_DELETE_BULK' then
-		discordia.storage.bulkDeletes = payload.d.ids or {}
+		storage.bulkDeletes = payload.d.ids or {}
 	end
 end
 
-function Events.ready()
-	API.misc.DBots_Stats_Update({server_count=#client.guilds})
-	errLog = client:getChannel('376422808852627457')
-	comLog = client:getChannel('376422940570419200')
-	guildLog = client:getChannel('406115496833056789')
-	Timing:on(Events.Timing)
+function events.ready()
+	api.misc.DBots_Stats_Update({server_count=#client.guilds})
+	storage.errLog = client:getChannel('376422808852627457')
+	storage.comLog = client:getChannel('376422940570419200')
+	storage.guildLog = client:getChannel('406115496833056789')
+	timing:on(events.timing)
 	for g in client.guilds:iter() do
-		local data = Database:get(g)
-		Timing:load(g)
+		local data = database:get(g)
+		timing:load(g)
 		local users = data.Users
 		for m in g.members:iter() do
 			local roles = {}
@@ -405,7 +406,7 @@ function Events.ready()
 			end
 			users[m.id] = {nick=m.nickname, roles=roles}
 		end
-		Database:update(g,"Users",users)
+		database:update(g,"Users",users)
 	end
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),

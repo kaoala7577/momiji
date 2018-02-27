@@ -1,6 +1,8 @@
 --[[ Several functions adapted from DannehSC/Electricity-2.0 ]]
 
-function checkArgs(types, vals)
+local functions = {}
+
+function functions.checkArgs(types, vals)
 	for i,v in ipairs(types) do
 		if type(v)=='table' then
 			local t1=true
@@ -21,11 +23,11 @@ function checkArgs(types, vals)
 	return true,'',#vals
 end
 
-function getRank(member, server)
+function functions.getRank(member, server)
 	if not member then return 0 end
 	local rank = 0
 	if server then
-		local settings = Database:get(member, "Settings")
+		local settings = database:get(member, "Settings")
 		for _,v in ipairs(settings['mod_roles']) do
 			if member:hasRole(v) then
 				rank = 1
@@ -46,7 +48,7 @@ function getRank(member, server)
 	return rank
 end
 
-function humanReadableTime(table)
+function functions.humanReadableTime(table)
 	days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 	months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 	if #tostring(table.min) == 1 then table.min = "0"..table.min end
@@ -54,11 +56,11 @@ function humanReadableTime(table)
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
-function parseISOTime(time)
+function functions.parseISOTime(time)
 	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
-function parseTime(message)
+function functions.parseTime(message)
 	local t = discordia.Date():toTableUTC()
 	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
 		local u = unit:lower()
@@ -81,11 +83,11 @@ function parseTime(message)
 	return discordia.Date.fromTableUTC(t)
 end
 
-function timeBetween(time)
+function functions.timeBetween(time)
 	return discordia.Date.fromSeconds(math.abs(time:toSeconds()-discordia.Date():toSeconds()))
 end
 
-function prettyTime(t)
+function functions.prettyTime(t)
 	local out = ""
 	for k,v in pairsByKeys(t) do
 		if type(v)=='number' then
@@ -97,12 +99,12 @@ function prettyTime(t)
 	return out
 end
 
-function getIdFromString(str)
+function functions.getIdFromString(str)
 	local d = string.match(tostring(str),"<?[@#]?!?(%d+)>?")
 	if d and #d>=17 then return d else return end
 end
 
-function resolveGuild(guild)
+function functions.resolveGuild(guild)
 	local ts=tostring
 	if not guild then error"No ID/Guild/Message provided" end
 	local id
@@ -119,7 +121,7 @@ function resolveGuild(guild)
 	return id,guild
 end
 
-function resolveChannel(guild,name)
+function functions.resolveChannel(guild,name)
 	local this=getIdFromString(name)
 	local c
 	if this then
@@ -132,7 +134,7 @@ function resolveChannel(guild,name)
 	return c
 end
 
-function resolveMember(guild,name)
+function functions.resolveMember(guild,name)
 	local this = getIdFromString(name)
 	local m
 	if this then
@@ -145,7 +147,7 @@ function resolveMember(guild,name)
 	return m
 end
 
-function resolveRole(guild,name)
+function functions.resolveRole(guild,name)
 	local this = getIdFromString(name)
 	local r
 	if this then
@@ -158,12 +160,12 @@ function resolveRole(guild,name)
 	return r
 end
 
-function getFormatType(str)
+function functions.getFormatType(str)
 	local type = str:match("$type:(%S*)")
 	return type
 end
 
-function formatMessageSimple(str, member)
+function functions.formatMessageSimple(str, member)
 	for word in string.gmatch(str, "{%S+}") do
 		if word:lower()=='{user}' then
 			str = str:gsub(word, member.mentionString)
@@ -174,7 +176,7 @@ function formatMessageSimple(str, member)
 	return str
 end
 
-function formatMessageEmbed(str, member)
+function functions.formatMessageEmbed(str, member)
 	local embed = {}
 	for word in string.gmatch(str, "$[^$]*") do
 		local field, val = string.match(word, "$(%S+):(.*)")
@@ -198,7 +200,7 @@ function formatMessageEmbed(str, member)
 	return embed
 end
 
-function resolveCommand(str, pre)
+function functions.resolveCommand(str, pre)
 	local prefix = pre or "m!"
 	local command,rest
 	if string.match(str, "^<@!?"..client.user.id..">") then
@@ -209,16 +211,16 @@ function resolveCommand(str, pre)
 	return command, rest
 end
 
-function dispatcher(name, ...)
+function functions.dispatcher(name, ...)
 	local b,e,n,g = checkArgs({'string'}, {name})
 	if not b then
 		logger:log(1, "<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
 		return
 	end
-	local ret, err = pcall(Events[name], ...)
+	local ret, err = pcall(events[name], ...)
 	if not ret then
-		if errLog then
-			errLog:send {embed = {
+		if storage.errLog then
+			storage.errLog:send {embed = {
 				description = err,
 				footer = {text="DISPATCHER: "..name},
 				timestamp = discordia.Date():toISO(),
@@ -228,30 +230,30 @@ function dispatcher(name, ...)
 	end
 end
 
-function unregisterAllEvents()
-	if not Events then return end
-	for k,_ in pairs(Events) do
+function functions.unregisterAllevents()
+	if not events then return end
+	for k,_ in pairs(events) do
 		if k~="Timing" and k~="ready" then
 			client:removeAllListeners(k)
 		end
 	end
 end
 
-function registerAllEvents()
-	if not Events then return end
-	for k,_ in pairs(Events) do
+function functions.registerAllEvents()
+	if not events then return end
+	for k,_ in pairs(events) do
 		if k~="Timing" and k~="ready" then
-			client:on(k,function(...) dispatcher(k,...) end)
+			client:on(k,function(...) functions.dispatcher(k,...) end)
 		end
 	end
 end
 
-function pairsByKeys (t, f)
+function functions.pairsByKeys (t, f)
 	local a = {}
 	for n in pairs(t) do table.insert(a, n) end
 	table.sort(a, f)
 	local i = 0      -- iterator variable
-	local iter = function ()   -- iterator function
+	local iter = function()   -- iterator function
 		i = i + 1
 		if a[i] == nil then
 			return nil
@@ -261,3 +263,9 @@ function pairsByKeys (t, f)
 	end
 	return iter
 end
+
+for k,v in pairs(functions) do
+	_G[k] = v
+end
+
+return functions

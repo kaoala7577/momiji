@@ -1,5 +1,11 @@
 --[[ Adapted from DannehSC/Electricity-2.0 ]]
 
+local json = require('json')
+local ssl = require('openssl')
+local query = require('querystring')
+local http = require('coro-http')
+local xml = require("xmlSimple").newParser()
+
 API={
 	data={},
 	endpoints={
@@ -18,7 +24,7 @@ API={
 }
 
 pcall(function()
-	API.data=options.apiData
+	API.data=storage.options.apiData
 end)
 
 function API.post(endpoint,fmt,...)
