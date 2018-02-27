@@ -1,6 +1,12 @@
 --[[ Adapted from DannehSC/Electricity-2.0 ]]
 
-API={
+local json = require('json')
+local ssl = require('openssl')
+local query = require('querystring')
+local http = require('coro-http')
+local xml = require("xmlSimple").newParser()
+
+local api={
 	data={},
 	endpoints={
 		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats', --id: the bot ID
@@ -18,12 +24,12 @@ API={
 }
 
 pcall(function()
-	API.data=options.apiData
+	api.data=storage.options.apiData
 end)
 
-function API.post(endpoint,fmt,...)
+function api.post(endpoint,fmt,...)
 	local uri
-	local url=API.endpoints[endpoint]
+	local url=api.endpoints[endpoint]
 	if url then
 		if fmt then
 			uri=url:format(unpack(fmt))
@@ -34,9 +40,9 @@ function API.post(endpoint,fmt,...)
 	return http.request('POST',uri,...)
 end
 
-function API.get(endpoint,fmt,...)
+function api.get(endpoint,fmt,...)
 	local uri
-	local url=API.endpoints[endpoint]
+	local url=api.endpoints[endpoint]
 	if url then
 		if fmt then
 			uri=url:format(unpack(fmt))
@@ -47,32 +53,32 @@ function API.get(endpoint,fmt,...)
 	return http.request('GET',uri,...)
 end
 
-function API.misc.DBots_Stats_Update(info)
-	return API.post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",API.data.DBotsToken}},json.encode(info))
+function api.misc.DBots_Stats_Update(info)
+	return api.post('DBots_Stats',{client.user.id},{{"Content-Type","application/json"},{"Authorization",api.data.DBotsToken}},json.encode(info))
 end
 
-function API.misc.Cats()
-	local _,request=API.get('Meow')
+function api.misc.Cats()
+	local _,request=api.get('Meow')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc.Cats]'
+		return nil,'ERROR: Unable to decode JSON [api.misc.Cats]'
 	end
 	return json.decode(request).file
 end
 
-function API.misc.Dogs()
-	local _,request=API.get('Bork')
+function api.misc.Dogs()
+	local _,request=api.get('Bork')
 	if not json.decode(request)then
-		return nil,'ERROR: Unable to decode JSON [API.misc.Dogs]'
+		return nil,'ERROR: Unable to decode JSON [api.misc.Dogs]'
 	end
 	return json.decode(request).message
 end
 
-function API.misc.Joke()
-	local _,data=API.get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
+function api.misc.Joke()
+	local _,data=api.get('dadjoke',nil,{{'User-Agent','luvit'},{'Accept','text/plain'}})
 	return data
 end
 
-function API.misc.Weather(input)
+function api.misc.Weather(input)
 	local t="q"
 	input = input:trim()
 	local tp = input:match("^%d+$")
@@ -85,11 +91,11 @@ function API.misc.Weather(input)
 	end
 	local request = query.urlencode(input)
 	if request then
-		local _,data = API.get('Weather', {t,request,API.data.WeatherKey})
+		local _,data = api.get('Weather', {t,request,api.data.WeatherKey})
 		local jdata = json.decode(data)
 		if t=="zip" and jdata.cod~=200 then
 			t="id"
-			_,data = API.get('Weather', {t,request,API.data.WeatherKey})
+			_,data = api.get('Weather', {t,request,api.data.WeatherKey})
 			jdata = json.decode(data)
 		end
 		if jdata then
@@ -102,10 +108,10 @@ function API.misc.Weather(input)
 	end
 end
 
-function API.misc.Urban(input)
+function api.misc.Urban(input)
 	local request=query.urlencode(input:trim())
 	if request then
-		local _,data=API.get('Urban',{request}, {{'User-Agent','luvit'}})
+		local _,data=api.get('Urban',{request}, {{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata
@@ -117,11 +123,11 @@ function API.misc.Urban(input)
 	end
 end
 
-function API.misc.Furry(input)
+function api.misc.Furry(input)
 	input = input.." order:random"
 	local request=query.urlencode(input:trim())
 	if request then
-		local _,data=API.get('e621',{request},{{'User-Agent','luvit'}})
+		local _,data=api.get('e621',{request},{{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata[1]
@@ -133,10 +139,10 @@ function API.misc.Furry(input)
 	end
 end
 
-function API.misc.Booru(input)
+function api.misc.Booru(input)
 	local request=query.urlencode(input:trim())
 	if request then
-		local _,data=API.get('Danbooru',{request}, {{'User-Agent','luvit'}})
+		local _,data=api.get('Danbooru',{request}, {{'User-Agent','luvit'}})
 		local jdata=json.decode(data)
 		if jdata then
 			return jdata
@@ -148,10 +154,10 @@ function API.misc.Booru(input)
 	end
 end
 
-function API.misc.Anime(input)
+function api.misc.Anime(input)
 	local request = query.urlencode(input)
 	if request then
-		local _, data = API.get('Animu',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local _, data = api.get('Animu',{request}, {{'Authorization', "Basic "..ssl.base64(api.data.MALauth)}})
 		local xdata = xml:ParseXmlText(data)
 		if xdata.anime then
 			return xdata
@@ -163,10 +169,10 @@ function API.misc.Anime(input)
 	end
 end
 
-function API.misc.Manga(input)
+function api.misc.Manga(input)
 	local request = query.urlencode(input)
 	if request then
-		local _, data = API.get('Mango',{request}, {{'Authorization', "Basic "..ssl.base64(API.data.MALauth)}})
+		local _, data = api.get('Mango',{request}, {{'Authorization', "Basic "..ssl.base64(api.data.MALauth)}})
 		local xdata = xml:ParseXmlText(data)
 		if xdata.manga then
 			return xdata
@@ -177,3 +183,5 @@ function API.misc.Manga(input)
 		return nil, "ERROR: unable to urlencode"
 	end
 end
+
+return api

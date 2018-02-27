@@ -1,52 +1,54 @@
 --[[ Adapted from Timed.lua DannehSC/Electricity-2.0 ]]
 
+local ssl = require('openssl')
+local timer = require("timer")
 local fmt = string.format
-
-Timing = {
+local database = modules.database
+local timing = {
 	_callbacks = {},
 	_timers = {},
 }
 
-function Timing:on(f)
+function timing:on(f)
 	assert(type(f)=='function','Error: X3F - callback not function')
 	table.insert(self._callbacks,f)
 end
 
-function Timing:fire(...)
+function timing:fire(...)
 	for _,cb in pairs(self._callbacks)do
 		coroutine.wrap(cb)(...)
 	end
 end
 
-function Timing:load(guild)
-	local timers = Database:get(guild, "Timers") or {}
-	for id,timer in pairs(timers) do
-		if timer.endTime<os.time() then
+function timing:load(guild)
+	local timers = database:getCached(guild, "Timers") or {}
+	for id,ti in pairs(timers) do
+		if ti.endTime<os.time() then
 			coroutine.wrap(function() self:delete(guild,id) end)()
-			if timer.stopped==true then return end
-			self:fire(timer.data)
+			if ti.stopped==true then return end
+			self:fire(ti.data)
 		else
-			self:newTimer(guild,timer.endTime-os.time(),timer.data,true)
+			self:newTimer(guild,ti.endTime-os.time(),ti.data,true)
 		end
 	end
 end
 
-function Timing.save(guild,id,timer)
-	local timers = Database:get(guild, "Timers")
-	timers[id] = timer
-	Database:update(guild,'Timers',timers)
+function timing.save(guild,id,ti)
+	local timers = database:getCached(guild, "Timers")
+	timers[id] = ti
+	database:update(guild,'Timers',timers)
 end
 
-function Timing:delete(guild,id)
-	local data = Database:get(guild,'Timers')
+function timing:delete(guild,id)
+	local data = database:getCached(guild,'Timers')
 	if data then
 		self._timers[id] = nil
 		data[id] = nil
-		Database:update(guild,'Timers',data)
+		database:update(guild,'Timers',data)
 	end
 end
 
-function Timing:newTimer(guild,secs,data,ign)
+function timing:newTimer(guild,secs,data,ign)
 	if type(secs)~='number'then secs = 5 end
 	local ms = secs*1000
 	assert(guild~=nil,'Error 9F2 - guild nil')
@@ -66,7 +68,7 @@ function Timing:newTimer(guild,secs,data,ign)
 	return id
 end
 
-function Timing:endTimer(timerId)
+function timing:endTimer(timerId)
 	if self._timers[timerId]==nil then
 		client:warning('Invalid timerId passed to Timer:endTimer')
 	else
@@ -74,7 +76,7 @@ function Timing:endTimer(timerId)
 	end
 end
 
-function Timing:getTimers(txt)
+function timing:getTimers(txt)
 	local t={}
 	for i,v in pairs(self._timers) do
 		if v.data:find(txt) then
@@ -83,3 +85,5 @@ function Timing:getTimers(txt)
 	end
 	return t
 end
+
+return timing

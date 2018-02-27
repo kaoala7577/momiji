@@ -1,16 +1,16 @@
 --[[ RethinkDB databse interaction adapted from DannehSC/electricity-2.0 ]]
 
+local json = require('json')
 local rethink=require('luvit-reql')
-local conn=rethink:connect(options.database)
-
-Database={
+local conn=rethink:connect(storage.options.database)
+local database={
 	_raw_database=rethink,
 	_conn=conn,
 	cache={},
 	type='rethinkdb',
 }
 
-Database.default = {
+database.default = {
 	Settings = {
 		prefix = "m!",
 		admin_roles = {},
@@ -38,36 +38,36 @@ Database.default = {
 	Hackbans = {},
 }
 
-function Database:get(guild,index) --luacheck: ignore self
+function database:get(guild,index) --luacheck: ignore self
 	local id = resolveGuild(guild)
-	if Database.cache[id] then
-		local cached = Database.cache[id]
+	if database.cache[id] then
+		local cached = database.cache[id]
 		if cached[index]then
 			return cached[index]
 		else
 			return cached
 		end
 	else
-		local data,err = Database._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
+		local data,err = database._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
 		if err then
 			print('GET',err)
 		else
 			local u
 			if data==nil then
-				data = table.deepcopy(Database.default)
+				data = table.deepcopy(database.default)
 				data.id = id
-				Database.cache[id] = data
+				database.cache[id] = data
 				u = true
 			else
 				data.id = id
-				Database.cache[id] = data
-				for i,v in pairs(Database.default) do
+				database.cache[id] = data
+				for i,v in pairs(database.default) do
 					if not data[i] then
 						data[i] = v
 						u = true
 					end
 				end
-				for i,v in pairs(Database.default.Settings) do
+				for i,v in pairs(database.default.Settings) do
 					if not data.Settings[i] then
 						data.Settings[i] = v
 						u = true
@@ -75,26 +75,27 @@ function Database:get(guild,index) --luacheck: ignore self
 				end
 			end
 			if u then
-				Database:update(id)
+				database:update(id)
 			end
 			return data
 		end
 	end
 end
 
-function Database:update(guild,index,value) --luacheck: ignore self
+function database:update(guild,index,value) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided" end
 	local id=resolveGuild(guild)
-	if Database.cache[id] then
+	if database.cache[id] then
 		if index then
-			Database.cache[id][index]=value
+			database.cache[id][index]=value
 		end
-		if not Database.cache[id].id then
-			Database.cache[id].id=id
+		if not database.cache[id].id then
+			database.cache[id].id=id
 		end
-		local data,err,edata=Database._conn.reql().db('momiji').table('guilds').inOrRe(Database.cache[id]).run()
-		logger:log(err and 1 or 4, "GUILD: %s INDEX: %s%s DATA: %s", id, index, err and " ERROR: "..err.."\n" or "", json.encode(data))
+		local data,err,edata=database._conn.reql().db('momiji').table('guilds').inOrRe(database.cache[id]).run()
+		client:debug("GUILD: %s INDEX: %s DATA: %s", id, index, json.encode(data))
 		if err then
+			client:error("GUILD: %s INDEX: %s ERROR: %s\nDATA: %s", id, index, err, json.encode(data))
 			print('UPDATE')
 			print(err)
 			p(edata)
@@ -105,10 +106,10 @@ function Database:update(guild,index,value) --luacheck: ignore self
 	end
 end
 
-function Database:getCached(guild,index) --luacheck: ignore self
+function database:getCached(guild,index) --luacheck: ignore self
 	local id = resolveGuild(guild)
-	if Database.cache[id] then
-		local cached=Database.cache[id]
+	if database.cache[id] then
+		local cached=database.cache[id]
 		if cached[index]then
 			return cached[index]
 		else
@@ -119,11 +120,11 @@ function Database:getCached(guild,index) --luacheck: ignore self
 	end
 end
 
-function Database:delete(guild,index) --luacheck: ignore self
+function database:delete(guild,index) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided"end
 	local id = resolveGuild(guild)
-	if Database.cache[id] then
-		local cached = Database.cache[id]
+	if database.cache[id] then
+		local cached = database.cache[id]
 		if cached[index] then
 			cached[index] = nil
 		elseif cached.Timers[index] then
@@ -132,5 +133,7 @@ function Database:delete(guild,index) --luacheck: ignore self
 			cached.Roles[index] = nil
 		end
 	end
-	Database:Update(guild)
+	database:Update(guild)
 end
+
+return database
