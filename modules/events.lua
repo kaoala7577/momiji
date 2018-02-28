@@ -200,7 +200,6 @@ function events.messageCreate(msg)
 	local private, data
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-	local rank = getRank(sender, not private)
 	if not private then
 		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
 		data = database:getCached(msg)
@@ -220,6 +219,7 @@ function events.messageCreate(msg)
 					msg:reply("This command is not available in private messages.")
 					return
 				end
+				local rank = getRank(sender, not private)
 				if rank>=tab.rank then
 					local args
 					if tab.multi then
