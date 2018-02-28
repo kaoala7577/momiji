@@ -2,7 +2,6 @@
 
 local json = require('json')
 local timer = require("timer")
-local database = modules.database
 local api = modules.api
 local timing = modules.timing
 local events = {}
@@ -10,6 +9,7 @@ local events = {}
 --[[ Guild Events ]]
 
 function events.guildCreate(guild)
+	if not ready then return end
 	api.misc.DBots_Stats_Update({server_count=#client.guilds})
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
 	storage.guildLog:send{embed={
@@ -21,6 +21,7 @@ function events.guildCreate(guild)
 end
 
 function events.guildDelete(guild)
+	if not ready then return end
 	storage.guildLog:send{embed={
 		title = "Left Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
@@ -32,13 +33,14 @@ end
 --[[ Member Events ]]
 
 function events.memberJoin(member)
+	if not ready then return end
 	--Reference Hackban list
-	local hackbans = database:getCached(member, "Hackbans")
+	local hackbans = modules.database:get(member, "Hackbans")
 	if table.search(hackbans, member.id) then
 		return member:ban("Hackban")
 	end
 	--Welcome message
-	local settings = database:getCached(member, "Settings")
+	local settings = modules.database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
@@ -74,14 +76,15 @@ function events.memberJoin(member)
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
 		end
-		local users = database:getCached(member, "Users")
+		local users = modules.database:get(member, "Users")
 		users[member.id] = {nick=member.nickname, roles=roles}
-		database:update(member, "Users", users)
+		modules.database:update(member, "Users", users)
 	end
 end
 
 function events.memberLeave(member)
-	local settings = database:getCached(member, "Settings")
+	if not ready then return end
+	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
 		channel:send {embed={
@@ -94,9 +97,9 @@ function events.memberLeave(member)
 		}}
 	end
 	--kill their entry in the DB
-	local users = database:getCached(member, "Users")
+	local users = modules.database:get(member, "Users")
 	users[member.id] = nil
-	database:update(member, "Users", users)
+	modules.database:update(member, "Users", users)
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
 	--Check if they were kicked
@@ -127,8 +130,9 @@ function events.memberLeave(member)
 end
 
 function events.memberUpdate(member)
-	local users = database:getCached(member, "Users")
-	local settings = database:getCached(member, "Settings")
+	if not ready then return end
+	local users = modules.database:get(member, "Users")
+	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	local newRoles = {}
 	for role in member.roles:iter() do
@@ -177,11 +181,12 @@ function events.memberUpdate(member)
 		else
 			users[member.id] = {nick = member.nickname, roles = newRoles}
 		end
-		database:update(member, "Users", users)
+		modules.database:update(member, "Users", users)
 	end
 end
 
 function events.presenceUpdate(member)
+	if not ready then return end
 	if member.user.bot == true then return end
 	local role = '370395740406546432'
 	if member.guild.id == '348660188951216129' then
@@ -196,15 +201,19 @@ end
 --[[ Message Events ]]
 
 function events.messageCreate(msg)
+	if not ready then
+		if msg.author.id~=client.owner.id then
+			return
+		end
+	end
 	if msg.author.bot then return end
 	local private, data
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-	local rank = getRank(sender, not private)
 	if not private then
-		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
-		data = database:getCached(msg)
-		if data.Ignore[msg.channel.id] and rank<3 then
+		--Load settings for the guild, modules.database.lua keeps a cache of requests to avoid making excessive queries
+		data = modules.database:get(msg)
+		if data.Ignore[msg.channel.id] and sender.id~=client.owner.id then
 			return
 		end
 	end
@@ -220,6 +229,7 @@ function events.messageCreate(msg)
 					msg:reply("This command is not available in private messages.")
 					return
 				end
+				local rank = getRank(sender, not private)
 				if rank>=tab.rank then
 					local args
 					if tab.multi then
@@ -264,6 +274,7 @@ function events.messageCreate(msg)
 end
 
 function events.messageDelete(message)
+	if not ready then return end
 	for i,v in ipairs(storage.bulkDeletes) do
 		if message.id==v then
 			table.remove(storage.bulkDeletes,i)
@@ -272,7 +283,7 @@ function events.messageDelete(message)
 	end
 	local member = message.member or message.guild:getMember(message.author.id) or message.author
 	if message.author.bot then return end
-	local settings = database:getCached(message, "Settings")
+	local settings = modules.database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
 		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n**Content:**\n"..message.content
@@ -292,13 +303,14 @@ function events.messageDelete(message)
 end
 
 function events.messageDeleteUncached(channel, messageID)
+	if not ready then return end
 	for i,v in ipairs(storage.bulkDeletes) do
 		if messageID==v then
 			table.remove(storage.bulkDeletes,i)
 			return
 		end
 	end
-	local settings = database:getCached(channel, "Settings")
+	local settings = modules.database:get(channel, "Settings")
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
@@ -314,11 +326,12 @@ end
 --[[ User Events ]]
 
 function events.userBan(user, guild)
+	if not ready then return end
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
 	--End wait
 	local member = guild:getMember(user) or user
-	local settings = database:getCached(guild, "Settings")
+	local settings = modules.database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		local audit = guild:getAuditLogs({
@@ -339,8 +352,9 @@ function events.userBan(user, guild)
 end
 
 function events.userUnban(user, guild)
+	if not ready then return end
 	local member = guild:getMember(user) or user
-	local settings = database:getCached(guild, "Settings")
+	local settings = modules.database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		channel:send {embed={
@@ -374,7 +388,7 @@ function events.timing(data)
 	elseif args[1]=='UNMUTE' then
 		local g = client:getGuild(args[2])
 		if g then
-			local settings = database:getCached(g, "Settings")
+			local settings = modules.database:get(g, "Settings")
 			local m = g:getMember(args[3])
 			local time = args[4]
 			if m then
@@ -395,6 +409,7 @@ function events.timing(data)
 end
 
 function events.raw(raw)
+	if not ready then return end
 	local payload = json.parse(raw)
 	if payload.t == 'MESSAGE_DELETE_BULK' then
 		storage.bulkDeletes = payload.d.ids or {}
@@ -408,7 +423,7 @@ function events.ready()
 	storage.guildLog = client:getChannel('406115496833056789')
 	timing:on(events.timing)
 	for g in client.guilds:iter() do
-		local data = database:get(g)
+		local data = modules.database:get(g)
 		timing:load(g)
 		local users = data.Users
 		for m in g.members:iter() do
@@ -418,13 +433,14 @@ function events.ready()
 			end
 			users[m.id] = {nick=m.nickname, roles=roles}
 		end
-		database:update(g,"Users",users)
+		modules.database:update(g,"Users",users)
 	end
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
 	})
 	client:info("Logged in as %s", client.user.fullname)
+	ready = true
 end
 
 return events

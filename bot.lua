@@ -20,6 +20,7 @@ local colors = {
 	green = discordia.Color.fromHex('#00ff7f'),
 	altBlue = discordia.Color.fromHex('#7979FF'),
 } -- preset colors
+local ready = false
 
 -- modules adapted from SinisterRectus/Luna
 local env = setmetatable({
@@ -31,7 +32,8 @@ local env = setmetatable({
 	uptime = uptime,
 	clock = clock,
 	storage = storage,
-	colors = colors
+	colors = colors,
+	ready = ready
 }, {__index = _G})
 
 local utils = {}
