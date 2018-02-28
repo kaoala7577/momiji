@@ -2,7 +2,6 @@
 
 local json = require('json')
 local timer = require("timer")
-local database = modules.database
 local api = modules.api
 local timing = modules.timing
 local events = {}
@@ -33,12 +32,12 @@ end
 
 function events.memberJoin(member)
 	--Reference Hackban list
-	local hackbans = database:get(member, "Hackbans")
+	local hackbans = modules.database:get(member, "Hackbans")
 	if table.search(hackbans, member.id) then
 		return member:ban("Hackban")
 	end
 	--Welcome message
-	local settings = database:get(member, "Settings")
+	local settings = modules.database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
 		local channel = member.guild:getChannel(settings['welcome_channel'])
@@ -74,14 +73,14 @@ function events.memberJoin(member)
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
 		end
-		local users = database:get(member, "Users")
+		local users = modules.database:get(member, "Users")
 		users[member.id] = {nick=member.nickname, roles=roles}
-		database:update(member, "Users", users)
+		modules.database:update(member, "Users", users)
 	end
 end
 
 function events.memberLeave(member)
-	local settings = database:get(member, "Settings")
+	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
 		channel:send {embed={
@@ -94,9 +93,9 @@ function events.memberLeave(member)
 		}}
 	end
 	--kill their entry in the DB
-	local users = database:get(member, "Users")
+	local users = modules.database:get(member, "Users")
 	users[member.id] = nil
-	database:update(member, "Users", users)
+	modules.database:update(member, "Users", users)
 	--Wait a few seconds for the audit log to populate
 	timer.sleep(3*1000)
 	--Check if they were kicked
@@ -127,8 +126,8 @@ function events.memberLeave(member)
 end
 
 function events.memberUpdate(member)
-	local users = database:get(member, "Users")
-	local settings = database:get(member, "Settings")
+	local users = modules.database:get(member, "Users")
+	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
 	local newRoles = {}
 	for role in member.roles:iter() do
@@ -177,7 +176,7 @@ function events.memberUpdate(member)
 		else
 			users[member.id] = {nick = member.nickname, roles = newRoles}
 		end
-		database:update(member, "Users", users)
+		modules.database:update(member, "Users", users)
 	end
 end
 
@@ -201,8 +200,8 @@ function events.messageCreate(msg)
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
 	if not private then
-		--Load settings for the guild, database.lua keeps a cache of requests to avoid making excessive queries
-		data = database:get(msg)
+		--Load settings for the guild, modules.database.lua keeps a cache of requests to avoid making excessive queries
+		data = modules.database:get(msg)
 		if data.Ignore[msg.channel.id] and sender.id~=client.owner.id then
 			return
 		end
@@ -272,7 +271,7 @@ function events.messageDelete(message)
 	end
 	local member = message.member or message.guild:getMember(message.author.id) or message.author
 	if message.author.bot then return end
-	local settings = database:get(message, "Settings")
+	local settings = modules.database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
 		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n**Content:**\n"..message.content
@@ -298,7 +297,7 @@ function events.messageDeleteUncached(channel, messageID)
 			return
 		end
 	end
-	local settings = database:get(channel, "Settings")
+	local settings = modules.database:get(channel, "Settings")
 	local logChannel = channel.guild:getChannel(settings.audit_channel)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
@@ -318,7 +317,7 @@ function events.userBan(user, guild)
 	timer.sleep(3*1000)
 	--End wait
 	local member = guild:getMember(user) or user
-	local settings = database:get(guild, "Settings")
+	local settings = modules.database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		local audit = guild:getAuditLogs({
@@ -340,7 +339,7 @@ end
 
 function events.userUnban(user, guild)
 	local member = guild:getMember(user) or user
-	local settings = database:get(guild, "Settings")
+	local settings = modules.database:get(guild, "Settings")
 	local channel = guild:getChannel(settings.modlog_channel)
 	if channel and member and settings.modlog then
 		channel:send {embed={
@@ -374,7 +373,7 @@ function events.timing(data)
 	elseif args[1]=='UNMUTE' then
 		local g = client:getGuild(args[2])
 		if g then
-			local settings = database:get(g, "Settings")
+			local settings = modules.database:get(g, "Settings")
 			local m = g:getMember(args[3])
 			local time = args[4]
 			if m then
@@ -408,7 +407,7 @@ function events.ready()
 	storage.guildLog = client:getChannel('406115496833056789')
 	timing:on(events.timing)
 	for g in client.guilds:iter() do
-		local data = database:get(g)
+		local data = modules.database:get(g)
 		timing:load(g)
 		local users = data.Users
 		for m in g.members:iter() do
@@ -418,7 +417,7 @@ function events.ready()
 			end
 			users[m.id] = {nick=m.nickname, roles=roles}
 		end
-		database:update(g,"Users",users)
+		modules.database:update(g,"Users",users)
 	end
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
