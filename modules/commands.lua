@@ -1438,6 +1438,7 @@ addCommand('Restart', 'Restart the bot', 'restart', '[true|false]', 4, false, fa
 	if args=="" then args="true" end
 	message:reply("Restarting bot script...")
 	client:setStatus("invisible")
+	client:setGame(nil)
 	client:stop()
 	if args == 'true' then
 		os.exit()
