@@ -1168,7 +1168,7 @@ end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
 	local ignores, settings = database:get(message, 'Ignore'), database:get(message, 'Settings')
-	local digit = tonumber(args:match('%d'))
+	local digit = tonumber(args:match('^%d$'))
 	if digit then
 		if digit>=0 and digit<=4 then
 			settings.ignore_level = digit
@@ -1176,6 +1176,12 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 			database:update(message, "Settings", settings)
 		end
 		return
+	end
+	if args=='list' then
+		message:reply{embed={
+			title = "Ignored Channels",
+			description = table.concat(ignores, '\n'),
+		}}
 	end
 	local channel = resolveChannel(message.guild, args)
 	if channel and not ignores[channel.id] then
