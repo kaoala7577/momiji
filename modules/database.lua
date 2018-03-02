@@ -38,36 +38,36 @@ database.default = {
 	Hackbans = {},
 }
 
-function database:get(guild,index) --luacheck: ignore self
+function database:get(guild,index)
 	local id = resolveGuild(guild)
-	if database.cache[id] then
-		local cached = database.cache[id]
+	if self.cache[id] then
+		local cached = self.cache[id]
 		if cached[index]then
 			return cached[index]
 		else
 			return cached
 		end
 	else
-		local data,err = database._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
+		local data,err = self._conn.reql().db('momiji').table('guilds').get(tostring(id)).run()
 		if err then
 			print('GET',err)
 		else
 			local u
 			if data==nil then
-				data = table.deepcopy(database.default)
+				data = table.deepcopy(self.default)
 				data.id = id
-				database.cache[id] = data
+				self.cache[id] = data
 				u = true
 			else
 				data.id = id
-				database.cache[id] = data
-				for i,v in pairs(database.default) do
+				self.cache[id] = data
+				for i,v in pairs(self.default) do
 					if not data[i] then
 						data[i] = v
 						u = true
 					end
 				end
-				for i,v in pairs(database.default.Settings) do
+				for i,v in pairs(self.default.Settings) do
 					if not data.Settings[i] then
 						data.Settings[i] = v
 						u = true
@@ -75,7 +75,7 @@ function database:get(guild,index) --luacheck: ignore self
 				end
 			end
 			if u then
-				database:update(id)
+				self:update(id)
 			end
 			return data
 		end
@@ -85,14 +85,14 @@ end
 function database:update(guild,index,value) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided" end
 	local id=resolveGuild(guild)
-	if database.cache[id] then
+	if self.cache[id] then
 		if index then
-			database.cache[id][index]=value
+			self.cache[id][index]=value
 		end
-		if not database.cache[id].id then
-			database.cache[id].id=id
+		if not self.cache[id].id then
+			self.cache[id].id=id
 		end
-		local data,err,edata=database._conn.reql().db('momiji').table('guilds').inOrRe(database.cache[id]).run()
+		local data,err,edata=self._conn.reql().db('momiji').table('guilds').inOrRe(self.cache[id]).run()
 		client:debug("GUILD: %s INDEX: %s DATA: %s", id, index, json.encode(data))
 		if err then
 			client:error("GUILD: %s INDEX: %s ERROR: %s\nDATA: %s", id, index, err, json.encode(data))
@@ -108,8 +108,8 @@ end
 
 function database:getCached(guild,index) --luacheck: ignore self
 	local id = resolveGuild(guild)
-	if database.cache[id] then
-		local cached=database.cache[id]
+	if self.cache[id] then
+		local cached=self.cache[id]
 		if cached[index]then
 			return cached[index]
 		else
@@ -123,8 +123,8 @@ end
 function database:delete(guild,index) --luacheck: ignore self
 	if not guild then error"No ID/Guild/Message provided"end
 	local id = resolveGuild(guild)
-	if database.cache[id] then
-		local cached = database.cache[id]
+	if self.cache[id] then
+		local cached = self.cache[id]
 		if cached[index] then
 			cached[index] = nil
 		elseif cached.Timers[index] then
@@ -133,7 +133,7 @@ function database:delete(guild,index) --luacheck: ignore self
 			cached.Roles[index] = nil
 		end
 	end
-	database:Update(guild)
+	self:update(guild)
 end
 
 return database
