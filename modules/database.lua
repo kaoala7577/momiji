@@ -28,6 +28,7 @@ database.default = {
 		autorole = false,
 		autoroles = {},
 		mute_setup = false,
+		ignore_level = 3,
 	},
 	Roles = {},
 	Notes = {},
@@ -93,7 +94,7 @@ function database:update(guild,index,value) --luacheck: ignore self
 			self.cache[id].id=id
 		end
 		local data,err,edata=self._conn.reql().db('momiji').table('guilds').inOrRe(self.cache[id]).run()
-		client:debug("GUILD: %s INDEX: %s DATA: %s", id, index, json.encode(data))
+		client:info("GUILD: %s INDEX: %s DATA: %s", id, index, json.encode(data))
 		if err then
 			client:error("GUILD: %s INDEX: %s ERROR: %s\nDATA: %s", id, index, err, json.encode(data))
 			print('UPDATE')
