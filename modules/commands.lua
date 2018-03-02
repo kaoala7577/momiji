@@ -1167,7 +1167,16 @@ addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'
 end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, true, function(message, args)
-	local ignores = database:get(message, 'Ignore')
+	local ignores, settings = database:get(message, 'Ignore'), database:get(message, 'Settings')
+	local digit = tonumber(args:match('%d'))
+	if digit then
+		if digit>=0 and digit <=4 then
+			settings.ignore_level = digit
+			message.channel:sendf("Ignore level set to %s.", digit)
+			database:update(message, "Settings", settings)
+		end
+		return
+	end
 	local channel = resolveChannel(message.guild, args)
 	if channel and not ignores[channel.id] then
 		ignores[channel.id] = true
