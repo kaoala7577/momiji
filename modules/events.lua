@@ -10,7 +10,7 @@ local events = {}
 
 function events.guildCreate(guild)
 	if not ready then return end
-	api.misc.DBots_Stats_Update({server_count=#client.guilds})
+	modules.database:get(guild)
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
 	storage.guildLog:send{embed={
 		title = "Joined Guild",
