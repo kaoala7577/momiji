@@ -7,7 +7,7 @@ discordia.extensions() --load extensions
 local enums = discordia.enums -- load enumerations
 local client = discordia.Client({
 	cacheAllMembers = true,
-	logLevel = enums.logLevel.debug,
+	logLevel = enums.logLevel.info,
 }) -- create client
 local modules = {}
 local uptime = discordia.Stopwatch() -- stopwatch to count uptime

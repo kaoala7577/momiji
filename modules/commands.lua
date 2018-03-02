@@ -1170,7 +1170,7 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	local ignores, settings = database:get(message, 'Ignore'), database:get(message, 'Settings')
 	local digit = tonumber(args:match('%d'))
 	if digit then
-		if digit>=0 and digit <=4 then
+		if digit>=0 and digit<=4 then
 			settings.ignore_level = digit
 			message.channel:sendf("Ignore level set to %s.", digit)
 			database:update(message, "Settings", settings)
