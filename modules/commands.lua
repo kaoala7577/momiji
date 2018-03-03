@@ -1184,7 +1184,7 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	else
 		local r,c
 		for k,v in pairs(ignores) do
-			c = client:getChanne(k)
+			c = client:getChannel(k)
 			if not c then
 				ignores[k] = nil
 			else
