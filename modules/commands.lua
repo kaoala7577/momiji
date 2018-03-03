@@ -1182,9 +1182,14 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	elseif channel then
 		ignores[channel.id] = nil
 	else
-		local r
+		local r,c
 		for k,v in pairs(ignores) do
-			r = string.format(r and r.."%s" or "".."%s\n",v and client:getChannel(k).mentionString or k)
+			c = client:getChanne(k)
+			if not c then
+				ignores[k] = nil
+			else
+				r = string.format(r and r.."%s" or "".."%s\n",v and c.mentionString)
+			end
 		end
 		message:reply(r)
 		return
