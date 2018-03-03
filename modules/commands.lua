@@ -1184,13 +1184,15 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	else
 		local r
 		for k,v in pairs(ignores) do
-			r = string.format(r and r.."%s" or "".."%s",v and client:getChannel(k).mentionString.."\n")
+			r = string.format(r and r.."%s" or "".."%s",v and client:getChannel(k).mentionString.."\n" or k.."\n")
 		end
 		message:reply(r)
 		return
 	end
-	message.channel:sendf("I will %s for commands in %s",ignores[channel.id] and "no longer listen" or "now listen",channel.mentionString)
-	database:update(message, 'Ignore', ignores)
+	if channel then
+		message.channel:sendf("I will %s for commands in %s",ignores[channel.id] and "no longer listen" or "now listen",channel.mentionString)
+		database:update(message, 'Ignore', ignores)
+	end
 end)
 
 addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, '<roleName>, [category], [aliases]', 2, true, true, function(message, args)
