@@ -210,6 +210,15 @@ function functions.resolveCommand(str, pre)
 	return command, rest
 end
 
+function functions.getSwitches(str)
+    local t={}
+	t.rest = str:match("^([^/]*)/?"):trim()
+    for switch, arg in str:gmatch("/%s*(%S*)%s*([^/]*)")do
+        t[switch]=arg:trim()
+    end
+    return t
+end
+
 function functions.dispatcher(name, ...)
 	local b,e,n,g = checkArgs({'string'}, {name})
 	if not b then

@@ -235,6 +235,8 @@ function events.messageCreate(msg)
 					if tab.multi then
 						args = string.split(rest, ',')
 						for i,v in ipairs(args) do args[i]=v:trim() end
+					elseif tab.switches then
+						args = getSwitches(rest)
 					else
 						args = rest
 					end
