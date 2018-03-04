@@ -692,35 +692,41 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo',
 	end
 end)
 
---TODO check if member is muted already
-addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, false, false, true, function(message, args)
+--TODO check if member is muted already, use switches
+addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> /t time /r reason', 1, false, true, true, function(message, args)
 	local settings, cases = database:get(message, "Settings"), database:get(message, "Cases")
 	if not settings.mute_setup then
-		message:reply("Mute cannot be used until `setup` has been run.")
-		return
+		return message:reply("Mute cannot be used until `setup` has been run.")
 	end
-	local member = resolveMember(message.guild, args)
-	args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim():split(" ")
-	local time = args[1]
-	local t = timeBetween(parseTime(time))
-	local t2 = t:toTableUTC()
-	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
-		if type(v)=='number' then
-			local val = t2[k]-v
-			t2[k] = val~=0 and val or nil
-		else
-			t2[k] = nil
-		end
-	end
-	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
+	local member = resolveMember(message.guild, args.rest)
 	if member then
-		timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,strTime))
+		local time
+		if args.t then
+			local t = timeBetween(parseTime(args.t))
+			local t2 = t:toTableUTC()
+			for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
+				if type(v)=='number' then
+					local val = t2[k]-v
+					t2[k] = val~=0 and val or nil
+				else
+					t2[k] = nil
+				end
+			end
+			local parsedTime = t:toSeconds()
+			time = prettyTime(t2)
+			timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,time))
+		end
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
-		if not member:addRole(role) then return end
+		if not member:hasRole(role) then
+			if not member:addRole(role) then
+				return message:reply("Unable to mute. Please check permissions and role positions.")
+			end
+		else
+			return message:reply("Member already muted.")
+		end
 		message.channel:sendf("Muting %s", member.mentionString)
 		if settings.modlog then
-			local r = table.concat(table.slice(args, strTime=="" and 1 or 2), " ")
-			local reason = r~="" and r or "None"
+			local reason = args.r or "None"
 			if cases==nil or cases[member.id]==nil then
 				cases[member.id] = {}
 				table.insert(cases[member.id], {type="mute", reason=reason, moderator=message.author.id, timestamp=discordia.Date():toISO()})
@@ -733,7 +739,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [time] [reason]', 1, 
 					{name = "User", value = member.mentionString.."\n"..member.fullname, inline = true},
 					{name = "Moderator", value = message.author.mentionString.."\n"..message.author.fullname, inline = true},
 					{name = "Reason", value = reason, inline = true},
-					{name = "Duration", value = strTime~="" and strTime or "Indefinite", inline = true},
+					{name = "Duration", value = time or "Indefinite", inline = true},
 				},
 			}}
 		end
@@ -751,7 +757,13 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, fal
 	local member = resolveMember(message.guild, args)
 	if member then
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
-		if not member:removeRole(role) then return end
+		if member:hasRole(role) then
+			if not member:removeRole(role) then
+				return message:reply("Unable to unmute. Please check permissions and role positions.")
+			end
+		else
+			return message:reply("Member is not muted.")
+		end
 		message.channel:sendf("Unmuting %s", member.mentionString)
 		if settings.modlog then
 			message.guild:getChannel(settings.modlog_channel):send{embed={
