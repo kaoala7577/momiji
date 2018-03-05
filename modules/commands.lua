@@ -695,6 +695,14 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 	end
 	local member = resolveMember(message.guild, args.rest)
 	if member then
+		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
+		if not member:hasRole(role) then
+			if not member:addRole(role) then
+				return message:reply("Unable to mute. Please check permissions and role positions.")
+			end
+		else
+			return message:reply("Member already muted.")
+		end
 		local time
 		if args.t then
 			local t = timeBetween(parseTime(args.t))
@@ -710,14 +718,6 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 			local parsedTime = t:toSeconds()
 			time = prettyTime(t2)
 			timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,member.id,time))
-		end
-		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
-		if not member:hasRole(role) then
-			if not member:addRole(role) then
-				return message:reply("Unable to mute. Please check permissions and role positions.")
-			end
-		else
-			return message:reply("Member already muted.")
 		end
 		message.channel:sendf("Muting %s", member.mentionString)
 		if settings.modlog then
