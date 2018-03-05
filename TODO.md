@@ -1,7 +1,5 @@
 # High Priority
 * Warn command
-* Cases
-* Modinfo to use Cases
 # Low Priority
 * Modular Logging / Command options
 * Temp message channel

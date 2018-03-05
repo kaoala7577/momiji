@@ -553,7 +553,8 @@ end)
 
 --TODO add timezone ability
 addCommand('Time', 'Get the current time', 'time', '', 0, false, false, false, function(message)
-	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
+	local time = discordia.Date()
+	message:reply(humanReadableTime(time:toTableUTC()).." UTC")
 end)
 
 addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<search term>', 0, false, false, false, function(message, args)
@@ -663,7 +664,6 @@ end)
 
 --[[ Rank 1 Commands ]]
 
---TODO: Make Case list output pretty
 addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo', 'minfo'}, '<@user|userID>', 1, false, false, true, function(message, args)
 	local m = resolveMember(message.guild, args)
 	if m then
@@ -674,18 +674,13 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo',
 			local caseList = {}
 			if cases[m.id] then
 				for i,case in ipairs(cases[m.id]) do
-					local o = ""
-					for k,v in pairs(case) do
-						o = o.."**"..k.."**: "..v.."\n"
-					end
-					table.insert(caseList, {name = "Case "..tostring(i), value = o, inline = true})
+					table.insert(caseList, {name = string.format("Case %d: %s",i,case.type), value = string.format("**Reason:** %s\n**Moderator:** %s\n**Time:** %s", case.reason, case.moderator, humanReadableTime(discordia.Date.fromISO(case.timestamp):toTableUTC())), inline = true})
 				end
 			end
 			table.insert(caseList, 1, {name = "Watchlisted", value = watchlisted, inline = false})
 			message:reply {embed={
 				author = {name = m.username.."#"..m.discriminator, icon_url = m.avatarURL},
 				fields = caseList,
-				thumbnail = {url = m.avatarURL, height = 200, width = 200},
 				color = m:getColor().value,
 				timestamp = discordia.Date():toISO()
 			}}
