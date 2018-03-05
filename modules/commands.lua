@@ -294,7 +294,7 @@ addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, fa
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
-addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '/v reminder text /t time', 0, false, true, false, function(message, args)
+addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '</v reminder text> </t time>', 0, false, true, false, function(message, args)
 	local reminder, time = args.v, args.t
 	local t = timeBetween(parseTime(time))
 	local t2 = t:toTableUTC()
@@ -551,6 +551,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 	}
 end)
 
+--TODO add timezone ability
 addCommand('Time', 'Get the current time', 'time', '', 0, false, false, false, function(message)
 	message:reply(humanReadableTime(discordia.Date():toTableUTC()).." UTC")
 end)
@@ -622,7 +623,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 	end
 end)
 
-addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country>', 0, false, false, false, function(message, args)
+addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country> | <zipcode> | <id>', 0, false, false, false, function(message, args)
 	local data, err = api.misc.Weather(args)
 	if data then
 		if data.cod~=200 then
@@ -692,8 +693,7 @@ addCommand('Mod Info', "Get mod-related information on a user", {'mi','modinfo',
 	end
 end)
 
---TODO check if member is muted already, use switches
-addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> /t time /r reason', 1, false, true, true, function(message, args)
+addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]', 1, false, true, true, function(message, args)
 	local settings, cases = database:get(message, "Settings"), database:get(message, "Cases")
 	if not settings.mute_setup then
 		return message:reply("Mute cannot be used until `setup` has been run.")
@@ -747,7 +747,6 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> /t time /r reason', 1
 	database:update(message, "Cases", cases)
 end)
 
---TODO check if member is muted before unmuting
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, false, true, function(message, args)
 	local settings = database:get(message, "Settings")
 	if not settings.mute_setup then
@@ -1021,7 +1020,7 @@ end)
 
 --[[ Rank 2 Commands ]]
 
-addCommand('Config', 'Update configuration for the current guild', 'config', 'section /o operation /v value', 2, false, true, true, function(message, args)
+addCommand('Config', 'Update configuration for the current guild', 'config', 'section </o operation> [/v value]', 2, false, true, true, function(message, args)
 	local settings = database:get(message, "Settings")
 	local switches = {
 		roles = {'admin', 'mod'},
@@ -1217,7 +1216,7 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 	end
 end)
 
-addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, 'roleName /c category /a aliases', 2, false, true, true, function(message, args)
+addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, 'roleName [/c category] [/a aliases]', 2, false, true, true, function(message, args)
 	local roles = database:get(message, "Roles")
 	local r = resolveRole(message.guild, args.rest)
 	if r then
@@ -1267,7 +1266,7 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 	database:update(message, "Roles", roles)
 end)
 
-addCommand('Prune', 'Bulk deletes messages', 'prune', '<count>', 2, false, false, true, function(message, args)
+addCommand('Prune', 'Bulk deletes messages', 'prune', '<count> [filter]', 2, false, false, true, function(message, args)
 	local settings = database:get(message, "Settings")
 	local author = message.member or message.guild:getMember(message.author.id)
 	local guild,channel=message.guild,message.channel
@@ -1360,7 +1359,7 @@ end)
 
 --[[ Rank 4 Commands ]]
 
-addCommand('Git', 'Run a git command', 'git', '<storage.options>', 4, false, false, false, function(message, args)
+addCommand('Git', 'Run a git command', 'git', '<option>', 4, false, false, false, function(message, args)
 	local com
 	if args=='pull' then
 		com = "pull origin master"
