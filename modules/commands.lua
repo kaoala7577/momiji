@@ -709,7 +709,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 			end
 			local parsedTime = t:toSeconds()
 			time = prettyTime(t2)
-			timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,message.author.id,time))
+			timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,member.id,time))
 		end
 		local role = message.guild.roles:find(function(r) return r.name == 'Muted' end)
 		if not member:hasRole(role) then
