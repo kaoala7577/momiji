@@ -12,6 +12,7 @@ local client = discordia.Client({
 local modules = {}
 local uptime = discordia.Stopwatch() -- stopwatch to count uptime
 local clock = discordia.Clock() -- clock emitter
+clock:start(true)
 local storage = discordia.storage
 storage.bulkDeletes = {} -- initalize storage table and bulkDeletes
 storage.options = json.parse(fs.readFileSync('options.json')) -- Static config file containing key-value pairs
