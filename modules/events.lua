@@ -299,7 +299,7 @@ function events.messageDelete(message)
 			description = body,
 			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
+			footer = {text = "ID: "..message.id}
 		}}
 	end
 end
