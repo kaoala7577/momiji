@@ -1,4 +1,3 @@
-local database = modules.database
 local api = modules.api
 local clocks = {}
 
@@ -25,7 +24,7 @@ function clocks.min(time)
 	end
 	--Auto-remove Cooldown
 	for name,guild in pairs(guilds) do
-		local users = database:get(guild, "Users")
+		local users = modules.database:get(guild, "Users")
 		for member in guild.members:iter() do
 			if member:hasRole(roles[name].cooldown) then
 				if users[member.id] then

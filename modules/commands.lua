@@ -1228,13 +1228,13 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, 'role
 				[r.name] = {}
 			}
 		end
-		local aliases = args.a:split(",%s*")
-		if aliases~={} then
+		local aliases = args.a and args.a:split(",%s*") or {}
+		if type(aliases)=='table' then
 			for _,v in ipairs(aliases) do
 				table.insert(roles[cat][r.name], string.lower(v))
 			end
 		end
-		if table.concat(aliases,', ')=='' then
+		if next(aliases)==nil then
 			message:reply("Added "..r.name.." to "..cat)
 		else
 			message:reply("Added "..r.name.." to "..cat.." with aliases "..table.concat(aliases,', '))
