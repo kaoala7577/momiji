@@ -207,13 +207,14 @@ function events.messageCreate(msg)
 		end
 	end
 	if msg.author.bot then return end
-	local private, data
+	local private
+	local data = {}
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
 	local rank = getRank(sender, not private)
 	if not private then
 		--Load settings for the guild, modules.database.lua keeps a cache of requests to avoid making excessive queries
-		data = modules.database:get(msg)
+		data.Settings, data.Ignore = modules.database:get(msg, "Settings"), modules.database:get(msg, "Ignore")
 		if data.Ignore[msg.channel.id] and rank<data.Settings.ignore_level then
 			return
 		end

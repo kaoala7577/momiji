@@ -1148,8 +1148,8 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 	end
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
+		database:update(message, "Settings", settings)
 	end
-	database:update(message, "Settings", settings)
 end)
 
 addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'}, '<userID>', 2, false, false, true, function(message, args)
