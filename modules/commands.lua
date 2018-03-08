@@ -278,6 +278,7 @@ addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni','nerdyinfo'}, '', 0, f
 			{name = 'CPU Threads:', value = ts(threads)},
 			{name = 'CPU Model:', value = ts(cpumodel)},
 			{name = 'Memory usage:', value = ts(mem)..' MB'},
+			{name = 'Uptime', value = uptime:getTime():toSeconds().." s"}
 		},
 	}}
 end)

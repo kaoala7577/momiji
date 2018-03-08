@@ -444,6 +444,7 @@ function events.ready()
 	})
 	client:info("Logged in as %s", client.user.fullname)
 	ready = true
+	uptime:start()
 end
 
 return events
