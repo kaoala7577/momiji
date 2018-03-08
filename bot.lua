@@ -25,6 +25,7 @@ local colors = {
 local ready = false
 
 -- modules adapted from SinisterRectus/Luna
+-- Create the environment for modules
 local env = setmetatable({
 	require = require, --luvit custom require
 	discordia = discordia,
@@ -40,6 +41,7 @@ local env = setmetatable({
 
 local utils = {}
 
+-- These should be self-explanatory
 function utils.loadModule(path, silent)
 	local name = table.remove(pathjoin.splitPath(path)):gsub(".lua","")
 	local success, err = pcall(function()
@@ -81,6 +83,7 @@ end
 
 storage.utils = utils
 
+-- Wrapped because luvit-reql prefers coroutines
 coroutine.wrap(function()
 	-- Load Modules
 	-- These need to be loaded in a specific order

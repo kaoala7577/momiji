@@ -1,6 +1,7 @@
 --[[ Several functions adapted from DannehSC/Electricity-2.0 ]]
 local functions = {}
 
+--Type checking function, useful when strict typing is needed
 function functions.checkArgs(types, vals)
 	for i,v in ipairs(types) do
 		if type(v)=='table' then
@@ -22,6 +23,7 @@ function functions.checkArgs(types, vals)
 	return true,'',#vals
 end
 
+--Given a member and a guild (or false/nil), get the rank of the member
 function functions.getRank(member, server)
 	if not member then return 0 end
 	local rank = 0
@@ -47,6 +49,7 @@ function functions.getRank(member, server)
 	return rank
 end
 
+-- This is shit, please fix
 function functions.humanReadableTime(table)
 	days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
 	months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
@@ -55,10 +58,12 @@ function functions.humanReadableTime(table)
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
+-- Takes a (hopefully) ISO date string and turns it into a Date object, if not ISO formatted, returns the input
 function functions.parseISOTime(time)
 	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
 end
 
+-- Takes a string and attempts to build a time out from the current based on the input (i.e. 5m 20 seconds will build an Date object that time in the future)
 function functions.parseTime(message)
 	local t = discordia.Date():toTableUTC()
 	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
@@ -82,10 +87,12 @@ function functions.parseTime(message)
 	return discordia.Date.fromTableUTC(t)
 end
 
+-- Takes a Date object and returns a new Date object representing the time between the given one and the current
 function functions.timeBetween(time)
 	return discordia.Date.fromSeconds(math.abs(time:toSeconds()-discordia.Date():toSeconds()))
 end
 
+-- Given a Lua date time table, create a string with the values and keys
 function functions.prettyTime(t)
 	local out = ""
 	for k,v in pairsByKeys(t) do
@@ -98,11 +105,13 @@ function functions.prettyTime(t)
 	return out
 end
 
+-- Tries to find a Discord snowflake in the given string, returning it if one is found. returns nil on failure
 function functions.getIdFromString(str)
 	local d = string.match(tostring(str),"<?[@#]?!?(%d+)>?")
 	if d and #d>=17 then return d else return end
 end
 
+-- attemps to resolve a guild known to the client from a provided object or ID. Do not rely on  this
 function functions.resolveGuild(guild)
 	local ts=tostring
 	if not guild then error"No ID/Guild/Message provided" end
@@ -120,6 +129,7 @@ function functions.resolveGuild(guild)
 	return id,guild
 end
 
+-- Resolves a channel object given a guild and a string. Will match with ID or name
 function functions.resolveChannel(guild,name)
 	local this=getIdFromString(name)
 	local c
@@ -133,6 +143,7 @@ function functions.resolveChannel(guild,name)
 	return c
 end
 
+-- Resolves a member object given a guild and a string. Will match with ID or name
 function functions.resolveMember(guild,name)
 	local this = getIdFromString(name)
 	local m
@@ -146,6 +157,7 @@ function functions.resolveMember(guild,name)
 	return m
 end
 
+-- Resolves a role object given a guild and a string. Will match with ID or name
 function functions.resolveRole(guild,name)
 	local this = getIdFromString(name)
 	local r
@@ -159,11 +171,13 @@ function functions.resolveRole(guild,name)
 	return r
 end
 
+-- Used in message formatting, purely matches "$type:(capture)" and returns the capture group
 function functions.getFormatType(str)
 	local type = str:match("$type:(%S*)")
 	return type
 end
 
+-- Searches a string for known replacements and replaces them
 function functions.formatMessageSimple(str, member)
 	for word in string.gmatch(str, "{%S+}") do
 		if word:lower()=='{user}' then
@@ -175,6 +189,7 @@ function functions.formatMessageSimple(str, member)
 	return str
 end
 
+-- Converts a string into an embed table
 function functions.formatMessageEmbed(str, member)
 	local embed = {}
 	for word in string.gmatch(str, "$[^$]*") do
@@ -199,6 +214,7 @@ function functions.formatMessageEmbed(str, member)
 	return embed
 end
 
+-- Black magic fuckery. Don't mess with this or everything breaks
 function functions.resolveCommand(str, pre)
 	local prefix = pre or "m!"
 	local command,rest
@@ -210,6 +226,7 @@ function functions.resolveCommand(str, pre)
 	return command, rest
 end
 
+-- Also black magic fuckery, but I vaguely understand how this works
 function functions.getSwitches(str)
     local t={}
 	t.rest = str:match("^([^/]*)/?"):trim()
@@ -219,6 +236,7 @@ function functions.getSwitches(str)
     return t
 end
 
+-- Used to wrap and post errors in all events
 function functions.dispatcher(name, ...)
 	local b,e,n,g = checkArgs({'string'}, {name})
 	if not b then
@@ -256,6 +274,7 @@ function functions.registerAllEvents()
 	end
 end
 
+-- Traverses a table and returns an iterator sorted by keys
 function functions.pairsByKeys (t, f)
 	local a = {}
 	for n in pairs(t) do table.insert(a, n) end
@@ -272,6 +291,7 @@ function functions.pairsByKeys (t, f)
 	return iter
 end
 
+-- Load this shit to global fam
 for k,v in pairs(functions) do
 	_G[k] = v
 end
