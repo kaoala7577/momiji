@@ -879,6 +879,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 				else
 					users[member.id].registered = discordia.Date():toISO()
 				end
+				database:update(message, "Users", {})
 				database:update(message, "Users", users)
 			end
 		else
