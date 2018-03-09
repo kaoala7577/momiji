@@ -434,7 +434,12 @@ function events.ready()
 			for role in m.roles:iter() do
 				table.insert(roles, role.id)
 			end
-			users[m.id] = {nick=m.nickname, roles=roles}
+			if not users[m.id] then
+				users[m.id] = {nick=m.nickname, roles=roles}
+			else
+				users[m.id].nick = m.nickname
+				users[m.id].roles = roles
+			end
 		end
 		modules.database:update(g,"Users",users)
 	end
