@@ -874,7 +874,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 						introChannel:send(formatMessageSimple(settings.introduction_message, member))
 					end
 				end
-				if users==nil or users[member.id]==nil then
+				if not users[member.id] then
 					users[member.id] = { registered=discordia.Date():toISO() }
 				else
 					users[member.id].registered = discordia.Date():toISO()
