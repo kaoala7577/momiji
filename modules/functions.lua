@@ -229,13 +229,13 @@ end
 -- Also black magic fuckery, but I vaguely understand how this works
 function functions.getSwitches(str)
     local t = {}
-	str = str:gsub("\\/", ":")
+	str = str:gsub("\\/", "—")
 	t.rest = str:match("^([^/]*)/?"):trim()
     for switch, arg in str:gmatch("/%s*(%S*)%s*([^/]*)")do
         t[switch]=arg:trim()
     end
 	for k,v in pairs(t) do
-		t[k] = v:gsub(":", "/")
+		t[k] = v:gsub("—", "/")
 	end
     return t
 end
