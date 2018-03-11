@@ -514,10 +514,21 @@ addCommand('Roll', 'Roll X N-sided dice', 'roll', '<XdN>', 0, false, false, fals
 	end
 end)
 
-addCommand('Server Info', "Get information on the server", {'serverinfo','si', 'sinfo'}, '[serverID]', 0, false, false, true, function(message, args)
+addCommand('Server Info', "Get information on the server", {'serverinfo','si', 'sinfo'}, '[serverID]', 0, false, true, true, function(message, args)
 	local guild = message.guild
-	if client:getGuild(args) then
-		guild = client:getGuild(args)
+	local g = client:getGuild(args.g)
+	if g then
+		guild = g
+	end
+	if args.roles then
+		local roles = {}
+		for _,r in pairs(guild.roles:toArray("position")) do
+			table.insert(roles, r.name)
+		end
+		return message:reply{embed={
+			title = "Roles for "..guild.name..". Count: "..#guild.roles,
+			description = table.concat(roles, ", ") or "None"
+		}}
 	end
 	local humans, bots, online = 0,0,0
 	for member in guild.members:iter() do
