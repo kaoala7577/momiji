@@ -531,6 +531,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 			if #result[count] < 1950 then
 				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
 			else
+				if not result[count] then result[count] = "" end
 				count = count+1
 				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
 			end
