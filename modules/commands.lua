@@ -295,8 +295,8 @@ addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, fa
 	message:reply("The prefix for "..message.guild.name.." is `"..settings.prefix.."`")
 end)
 
-addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '</v reminder text> </t time>', 0, false, true, false, function(message, args)
-	local reminder, time = args.v, args.t
+addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder text> </t time>', 0, false, true, false, function(message, args)
+	local reminder, time = args.rest, args.t
 	local t = timeBetween(parseTime(time))
 	local t2 = t:toTableUTC()
 	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
