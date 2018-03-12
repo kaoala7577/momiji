@@ -529,11 +529,11 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 		for _,v in ipairs(roles) do
 			if not result[count] then result[count] = "" end
 			if #result[count] < 1950 then
-				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
+				result[count] = result[count]=="" and result[count]..v or result[count]..", "..v
 			else
 				count = count+1
 				result[count] = ""
-				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
+				result[count] = result[count]=="" and result[count]..v or result[count]..", "..v
 			end
 		end
 		message:reply{embed={
