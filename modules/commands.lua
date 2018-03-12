@@ -525,10 +525,28 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 		for _,r in pairs(guild.roles:toArray("position")) do
 			table.insert(roles, r.name)
 		end
-		return message:reply{embed={
+		local result, count = {}, 1
+		for _,v in ipairs(roles) do
+			if not result[count] then result[count] = "" end
+			if #result[count] < 1950 then
+				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
+			else
+				count = count+1
+				result[count] = result[count]=="" and result[count]..v or result[count]..v..", "
+			end
+		end
+		message:reply{embed={
 			title = "Roles for "..guild.name..". Count: "..#guild.roles,
-			description = table.concat(roles, ", ") or "None"
+			description = result[1] or "None"
 		}}
+		for i in pairs(result) do
+			if i>1 then
+				message:reply{embed={
+					description = result[i]
+				}}
+			end
+		end
+		return
 	end
 	local humans, bots, online = 0,0,0
 	for member in guild.members:iter() do
