@@ -179,11 +179,19 @@ end
 
 -- Searches a string for known replacements and replaces them
 function functions.formatMessageSimple(str, member)
-	for word in string.gmatch(str, "{%S+}") do
-		if word:lower()=='{user}' then
-			str = str:gsub(word, member.mentionString)
-		elseif word:lower()=='{guild}' then
-			str = str:gsub(word, member.guild.name)
+	for word, opt in string.gmatch(str, "{(%S+):?(%S*)}") do
+		if word:lower()=='user' then
+			if opt~="" then
+				str = str:gsub(word, member[opt])
+			else
+				str = str:gsub(word, member.mentionString)
+			end
+		elseif word:lower()=='guild' then
+			if opt~="" then
+				str = str:gsub(word, member.guild[opt])
+			else
+				str = str:gsub(word, member.guild.name)
+			end
 		end
 	end
 	return str
