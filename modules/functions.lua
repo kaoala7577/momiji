@@ -260,6 +260,12 @@ function functions.dispatcher(name, ...)
 	end
 end
 
+function functions.sendErrMessage(message)
+	if type(message)=="table" then
+		message:reply("OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!")
+	end
+end
+
 function functions.unregisterAllEvents()
 	if not modules.events then return end
 	for k,_ in pairs(modules.events) do

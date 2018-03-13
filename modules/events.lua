@@ -53,11 +53,16 @@ function events.memberJoin(member)
 		end
 	end
 	--Join message
+	local t = discordia.Date():toSeconds()-discordia.Date.fromISO(member.createdAt):toSeconds()
+	local desc = member.mentionString.."\n"..member.fullname
+	if t<(60*60*24*7) then
+		desc = desc.."\n"..prettyTime(discordia.Date.fromSeconds(t):toTableUTC())
+	end
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
 		channel:send {embed={
 			author = {name = "Member Joined", icon_url = member.avatarURL},
-			description = member.mentionString.."\n"..member.fullname,
+			description = desc,
 			thumbnail = {url = member.avatarURL, height = 200, width = 200},
 			color = colors.green.value,
 			timestamp = discordia.Date():toISO(),
