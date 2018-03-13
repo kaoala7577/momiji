@@ -179,18 +179,18 @@ end
 
 -- Searches a string for known replacements and replaces them
 function functions.formatMessageSimple(str, member)
-	for word, opt in string.gmatch(str, "{(%S+):?(%S*)}") do
+	for word, opt in string.gmatch(str, "{([^:{}]+):?([^:{}]*)}") do
 		if word:lower()=='user' then
 			if opt~="" then
-				str = str:gsub(word, member[opt])
+				str = str:gsub("{[^{}]*}", tostring(member[opt]), 1)
 			else
-				str = str:gsub(word, member.mentionString)
+				str = str:gsub("{[^{}]*}", member.mentionString, 1)
 			end
 		elseif word:lower()=='guild' then
 			if opt~="" then
-				str = str:gsub(word, member.guild[opt])
+				str = str:gsub("{[^{}]*}", tostring(member.guild[opt]), 1)
 			else
-				str = str:gsub(word, member.guild.name)
+				str = str:gsub("{[^{}]*}", member.guild.name, 1)
 			end
 		end
 	end
