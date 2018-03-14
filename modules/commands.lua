@@ -645,8 +645,19 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 	end
 end)
 
-addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country> | <zipcode> | <id>', 0, false, false, false, function(message, args)
-	local data, err = modules.api.misc.Weather(args)
+addCommand('Weather', 'Get weather information on a given city', 'weather', '<city, country> | <zipcode> | <id>', 0, false, true, false, function(message, args)
+	local type, val
+	if args.zip then
+		type = "zip"
+		val = args.zip
+	elseif args.id then
+		type = "id"
+		val = args.id
+	else
+		type = "q"
+		val = args.q or args.rest
+	end
+	local data, err = modules.api.misc.Weather(type, val)
 	if data then
 		if data.cod~=200 then
 			return nil,data.message:sub(0,1):upper()..data.message:sub(2)
