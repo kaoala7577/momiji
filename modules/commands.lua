@@ -52,6 +52,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
 		os.execute("magick montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
+		message.channel:broadcastTyping()
 		fs.exists("final.png", function(err)
 			if not err then
 				message:reply{
@@ -1237,7 +1238,7 @@ addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 
 			if not c then
 				ignores[k] = nil
 			else
-				r = string.format(r and r.."%s" or "".."%s\n",v and c.mentionString)
+				r = string.format(r and r.."%s\n" or "".."%s\n",v and c.mentionString)
 			end
 		end
 		message:reply(r)
