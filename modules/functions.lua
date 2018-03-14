@@ -68,13 +68,7 @@ function functions.parseTime(message)
 	local t = discordia.Date():toTableUTC()
 	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
 		local u = unit:lower()
-		if u:startswith('y') then
-			t.year = t.year+time
-		elseif u:startswith('mo') then
-			t.month = t.month+time
-		elseif u:startswith('w') then
-			t.week = t.week+time
-		elseif u:startswith('d') then
+		if u:startswith('d') then
 			t.day = t.day+time
 		elseif u:startswith('h') then
 			t.hour = t.hour+time
@@ -94,11 +88,14 @@ end
 
 -- Given a Lua date time table, create a string with the values and keys
 function functions.prettyTime(t)
+	local order = {"day", "hour", "minute", "second"}
 	local out = ""
-	for k,v in pairsByKeys(t) do
-		if type(v)=='number' then
-			if v~=0 and k~='wday' and k~='yday' then
-				out = out=="" and tostring(v).." "..k or out..", "..tostring(v).." "..k
+	for _,k in ipairs(order) do
+		if t[k] then
+			if t[k]==1 then
+				out = out~="" and out..", "..t[k].." "..k or t[k].." "..k
+			elseif t[k]~=0 then
+				out = out~="" and out..", "..t[k].."s "..k or t[k].."s "..k
 			end
 		end
 	end
