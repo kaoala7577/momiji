@@ -1101,7 +1101,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 				settings[v] = false
 				operation = "disable"
 			elseif o=='set' then
-				local channel = resolveChannel(message.guild, args[3])
+				local channel = resolveChannel(message.guild, args.v)
 				settings[v..'_channel'] = channel.id or ''
 				operation = "set channel"
 				value = val
