@@ -56,7 +56,7 @@ function events.memberJoin(member)
 	local t = discordia.Date():toSeconds()-discordia.Date.fromISO(member.timestamp):toSeconds()
 	local desc = member.mentionString.."\n"..member.fullname
 	if t<(60*60*24*7) then
-		desc = desc.."\n"..prettyTime(discordia.Date.fromSeconds(t):toTableUTC())
+		desc = desc.."\nCreated "..prettyTime(discordia.Date.fromSeconds(t):toTableUTC()).." ago"
 	end
 	local channel = member.guild:getChannel(settings.audit_channel)
 	if settings.audit and channel then
