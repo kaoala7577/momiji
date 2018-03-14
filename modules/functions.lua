@@ -81,18 +81,22 @@ function functions.parseTime(message)
 	return discordia.Date.fromTableUTC(t)
 end
 
--- Takes a Date object and returns a new Date object representing the time between the given one and the current
+-- Takes a Date object and returns a new Time object representing the time between the given one and the current
 function functions.timeBetween(time)
-	return discordia.Date.parseTableUTC(os.date("!*t"))-time:toSeconds()
+	return discordia.Time.fromSeconds(discordia.Date():toSeconds()-time:toSeconds())
+end
+
+-- Takes a Date object and returns a new Time object representing the time between the given one and the current
+function functions.timeUntil(time)
+	return discordia.Time.fromSeconds(time:toSeconds()-discordia.Date():toSeconds())
 end
 
 -- Given a Lua date time table, create a string with the values and keys
 function functions.prettyTime(t)
-	local order = {day = "day", hour = "hour", min = "minute", sec = "second"}
+	local order = {days = "day", hours = "hour", minutes = "minute", seconds = "second"}
 	local out = ""
 	for k,v in pairsByKeys(order) do
 		if t[k] then
-			t[k] = t[k]>0 and t[k]-1 or t[k]
 			if t[k]==1 then
 				out = out~="" and out..", "..t[k].." "..v or t[k].." "..v
 			elseif t[k]~=0 then

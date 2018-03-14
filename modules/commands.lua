@@ -297,17 +297,8 @@ end)
 
 addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder text> </t time>', 0, false, true, false, function(message, args)
 	local reminder, time = args.rest, args.t
-	local t = timeBetween(parseTime(time))
-	local t2 = t:toTableUTC()
-	for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
-		if type(v)=='number' then
-			local val = t2[k]-v
-			t2[k] = val~=0 and val or nil
-		else
-			t2[k] = nil
-		end
-	end
-	local parsedTime, strTime = t:toSeconds(), prettyTime(t2)
+	local t = timeUntil(parseTime(time))
+	local parsedTime, strTime = t:toSeconds(), prettyTime(t:toTable())
 	if reminder and time then
 		timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
 		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
@@ -738,18 +729,9 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 		end
 		local time
 		if args.t then
-			local t = timeBetween(parseTime(args.t))
-			local t2 = t:toTableUTC()
-			for k,v in pairs(discordia.Date.fromSeconds(0):toTableUTC()) do
-				if type(v)=='number' then
-					local val = t2[k]-v
-					t2[k] = val~=0 and val or nil
-				else
-					t2[k] = nil
-				end
-			end
+			local t = timeUntil(parseTime(args.t))
 			local parsedTime = t:toSeconds()
-			time = prettyTime(t2)
+			time = prettyTime(t:toTable())
 			timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,member.id,time))
 		end
 		message.channel:sendf("Muting %s", member.mentionString)
