@@ -69,13 +69,13 @@ end
 coroutine.wrap(function()
 	-- Load Modules
 	-- These need to be loaded in a specific order
-	utils.loadModule('./modules/functions.lua', env)
-	utils.loadModule('./modules/api.lua', env)
-	utils.loadModule('./modules/clocks.lua', env)
-	utils.loadModule('./modules/database.lua', env)
-	utils.loadModule('./modules/timing.lua', env)
-	utils.loadModule('./modules/events.lua', env)
-	utils.loadModule('./modules/commands.lua', env)
+	loadModule('./modules/functions.lua', env)
+	loadModule('./modules/api.lua', env)
+	loadModule('./modules/clocks.lua', env)
+	loadModule('./modules/database.lua', env)
+	loadModule('./modules/timing.lua', env)
+	loadModule('./modules/events.lua', env)
+	loadModule('./modules/commands.lua', env)
 
 	-- Register Client Events
 	registerAllEvents()

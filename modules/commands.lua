@@ -43,15 +43,30 @@ addCommand('Cat', 'Meow', 'cat', '', 0, false, false, false, function(message)
 end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
+	local fs = require('fs')
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
 		local color,name = ntc.name(hex)
-		message:reply{embed={
-			thumbnail = {url = "http://www.colorhexa.com/"..color:lower()..".png", height = 150, width = 150},
-			description = string.format("**%s**\n%s", name, "#"..color),
-			color = discordia.Color.fromHex(color).value,
-		}}
+		local image1, image2 = "http://www.colorhexa.com/"..hex:lower()..".png", "http://www.colorhexa.com/"..color:lower()..".png"
+		os.execute("wget "..image1)
+		os.execute("wget "..image2)
+		os.execute("magick montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
+		fs.exists("final.png", function(err)
+			if not err then
+				message:reply{
+					file="final.png",
+					embed = {
+						image = { url = "attachment://final.png" },
+						fields = {
+							{ name = "Input Color", value = "#"..hex:upper(), inline = true},
+							{ name = name, value = "#"..color, inline = true},
+						},
+					}
+				}
+				os.execute("rm *.png")
+			end
+		end)
 	else
 		message:reply("Invalid Hex Color")
 	end
