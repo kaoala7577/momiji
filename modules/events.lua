@@ -53,7 +53,7 @@ function events.memberJoin(member)
 		end
 	end
 	--Join message
-	local t = discordia.Date.parseTableUTC(os.date("!*t"))-discordia.Date.parseISO(member.timestamp)
+	local t = timeBetween(discordia.Date.parseISO(member.timestamp))
 	local desc = member.mentionString.."\n"..member.fullname
 	if t<(60*60*24*7) then
 		desc = desc.."\nCreated "..prettyTime(discordia.Date.fromSeconds(t):toTableUTC()).." ago"

@@ -92,6 +92,7 @@ function functions.prettyTime(t)
 	local out = ""
 	for k,v in pairsByKeys(order) do
 		if t[k] then
+			t[k] = t[k]-1
 			if t[k]==1 then
 				out = out~="" and out..", "..t[k].." "..v or t[k].." "..v
 			elseif t[k]~=0 then
