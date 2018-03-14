@@ -1462,7 +1462,6 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 end)
 
 addCommand('Reload', 'Reload a module', 'reload', '<module>', 4, false, false, false, function(message, args)
-	local loadModule, unloadModule = storage.utils.loadModule, storage.utils.unloadModule
 	local loaded = false
 	local path = "./modules/"
 	if args~="" then

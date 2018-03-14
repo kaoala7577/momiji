@@ -39,10 +39,7 @@ local env = setmetatable({
 	ready = ready
 }, {__index = _G})
 
-local utils = {}
-
--- These should be self-explanatory
-function utils.loadModule(path, silent)
+function _G.loadModule(path, silent)
 	local name = table.remove(pathjoin.splitPath(path)):gsub(".lua","")
 	local success, err = pcall(function()
 		local code = assert(fs.readFileSync(path))
@@ -59,7 +56,7 @@ function utils.loadModule(path, silent)
 	end
 end
 
-function utils.unloadModule(name)
+function _G.unloadModule(name)
 	if modules[name] then
 		modules[name] = nil
 		client:info("Module unloaded: %s", name)
@@ -68,32 +65,17 @@ function utils.unloadModule(name)
 	end
 end
 
-function utils.loadModules(path)
-	for k, v in fs.scandirSync(path) do
-		local joined = pathjoin.pathJoin(path, k)
-		if v == 'file' then
-			if k:find('.lua', -4, true) then
-				utils.loadModule(joined)
-			end
-		else
-			utils.loadModules(joined)
-		end
-	end
-end
-
-storage.utils = utils
-
 -- Wrapped because luvit-reql prefers coroutines
 coroutine.wrap(function()
 	-- Load Modules
 	-- These need to be loaded in a specific order
-	utils.loadModule('./modules/functions.lua')
-	utils.loadModule('./modules/api.lua')
-	utils.loadModule('./modules/clocks.lua')
-	utils.loadModule('./modules/database.lua')
-	utils.loadModule('./modules/timing.lua')
-	utils.loadModule('./modules/events.lua')
-	utils.loadModule('./modules/commands.lua')
+	utils.loadModule('./modules/functions.lua', env)
+	utils.loadModule('./modules/api.lua', env)
+	utils.loadModule('./modules/clocks.lua', env)
+	utils.loadModule('./modules/database.lua', env)
+	utils.loadModule('./modules/timing.lua', env)
+	utils.loadModule('./modules/events.lua', env)
+	utils.loadModule('./modules/commands.lua', env)
 
 	-- Register Client Events
 	registerAllEvents()
