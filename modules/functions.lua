@@ -95,7 +95,7 @@ function functions.prettyTime(t)
 			if t[k]==1 then
 				out = out~="" and out..", "..t[k].." "..v or t[k].." "..v
 			elseif t[k]~=0 then
-				out = out~="" and out..", "..t[k].."s "..v or t[k].."s "..v
+				out = out~="" and out..", "..t[k].." "..v.."s" or t[k].." "..v.."s"
 			end
 		end
 	end
