@@ -3,7 +3,6 @@
 local ssl = require('openssl')
 local timer = require("timer")
 local fmt = string.format
-local database = modules.database
 local timing = {
 	_callbacks = {},
 	_timers = {},
@@ -21,7 +20,7 @@ function timing:fire(...)
 end
 
 function timing:load(guild)
-	local timers = database:get(guild, "Timers") or {}
+	local timers = modules.database:get(guild, "Timers") or {}
 	for id,ti in pairs(timers) do
 		if ti.endTime<os.time() then
 			coroutine.wrap(function() self:delete(guild,id) end)()
@@ -34,17 +33,17 @@ function timing:load(guild)
 end
 
 function timing.save(guild,id,ti)
-	local timers = database:get(guild, "Timers")
+	local timers = modules.database:get(guild, "Timers")
 	timers[id] = ti
-	database:update(guild,'Timers',timers)
+	modules.database:update(guild,'Timers',timers)
 end
 
 function timing:delete(guild,id)
-	local data = database:get(guild,'Timers')
+	local data = modules.database:get(guild,'Timers')
 	if data then
 		self._timers[id] = nil
 		data[id] = nil
-		database:update(guild,'Timers',data)
+		modules.database:update(guild,'Timers',data)
 	end
 end
 

@@ -2,8 +2,6 @@
 
 local json = require('json')
 local timer = require("timer")
-local api = modules.api
-local timing = modules.timing
 local events = {}
 
 --[[ Guild Events ]]
@@ -426,14 +424,14 @@ function events.raw(raw)
 end
 
 function events.ready()
-	api.misc.DBots_Stats_Update({server_count=#client.guilds})
+	modules.api.misc.DBots_Stats_Update({server_count=#client.guilds})
 	storage.errLog = client:getChannel('376422808852627457')
 	storage.comLog = client:getChannel('376422940570419200')
 	storage.guildLog = client:getChannel('406115496833056789')
-	timing:on(events.timing)
+	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
-		timing:load(g)
+		modules.timing:load(g)
 		local users = data.Users
 		for m in g.members:iter() do
 			local roles = {}

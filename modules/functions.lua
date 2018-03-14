@@ -241,7 +241,7 @@ function functions.getSwitches(str)
     local t = {}
 	str = str:gsub("\\/", "—")
 	t.rest = str:match("^([^/]*)/?"):trim()
-    for switch, arg in str:gmatch("/%s*(%S*)%s*([^/]*)")do
+    for switch, arg in str:gmatch("/%s*(%S*)%s*([^/]*)") do
         t[switch]=arg:trim()
     end
 	for k,v in pairs(t) do

@@ -1,4 +1,3 @@
-local api = modules.api
 local clocks = {}
 
 --Currently, this file is entirely specific to my guild and I have no reason to expand it as of this time
@@ -46,7 +45,7 @@ end
 
 --Update status and DBots hourly with guild count
 function clocks.hour()
-	api.misc.DBots_Stats_Update({server_count=#client.guilds})
+	modules.api.misc.DBots_Stats_Update({server_count=#client.guilds})
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
 		type = 2,
