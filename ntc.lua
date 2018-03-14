@@ -5,7 +5,7 @@
 local Color = require('discordia').Color
 
 local ntc = {}
-
+local pow = math.pow
 local names = {
     ["000000"] = "Black",
     ["000080"] = "Navy Blue",
@@ -1574,14 +1574,6 @@ local names = {
     ["FFFFF0"] = "Ivory",
     ["FFFFFF"] = "White",
 }
-
-local function pow(n,m)
-    local res = 1
-    for i=1,m do
-        res=res*n
-    end
-    return res
-end
 
 function ntc.name(color)
     color = Color.fromHex(color)
