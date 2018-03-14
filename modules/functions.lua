@@ -88,14 +88,14 @@ end
 
 -- Given a Lua date time table, create a string with the values and keys
 function functions.prettyTime(t)
-	local order = {"day", "hour", "minute", "second"}
+	local order = {day = "day", hour = "hour", min = "minute", sec = "second"}
 	local out = ""
-	for _,k in ipairs(order) do
+	for k,v in pairsByKeys(order) do
 		if t[k] then
 			if t[k]==1 then
-				out = out~="" and out..", "..t[k].." "..k or t[k].." "..k
+				out = out~="" and out..", "..t[k].." "..v or t[k].." "..v
 			elseif t[k]~=0 then
-				out = out~="" and out..", "..t[k].."s "..k or t[k].."s "..k
+				out = out~="" and out..", "..t[k].."s "..v or t[k].."s "..v
 			end
 		end
 	end
