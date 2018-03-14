@@ -10,7 +10,7 @@ local api={
 	data={},
 	endpoints={
 		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats', --id: the bot ID
-		['Meow']='http://random.cat/meow',
+		['Meow']='http://aws.random.cat/meow',
 		['Bork']='https://dog.ceo/api/breeds/image/random',
 		['Urban']='https://api.urbandictionary.com/v0/define?term=%s', --term: a search term
 		['dadjoke']='https://icanhazdadjoke.com/',
