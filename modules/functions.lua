@@ -83,7 +83,7 @@ end
 
 -- Takes a Date object and returns a new Date object representing the time between the given one and the current
 function functions.timeBetween(time)
-	return discordia.Date.fromSeconds(math.abs(time:toSeconds()-discordia.Date():toSeconds()))
+	return discordia.Date.parseTableUTC(os.date("!*t"))-time:toSeconds()
 end
 
 -- Given a Lua date time table, create a string with the values and keys
