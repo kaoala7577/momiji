@@ -256,6 +256,7 @@ function events.messageCreate(msg)
 								color = discordia.Color.fromRGB(255, 0 ,0).value,
 							}}
 						end
+						msg:reply("OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this!")
 					end
 					if storage.comLog then
 						local g = not private and msg.guild or {name="Private", id=""}

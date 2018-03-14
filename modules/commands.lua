@@ -56,8 +56,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 			color = discordia.Color.fromHex(color).value,
 		}}
 	else
-		--message:reply("Invalid Hex Color")
-		sendErrMessage(message)
+		message:reply("Invalid Hex Color")
 	end
 end)
 
@@ -237,8 +236,7 @@ addCommand('MAL Anime Search', "Search MyAnimeList for an anime", 'anime', '<sea
 		end
 		message:reply{embed=t}
 	else
-		--message:reply(err)
-		sendErrMessage(message)
+		message:reply(err)
 	end
 end)
 
@@ -261,8 +259,7 @@ addCommand('MAL Manga Search', "Search MyAnimeList for a manga", 'manga', '<sear
 		end
 		message:reply{embed=t}
 	else
-		--message:reply(err)
-		sendErrMessage(message)
+		message:reply(err)
 	end
 end)
 
@@ -315,7 +312,7 @@ addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder t
 		timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
 		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
 	else
-		sendErrMessage(message)
+		message:reply("I was unable to process your input. Please check the syntax.")
 	end
 end)
 
@@ -371,8 +368,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 			footer = {text = "ID: "..member.id}
 		}}
 	else
-		--message:reply("I was unable to match any of the following requests to existing self roles: "..table.concat(roles, "\n"))
-		sendErrMessage(message)
+		message:reply("I was unable to match any of the following requests to existing self roles: "..table.concat(roles, "\n"))
 	end
 end)
 
@@ -409,8 +405,7 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 			}
 		}
 	else
-		--message:reply("I was unable to find any of those roles")
-		sendErrMessage(message)
+		message:reply("I was unable to match any of the following requests to existing self roles: "..table.concat(roles, "\n"))
 	end
 end)
 
@@ -658,8 +653,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 			}
 		}
 	else
-		--message.channel:send("Sorry, I couldn't find that user.")
-		sendErrMessage(message)
+		message.channel:send("Sorry, I couldn't find that user.")
 	end
 end)
 
