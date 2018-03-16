@@ -66,6 +66,16 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 					}
 				}
 				os.execute("rm *.png")
+			else
+				message:reply{
+					content = "Unable to generate montage",
+					embed = {
+						image = { url = "http://www.colorhexa.com/"..color:lower()..".png"},
+						fields = {
+							{ name = name, value = "#"..color},
+						},
+					}
+				}
 			end
 		end)
 	else
