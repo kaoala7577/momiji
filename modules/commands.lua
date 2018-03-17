@@ -51,7 +51,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		local image1, image2 = "http://www.colorhexa.com/"..hex:lower()..".png", "http://www.colorhexa.com/"..color:lower()..".png"
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
-		os.execute("magick montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
+		os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
 		message.channel:broadcastTyping()
 		fs.exists("final.png", function(err)
 			if not err then
@@ -76,6 +76,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 						},
 					}
 				}
+				os.execute("rm *.png")
 			end
 		end)
 	else
