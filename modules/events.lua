@@ -293,7 +293,7 @@ function events.messageDelete(message)
 	local settings = modules.database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = "**Author:** "..member.mentionString.." ("..member.fullname..")\n**Channel:** "..message.channel.mentionString.." ("..message.channel.name..")\n**Content:**\n"..message.content
+		local body = string.format("**Author:** %s (%s) - %s\n**Channel:** %s (%s) - %s\n**Content:**\n", member.fullname, member.id, member.mentionString, message.channel.name, message, channel.id, message.channel.mentionString, message.content)
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
@@ -322,7 +322,7 @@ function events.messageDeleteUncached(channel, messageID)
 	if logChannel and settings.audit then
 		logChannel:send {embed={
 			author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
-			description = "**Channel:** "..channel.mentionString.." ("..channel.name..")",
+			description = string.format("**Channel:** %s (%s) - %s", channel.name, channel.id, channel.mentionString),
 			color = colors.red.value,
 			timestamp = discordia.Date():toISO(),
 			footer = {text = "ID: "..channel.id}
