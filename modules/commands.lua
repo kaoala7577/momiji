@@ -294,6 +294,7 @@ addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni','nerdyinfo'}, '', 0, f
 	local threads = #cpu
 	local cpumodel = cpu[1].model
 	local mem = math.floor(collectgarbage('count')/1000)
+	local uptime = prettyTime(uptime:getTime():toTable())
 	message:reply{embed={
 		title = 'Nerdy Info',
 		color = colors.blue.value,
@@ -302,7 +303,7 @@ addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni','nerdyinfo'}, '', 0, f
 			{name = 'CPU Threads:', value = ts(threads)},
 			{name = 'CPU Model:', value = ts(cpumodel)},
 			{name = 'Memory usage:', value = ts(mem)..' MB'},
-			{name = 'Uptime', value = math.round(uptime:getTime():toSeconds()).." s"}
+			{name = 'Uptime', value = uptime}
 		},
 	}}
 end)
