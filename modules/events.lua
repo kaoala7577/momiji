@@ -217,7 +217,7 @@ function events.messageCreate(msg)
 	local rank = getRank(sender, not private)
 	if not private then
 		--Load settings for the guild, modules.database.lua keeps a cache of requests to avoid making excessive queries
-		data.Settings, data.Ignore = modules.database:get(msg, "Settings"), modules.database:get(msg, "Ignore")
+		data.Settings, data.Ignore, data.Commands = modules.database:get(msg, "Settings"), modules.database:get(msg, "Ignore"), modules.database:get(msg, "Commands")
 		if data.Ignore[msg.channel.id] and rank<data.Settings.ignore_level then
 			return
 		end
@@ -232,6 +232,9 @@ function events.messageCreate(msg)
 			if command:lower() == cmd:lower() then
 				if tab.serverOnly and private then
 					msg:reply("This command is not available in private messages.")
+					return
+				end
+				if data.Commands[tab.name] and data.Commands[tab.name].disable and rank<2 then
 					return
 				end
 				if rank>=tab.rank then

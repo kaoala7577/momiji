@@ -37,6 +37,8 @@ database.default = {
 	Timers = {},
 	Users = {},
 	Hackbans = {},
+	Commands = {},
+	Logging = {},
 }
 
 function database:get(guild,index)

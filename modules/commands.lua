@@ -1177,6 +1177,39 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 		message:reply{embed={
 			fields = fields,
 		}}
+	elseif s=='command' then
+		local command = modules.database:get(message, "Commands")
+		local name
+		for _,tab in pairs(commands) do
+			if val:lower()==tab.name:lower() then
+				name = tab.name
+				break
+			end
+			for _,cmd in pairs(tab.commands) do
+				if val==cmd then
+					name = tab.name
+					break
+				end
+			end
+		end
+		if not name then
+			return message:reply("Unknown command")
+		end
+		if not command[name] then
+			command[name] = {}
+		end
+		if name=="Config" then
+			return message:reply("Cannot disable config command")
+		end
+		section = "commands"
+		if o=='enable' then
+			command[name].disable = false
+			operation = "enable"
+		elseif o=='disable' then
+			command[name].disable = true
+			operation = "disable"
+		end
+		modules.database:update(message, "Commands", command)
 	elseif not s or s=="" then
 		local list = ""
 		for k,v in pairsByKeys(table.deepcopy(settings)) do
