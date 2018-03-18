@@ -293,7 +293,7 @@ function events.messageDelete(message)
 	local settings = modules.database:get(message, "Settings")
 	local channel = message.guild:getChannel(settings.audit_channel)
 	if channel and member and settings.audit then
-		local body = string.format("**Author:** %s (%s) - %s\n**Channel:** %s (%s) - %s\n**Content:**\n", member.fullname, member.id, member.mentionString, message.channel.name, message.channel.id, message.channel.mentionString, message.content)
+		local body = string.format("**Author:** %s (%s) - %s\n**Channel:** %s (%s) - %s\n**Content:**\n%s", member.fullname, member.id, member.mentionString, message.channel.name, message.channel.id, message.channel.mentionString, message.content)
 		if message.attachments then
 			for i,t in ipairs(message.attachments) do
 				body = body.."\n[Attachment "..i.."]("..t.url..")"
