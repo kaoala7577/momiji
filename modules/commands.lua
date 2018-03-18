@@ -771,7 +771,7 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 			modules.timing:newTimer(message.guild,parsedTime,string.format('UNMUTE||%s||%s||%s',message.guild.id,member.id,time))
 		end
 		message.channel:sendf("Muting %s", member.mentionString)
-		if settings.modlog then
+		if settings.modlog and settings.modlog_channel then
 			local reason = args.r or "None"
 			if cases==nil or cases[member.id]==nil then
 				cases[member.id] = {}
@@ -810,7 +810,7 @@ addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, fal
 			return message:reply("Member is not muted.")
 		end
 		message.channel:sendf("Unmuting %s", member.mentionString)
-		if settings.modlog then
+		if settings.modlog and settings.modlog_channel then
 			message.guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Member Unmuted",
 				fields = {
@@ -1368,7 +1368,7 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count> [filter]', 2, fal
 				deletions = nextDeletions
 			end
 		end
-		if settings.modlog then
+		if settings.modlog and settings.modlog_channel then
 			guild:getChannel(settings.modlog_channel):send{embed={
 				title = "Messages Pruned",
 				description = string.format("**Count:** %s\n**Moderator:** %s (%s)\n**Channel:** %s (%s)", numDel, author.mentionString, author.fullname, message.channel.mentionString, message.channel.name),
