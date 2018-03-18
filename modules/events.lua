@@ -50,23 +50,6 @@ function events.memberJoin(member)
 			}
 		end
 	end
-	--Join message
-	local t = timeBetween(discordia.Date.fromISO(member.timestamp))
-	local desc = member.mentionString.."\n"..member.fullname
-	if t:toSeconds()<(60*60*24*7) then
-		desc = desc.."\nCreated "..prettyTime(t:toTable()).." ago"
-	end
-	local channel = member.guild:getChannel(settings.audit_channel)
-	if settings.audit and channel then
-		channel:send {embed={
-			author = {name = "Member Joined", icon_url = member.avatarURL},
-			description = desc,
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.green.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
-	end
 	--Auto role
 	if settings.autorole then
 		for _,r in ipairs(settings.autoroles) do
@@ -83,51 +66,79 @@ function events.memberJoin(member)
 		users[member.id] = {nick=member.nickname, roles=roles}
 		modules.database:update(member, "Users", users)
 	end
+	local logging = modules.database:get(member, "Logging")
+	local set = logging.memberJoin
+	if set and not set.disable or not set then
+		--Join message
+		local t = timeBetween(discordia.Date.fromISO(member.timestamp))
+		local desc = member.mentionString.."\n"..member.fullname
+		if t:toSeconds()<(60*60*24*7) then
+			desc = desc.."\nCreated "..prettyTime(t:toTable()).." ago"
+		end
+		local channel = member.guild:getChannel(settings.audit_channel)
+		if settings.audit and channel then
+			channel:send {embed={
+				author = {name = "Member Joined", icon_url = member.avatarURL},
+				description = desc,
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = colors.green.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..member.id}
+			}}
+		end
+	end
 end
 
 function events.memberLeave(member)
 	if not ready then return end
 	local settings = modules.database:get(member, "Settings")
-	local channel = member.guild:getChannel(settings.audit_channel)
-	if settings.audit and channel then
-		channel:send {embed={
-			author = {name = "Member Left", icon_url = member.avatarURL},
-			description = member.mentionString.."\n"..member.fullname,
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
-	end
-	--kill their entry in the DB
-	local users = modules.database:get(member, "Users")
-	users[member.id] = nil
-	modules.database:update(member, "Users", users)
-	--Wait a few seconds for the audit log to populate
-	timer.sleep(3*1000)
-	--Check if they were kicked
-	local guild = member.guild
-	channel = guild:getChannel(settings.modlog_channel)
-	if channel and member and settings.modlog then
-		local audit = guild:getAuditLogs({
-			limit = 1,
-			type = enums.actionType.memberKick,
-		}):iter()()
-		if audit and audit:getTarget().id~=member.id then
-			return
-		elseif audit and discordia.Date():toSeconds()-audit.createdAt>5 then
-			return
-		end
-		local reason = audit and audit.reason or nil
-		if audit then
-			channel:send{embed={
-				author = {name = "Member Kicked", icon_url = member.avatarURL},
-				description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+	local logging = modules.database:get(member, "Logging")
+	local set = logging.memberLeave
+	if set and not set.disable or not set then
+		local channel = member.guild:getChannel(settings.audit_channel)
+		if settings.audit and channel then
+			channel:send {embed={
+				author = {name = "Member Left", icon_url = member.avatarURL},
+				description = member.mentionString.."\n"..member.fullname,
 				thumbnail = {url = member.avatarURL, height = 200, width = 200},
 				color = colors.red.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}
 			}}
+		end
+	end
+	--kill their entry in the DB
+	local users = modules.database:get(member, "Users")
+	users[member.id] = nil
+	modules.database:update(member, "Users", users)
+	set = logging.memberKick
+	if set and not set.disable or not set then
+		--Wait a few seconds for the audit log to populate
+		timer.sleep(3*1000)
+		--Check if they were kicked
+		local guild = member.guild
+		channel = guild:getChannel(settings.modlog_channel)
+		if channel and member and settings.modlog then
+			local audit = guild:getAuditLogs({
+				limit = 1,
+				type = enums.actionType.memberKick,
+			}):iter()()
+			if audit and audit:getTarget().id~=member.id then
+				return
+			elseif audit and discordia.Date():toSeconds()-audit.createdAt>5 then
+				return
+			end
+			local reason = audit and audit.reason or nil
+			if audit then
+				channel:send{embed={
+					author = {name = "Member Kicked", icon_url = member.avatarURL},
+					description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+					thumbnail = {url = member.avatarURL, height = 200, width = 200},
+					color = colors.red.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..member.id}
+				}}
+			end
 		end
 	end
 end
@@ -141,40 +152,49 @@ function events.memberUpdate(member)
 	for role in member.roles:iter() do
 		table.insert(newRoles, role.id)
 	end
-	if users[member.id] and settings.audit and channel then
-		if users[member.id].nick~=member.nickname then
-			channel:send{embed={
-				title = "Nickname Changed",
-				description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
-				thumbnail = {url=member.avatarURL},
-				color = colors.blue.value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text="ID: "..member.id},
-			}}
-		end
-		local oldRoles = users[member.id].roles
-		local changedRoles, t = {}, ""
-		local longer = #oldRoles>#newRoles and oldRoles or newRoles
-		for _,v in ipairs(longer) do
-			local role = member.guild:getRole(v)
-			if table.search(oldRoles, v) and not table.search(newRoles, v) then
-				t = "Removed"
-				table.insert(changedRoles,role.name)
-			elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
-				t = "Added"
-				table.insert(changedRoles,role.name)
+	local logging = modules.database:get(member, "Logging")
+	local set = logging.nicknameChange
+	if set and not set.disable or not set then
+		if users[member.id] and settings.audit and channel then
+			if users[member.id].nick~=member.nickname then
+				channel:send{embed={
+					title = "Nickname Changed",
+					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
+					thumbnail = {url=member.avatarURL},
+					color = colors.blue.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text="ID: "..member.id},
+				}}
 			end
 		end
-		if changedRoles[1]~=nil then
-			local changes = table.concat(changedRoles, ", ")
-			channel:send{embed={
-				title = "Roles Changed",
-				description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
-				thumbnail = {url=member.avatarURL},
-				color = colors.blue.value,
-				timestamp = discordia.Date():toISO(),
-				footer = {text="ID: "..member.id}
-			}}
+	end
+	set = logging.roleChange
+	if set and not set.disable or not set then
+		if users[member.id] and settings.audit and channel then
+			local oldRoles = users[member.id].roles
+			local changedRoles, t = {}, ""
+			local longer = #oldRoles>#newRoles and oldRoles or newRoles
+			for _,v in ipairs(longer) do
+				local role = member.guild:getRole(v)
+				if table.search(oldRoles, v) and not table.search(newRoles, v) then
+					t = "Removed"
+					table.insert(changedRoles,role.name)
+				elseif table.search(newRoles, v) and not table.search(oldRoles, v) then
+					t = "Added"
+					table.insert(changedRoles,role.name)
+				end
+			end
+			if changedRoles[1]~=nil then
+				local changes = table.concat(changedRoles, ", ")
+				channel:send{embed={
+					title = "Roles Changed",
+					description = string.format("**User:** %s\n**%s:** %s", member.fullname, t, changes),
+					thumbnail = {url=member.avatarURL},
+					color = colors.blue.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text="ID: "..member.id}
+				}}
+			end
 		end
 	end
 	if member.guild.totalMemberCount<600 then
@@ -291,24 +311,28 @@ function events.messageDelete(message)
 			return
 		end
 	end
-	local member = message.member or message.guild:getMember(message.author.id) or message.author
-	if message.author.bot then return end
-	local settings = modules.database:get(message, "Settings")
-	local channel = message.guild:getChannel(settings.audit_channel)
-	if channel and member and settings.audit then
-		local body = string.format("**Author:** %s (%s) - %s\n**Channel:** %s (%s) - %s\n**Content:**\n%s", member.fullname, member.id, member.mentionString, message.channel.name, message.channel.id, message.channel.mentionString, message.content)
-		if message.attachments then
-			for i,t in ipairs(message.attachments) do
-				body = body.."\n[Attachment "..i.."]("..t.url..")"
+	local logging = modules.database:get(message, "Logging")
+	local set = logging.messageDelete
+	if set and not set.disable or not set then
+		local member = message.member or message.guild:getMember(message.author.id) or message.author
+		if message.author.bot then return end
+		local settings = modules.database:get(message, "Settings")
+		local channel = message.guild:getChannel(settings.audit_channel)
+		if channel and member and settings.audit then
+			local body = string.format("**Author:** %s (%s) - %s\n**Channel:** %s (%s) - %s\n**Content:**\n%s", member.fullname, member.id, member.mentionString, message.channel.name, message.channel.id, message.channel.mentionString, message.content)
+			if message.attachments then
+				for i,t in ipairs(message.attachments) do
+					body = body.."\n[Attachment "..i.."]("..t.url..")"
+				end
 			end
+			channel:send {embed={
+				author = {name = "Message Deleted", icon_url = member.avatarURL},
+				description = body,
+				color = colors.red.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..message.id}
+			}}
 		end
-		channel:send {embed={
-			author = {name = "Message Deleted", icon_url = member.avatarURL},
-			description = body,
-			color = colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..message.id}
-		}}
 	end
 end
 
@@ -320,16 +344,20 @@ function events.messageDeleteUncached(channel, messageID)
 			return
 		end
 	end
-	local settings = modules.database:get(channel, "Settings")
-	local logChannel = channel.guild:getChannel(settings.audit_channel)
-	if logChannel and settings.audit then
-		logChannel:send {embed={
-			author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
-			description = string.format("**Channel:** %s (%s) - %s", channel.name, channel.id, channel.mentionString),
-			color = colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..channel.id}
-		}}
+	local logging = modules.database:get(message, "Logging")
+	local set = logging.messageDelete
+	if set and not set.disable or not set then
+		local settings = modules.database:get(channel, "Settings")
+		local logChannel = channel.guild:getChannel(settings.audit_channel)
+		if logChannel and settings.audit then
+			logChannel:send {embed={
+				author = {name = "Uncached Message Deleted", icon_url = channel.guild.iconURL},
+				description = string.format("**Channel:** %s (%s) - %s", channel.name, channel.id, channel.mentionString),
+				color = colors.red.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..channel.id}
+			}}
+		end
 	end
 end
 
@@ -337,44 +365,52 @@ end
 
 function events.userBan(user, guild)
 	if not ready then return end
-	--Wait a few seconds for the audit log to populate
-	timer.sleep(3*1000)
-	--End wait
-	local member = guild:getMember(user) or user
-	local settings = modules.database:get(guild, "Settings")
-	local channel = guild:getChannel(settings.modlog_channel)
-	if channel and member and settings.modlog then
-		local audit = guild:getAuditLogs({
-			limit = 1,
-			type = enums.actionType.memberBanAdd,
-		}):iter()()
-		if audit and audit:getTarget().id ~= user.id then audit = nil end
-		local reason = audit and audit.reason or nil
-		channel:send{embed={
-			author = {name = "Member Banned", icon_url = member.avatarURL},
-			description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.red.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
+	local logging = modules.database:get(guild, "Logging")
+	local set = logging.userBan
+	if set and not set.disable or not set then
+		--Wait a few seconds for the audit log to populate
+		timer.sleep(3*1000)
+		--End wait
+		local member = guild:getMember(user) or user
+		local settings = modules.database:get(guild, "Settings")
+		local channel = guild:getChannel(settings.modlog_channel)
+		if channel and member and settings.modlog then
+			local audit = guild:getAuditLogs({
+				limit = 1,
+				type = enums.actionType.memberBanAdd,
+			}):iter()()
+			if audit and audit:getTarget().id ~= user.id then audit = nil end
+			local reason = audit and audit.reason or nil
+			channel:send{embed={
+				author = {name = "Member Banned", icon_url = member.avatarURL},
+				description = string.format("%s\n%s\n**Responsible Moderator: ** %s\n**Reason:** %s", member.mentionString, member.fullname, audit and audit:getMember().fullname or "N/A", reason or "None"),
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = colors.red.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..member.id}
+			}}
+		end
 	end
 end
 
 function events.userUnban(user, guild)
 	if not ready then return end
-	local member = guild:getMember(user) or user
-	local settings = modules.database:get(guild, "Settings")
-	local channel = guild:getChannel(settings.modlog_channel)
-	if channel and member and settings.modlog then
-		channel:send {embed={
-			author = {name = "Member Unbanned", icon_url = member.avatarURL},
-			description = member.mentionString.."\n"..member.fullname,
-			thumbnail = {url = member.avatarURL, height = 200, width = 200},
-			color = colors.green.value,
-			timestamp = discordia.Date():toISO(),
-			footer = {text = "ID: "..member.id}
-		}}
+	local logging = modules.database:get(guild, "Logging")
+	local set = logging.userUnban
+	if set and not set.disable or not set then
+		local member = guild:getMember(user) or user
+		local settings = modules.database:get(guild, "Settings")
+		local channel = guild:getChannel(settings.modlog_channel)
+		if channel and member and settings.modlog then
+			channel:send {embed={
+				author = {name = "Member Unbanned", icon_url = member.avatarURL},
+				description = member.mentionString.."\n"..member.fullname,
+				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				color = colors.green.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..member.id}
+			}}
+		end
 	end
 end
 

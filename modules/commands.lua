@@ -1163,17 +1163,17 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 		end
 	elseif s=='help' then
 		local fields,roles,chans = {
-			{name="prefix", value="Usage: config /s prefix /v <newPrefix>"},
-			{name="autorole", value="Operations:\n\tenable\n\tdisable\n\tadd <roleID>\n\tremove <roleID>"},
+			{name="prefix", value="Usage: config prefix /v <newPrefix>"},
+			{name="autorole", value="Operations:\n\tenable\n\tdisable\n\tadd <role>\n\tremove <role>"},
 		},"",""
 		for _,v in pairs(switches.roles) do
 			if roles == "" then roles=v else roles=roles..", "..v end
 		end
-		table.insert(fields, {name = roles, value = "Operations:\n\tadd <roleID>\n\tremove <roleID>"})
+		table.insert(fields, {name = roles, value = "Operations:\n\tadd <role>\n\tremove <role>"})
 		for _,v in pairs(switches.channels) do
 			if chans == "" then chans=v else chans=chans..", "..v end
 		end
-		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset <channelID>\n\tmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
+		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset <channel>\n\tmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
 		message:reply{embed={
 			fields = fields,
 		}}
@@ -1202,6 +1202,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 			return message:reply("Cannot disable config command")
 		end
 		section = "commands"
+		value = name
 		if o=='enable' then
 			command[name].disable = false
 			operation = "enable"
@@ -1210,6 +1211,35 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 			operation = "disable"
 		end
 		modules.database:update(message, "Commands", command)
+	elseif s=='logging' then
+		local logging = modules.database:get(message, "Logging")
+		local names = {
+			"memberJoin",
+			"memberLeave",
+			"memberKick",
+			"nicknameChange",
+			"roleChange",
+			"messageDelete",
+			"userBan",
+			"userUnban",
+		}
+		local index = table.search(names, val)
+		if not index then
+			return message:reply("Unrecognized option. Valid options are:\n"..table.concat(names, "\n"))
+		end
+		if not logging[names[index]] then
+			logging[names[index]] = {}
+		end
+		section = "logging"
+		value = names[index]
+		if o=='enable' then
+			logging[names[index]].disable = false
+			operation = "enable"
+		elseif o=='disable' then
+			logging[names[index]].disable = true
+			operation = "disable"
+		end
+		modules.database:update(message, "Logging", logging)
 	elseif not s or s=="" then
 		local list = ""
 		for k,v in pairsByKeys(table.deepcopy(settings)) do
