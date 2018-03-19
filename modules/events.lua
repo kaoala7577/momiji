@@ -344,7 +344,7 @@ function events.messageDeleteUncached(channel, messageID)
 			return
 		end
 	end
-	local logging = modules.database:get(message, "Logging")
+	local logging = modules.database:get(channel, "Logging")
 	local set = logging.messageDelete
 	if set and not set.disable or not set then
 		local settings = modules.database:get(channel, "Settings")
