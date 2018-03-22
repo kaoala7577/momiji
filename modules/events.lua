@@ -80,7 +80,7 @@ function events.memberJoin(member)
 			channel:send {embed={
 				author = {name = "Member Joined", icon_url = member.avatarURL},
 				description = desc,
-				thumbnail = {url = member.avatarURL, height = 200, width = 200},
+				thumbnail = {url = member.avatarURL},
 				color = colors.green.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..member.id}

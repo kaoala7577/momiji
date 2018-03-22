@@ -1444,6 +1444,34 @@ addCommand('Prune', 'Bulk deletes messages', 'prune', '<count> [filter]', 2, fal
 	end
 end)
 
+addCommand('Test', 'Test an automated message', {'test'}, '<option>', 2, false, false, true, function(message, args)
+	local settings = modules.database:get(message, "Settings")
+	local op = type(args)=="string" and args:lower()
+	if settings[op] and settings[op.."_channel"] then
+		local channel = client:getChannel(settings[op.."_channel"])
+		local member = message.member
+		if op=='audit' or op=='modlog' then
+			channel:send{embed={
+				author = {name = "Test", icon_url = member.avatarURL},
+				description = "This is a test message",
+				thumbnail = {url = member.avatarURL},
+				color = colors.blue.value,
+				timestamp = discordia.Date():toISO(),
+				footer = {text = "ID: "..member.id}
+			}}
+		elseif op=='welcome' or op=='introduction' then
+			local typeOf = getFormatType(settings[op..'_message'], member)
+			if typeOf == 'plain' or not typeOf and channel then
+				channel:send(formatMessageSimple(settings[op..'_message'], member))
+			elseif typeOf == 'embed' and channel then
+				channel:send{
+					embed = formatMessageEmbed(settings[op..'_message'], member)
+				}
+			end
+		end
+	end
+end)
+
 --[[ Rank 3 Commands ]]
 
 addCommand('Setup Mute', 'Sets up mute', 'setup', '', 3, false, false, true, function(message)
