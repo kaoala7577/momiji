@@ -39,6 +39,8 @@ database.default = {
 	Hackbans = {},
 	Commands = {},
 	Logging = {},
+	isPremium = false,
+	premiumTier = 0,
 }
 
 function database:get(guild,index)
@@ -85,7 +87,7 @@ function database:get(guild,index)
 	end
 end
 
-function database:update(guild,index,value) --luacheck: ignore self
+function database:update(guild,index,value)
 	if not guild then error"No ID/Guild/Message provided" end
 	local id=resolveGuild(guild)
 	if self.cache[id] then
@@ -109,7 +111,7 @@ function database:update(guild,index,value) --luacheck: ignore self
 	end
 end
 
-function database:getCached(guild,index) --luacheck: ignore self
+function database:getCached(guild,index)
 	local id = resolveGuild(guild)
 	if self.cache[id] then
 		local cached=self.cache[id]
@@ -123,7 +125,7 @@ function database:getCached(guild,index) --luacheck: ignore self
 	end
 end
 
-function database:delete(guild,index) --luacheck: ignore self
+function database:delete(guild,index)
 	if not guild then error"No ID/Guild/Message provided"end
 	local id = resolveGuild(guild)
 	if self.cache[id] then

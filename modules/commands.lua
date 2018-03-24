@@ -1564,16 +1564,16 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		else
 			ret = tostring(ret).."\n"..tx
 		end
-		local result, len = {}, 1991
-		local count = math.ceil(#ret/len)>1 and math.ceil(#ret/len) or 1
-		for i=1,count do
-			result[i] = string.sub(ret, (len*(i-1)), (len*(i)-1))
-		end
-		for _,v in pairs(result) do
-			if v ~= "" then message:reply({
-				content = v,
+		if #ret > 1950 then
+			message:reply{
+				content = "Output too large for Discord. Uploaded as attachment",
+				file = {'output.txt', ret}
+			}
+		else
+			message:reply{
+				content = ret,
 				code = s and true or "lua"
-			}) end
+			}
 		end
 	else
 		message:reply("Error loading function")
