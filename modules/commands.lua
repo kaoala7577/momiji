@@ -71,6 +71,8 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 			canvas:write("final.png")
 			canvas:destroy()
 		end]]
+		os.execute("rm"..hex:lower()..".png")
+		os.execute("rm"..color:lower()..".png")
 		fs.exists("final.png", function(err)
 			if not err then
 				message:reply{
@@ -83,7 +85,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 						},
 					}
 				}
-				os.execute("rm *.png")
+				os.execute("rm final.png")
 			else
 				message:reply{
 					content = "Unable to generate montage",
@@ -94,7 +96,6 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 						},
 					}
 				}
-				os.execute("rm *.png")
 			end
 		end)
 	else
