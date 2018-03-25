@@ -44,7 +44,10 @@ end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
 	local fs = require('fs')
-	local magick = require("magick")
+	local magick
+	pcall(function()
+		magick = require("magick")
+	end)
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
@@ -54,19 +57,23 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		-- easiest way to pull the images to local
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
-		local left = magick.load_image(hex:lower()..".png")
-		local right = magick.load_image(color:lower()..".png")
-		local canvas = magick.load_image("white.jpg")
-		local widthL, widthR = left:get_width(), right:get_width()
-		local heightL, heightR = left:get_height(), right:get_height()
-		local maxHeight = math.max(heightL, heightR)
-		canvas:resize(widthL+widthR, maxHeight)
-		canvas:composite(right, maxHeight, widthL, 0)
-		canvas:composite(left, maxHeight, 0, 0)
-		left:destroy()
-		right:destroy()
-		canvas:write("final.png")
-		canvas:destroy()
+		if not magick then
+			os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
+		else
+			local left = magick.load_image(hex:lower()..".png")
+			local right = magick.load_image(color:lower()..".png")
+			local canvas = magick.load_image("white.jpg")
+			local widthL, widthR = left:get_width(), right:get_width()
+			local heightL, heightR = left:get_height(), right:get_height()
+			local maxHeight = math.max(heightL, heightR)
+			canvas:resize(widthL+widthR, maxHeight)
+			canvas:composite(right, maxHeight, widthL, 0)
+			canvas:composite(left, maxHeight, 0, 0)
+			left:destroy()
+			right:destroy()
+			canvas:write("final.png")
+			canvas:destroy()
+		end
 		fs.exists("final.png", function(err)
 			if not err then
 				message:reply{
