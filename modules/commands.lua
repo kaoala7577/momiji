@@ -44,10 +44,7 @@ end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
 	local fs = require('fs')
-	local magick
-	pcall(function()
-		magick = require("magick")
-	end)
+	--magick = require("magick")
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
@@ -57,9 +54,9 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		-- easiest way to pull the images to local
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
-		if not magick then
+		--if not magick then
 			os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
-		else
+		--[[else
 			local left = magick.load_image(hex:lower()..".png")
 			local right = magick.load_image(color:lower()..".png")
 			local canvas = magick.load_image("white.jpg")
@@ -73,7 +70,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 			right:destroy()
 			canvas:write("final.png")
 			canvas:destroy()
-		end
+		end]]
 		fs.exists("final.png", function(err)
 			if not err then
 				message:reply{
