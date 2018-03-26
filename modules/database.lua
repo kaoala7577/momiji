@@ -1,4 +1,4 @@
---[[ RethinkDB databse interaction adapted from DannehSC/electricity-2.0 ]]
+--[[ RethinkDB database interaction adapted from DannehSC/electricity-2.0 ]]
 
 local json = require('json')
 local rethink=require('luvit-reql')

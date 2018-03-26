@@ -44,7 +44,7 @@ end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
 	local fs = require('fs')
-	--magick = require("magick")
+	--magick = require("magick") --This works on local but fails on Momiji's host server, so its disabled
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
