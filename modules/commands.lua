@@ -44,7 +44,6 @@ end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
 	local fs = require('fs')
-	--magick = require("magick") --This works on local but fails on Momiji's host server, so its disabled
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
@@ -54,23 +53,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		-- easiest way to pull the images to local
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
-		--if not magick then
-			os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
-		--[[else
-			local left = magick.load_image(hex:lower()..".png")
-			local right = magick.load_image(color:lower()..".png")
-			local canvas = magick.load_image("white.jpg")
-			local widthL, widthR = left:get_width(), right:get_width()
-			local heightL, heightR = left:get_height(), right:get_height()
-			local maxHeight = math.max(heightL, heightR)
-			canvas:resize(widthL+widthR, maxHeight)
-			canvas:composite(right, maxHeight, widthL, 0)
-			canvas:composite(left, maxHeight, 0, 0)
-			left:destroy()
-			right:destroy()
-			canvas:write("final.png")
-			canvas:destroy()
-		end]]
+		os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
 		os.execute("rm"..hex:lower()..".png")
 		os.execute("rm"..color:lower()..".png")
 		fs.exists("final.png", function(err)
@@ -340,6 +323,7 @@ addCommand('Prefix', 'Show the prefix for the guild', 'prefix', '', 0, false, fa
 end)
 
 addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder text> </t time>', 0, false, true, false, function(message, args)
+	if not args.t then return message:reply("Time entered incorrectly. Be sure to include it after /t in your message.") end
 	local reminder, time = args.rest, args.t
 	local t = timeUntil(parseTime(time))
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t:toTable())
