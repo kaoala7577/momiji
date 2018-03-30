@@ -8,7 +8,21 @@ local events = {}
 
 function events.guildCreate(guild)
 	if not ready then return end
-	modules.database:get(guild)
+	local data = modules.database:get(guild)
+	local users = data.Users
+	for m in guild.members:iter() do
+		local roles = {}
+		for role in m.roles:iter() do
+			table.insert(roles, role.id)
+		end
+		if not users[m.id] then
+			users[m.id] = {nick=m.nickname, roles=roles}
+		else
+			users[m.id].nick = m.nickname
+			users[m.id].roles = roles
+		end
+	end
+	modules.database:update(guild, "Users", users)
 	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
 	storage.guildLog:send{embed={
 		title = "Joined Guild",
@@ -360,6 +374,26 @@ function events.messageDeleteUncached(channel, messageID)
 		end
 	end
 end
+
+-- function events.messageUpdate(message)
+-- 	if not ready then return end
+-- 	if message.oldContent then
+-- 		local channel = message.channel
+-- 		local oldContent = message.oldContent[message.editedTimestamp]
+-- 		if string.levenshtein(oldContent, message.content)>=5 then
+-- 			channel:send {embed={
+-- 				author = {name = "Message Edited", icon_url = message.author.avatarURL},
+-- 				description = string.format([[**Old Content**
+-- 				```%s```**New Content**
+-- 				```%s```
+-- 				]], oldContent, message.content),
+-- 				color = colors.blue.value,
+-- 				timestamp = discordia.Date():toISO(),
+-- 				footer = {text = "ID: "..message.id}
+-- 			}}
+-- 		end
+-- 	end
+-- end
 
 --[[ User Events ]]
 
