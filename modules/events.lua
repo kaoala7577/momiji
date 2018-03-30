@@ -378,6 +378,7 @@ end
 
 function events.messageUpdate(message)
 	if not ready then return end
+	if message.author.bot then return end
 	local logging = modules.database:get(message, "Logging")
 	local set = logging.messageUpdate
 	if set and not set.disable or not set then
@@ -389,7 +390,7 @@ function events.messageUpdate(message)
 			if string.levenshtein(oldContent, message.content)>=5 then
 				channel:send {embed={
 					title = "Message Edited",
-					description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**```%s```**New Content**```%s```", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
+					description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**\n%s\n**New Content**\n%s", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
 					color = colors.blue.value,
 					timestamp = discordia.Date():toISO(),
 					footer = {text = "ID: "..message.id}
