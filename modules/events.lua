@@ -378,7 +378,7 @@ end
 
 function events.messageUpdate(message)
 	if not ready then return end
-	local logging = modules.database:get(channel, "Logging")
+	local logging = modules.database:get(message, "Logging")
 	local set = logging.messageUpdate
 	if set and not set.disable or not set then
 		if message.oldContent then
