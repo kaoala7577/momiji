@@ -376,24 +376,28 @@ function events.messageDeleteUncached(channel, messageID)
 	end
 end
 
--- function events.messageUpdate(message)
--- 	if not ready then return end
--- 	if message.oldContent then
--- 		local settings = modules.database:get(message, "Settings")
--- 		local channel = client:getChannel(settings['audit_channel'])
--- 		if not channel then return end
--- 		local oldContent = message.oldContent[message.editedTimestamp]
--- 		if string.levenshtein(oldContent, message.content)>=5 then
--- 			channel:send {embed={
--- 				title = "Message Edited",
--- 				description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**```%s```**New Content**```%s```", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
--- 				color = colors.blue.value,
--- 				timestamp = discordia.Date():toISO(),
--- 				footer = {text = "ID: "..message.id}
--- 			}}
--- 		end
--- 	end
--- end
+function events.messageUpdate(message)
+	if not ready then return end
+	local logging = modules.database:get(channel, "Logging")
+	local set = logging.messageUpdate
+	if set and not set.disable or not set then
+		if message.oldContent then
+			local settings = modules.database:get(message, "Settings")
+			local channel = client:getChannel(settings['audit_channel'])
+			if not channel then return end
+			local oldContent = message.oldContent[message.editedTimestamp]
+			if string.levenshtein(oldContent, message.content)>=5 then
+				channel:send {embed={
+					title = "Message Edited",
+					description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**```%s```**New Content**```%s```", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
+					color = colors.blue.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..message.id}
+				}}
+			end
+		end
+	end
+end
 
 --[[ User Events ]]
 
