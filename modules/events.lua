@@ -8,8 +8,8 @@ local events = {}
 
 function events.guildCreate(guild)
 	if not ready then return end
-	local data = modules.database:get(guild)
-	local users = data.Users
+	modules.database:get(guild)
+	local users = modules.database:get(guild, "Users")
 	for m in guild.members:iter() do
 		local roles = {}
 		for role in m.roles:iter() do
