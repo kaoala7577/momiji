@@ -34,6 +34,7 @@ end
 
 function events.guildDelete(guild)
 	if not ready then return end
+	modules.database:update(guild, "Users", {})
 	storage.guildLog:send{embed={
 		title = "Left Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
@@ -378,15 +379,14 @@ end
 -- function events.messageUpdate(message)
 -- 	if not ready then return end
 -- 	if message.oldContent then
--- 		local channel = message.channel
+-- 		local settings = modules.database:get(message, "Settings")
+-- 		local channel = client:getChannel(settings['audit_channel'])
+-- 		if not channel then return end
 -- 		local oldContent = message.oldContent[message.editedTimestamp]
 -- 		if string.levenshtein(oldContent, message.content)>=5 then
 -- 			channel:send {embed={
--- 				author = {name = "Message Edited", icon_url = message.author.avatarURL},
--- 				description = string.format([[**Old Content**
--- 				```%s```**New Content**
--- 				```%s```
--- 				]], oldContent, message.content),
+-- 				title = "Message Edited",
+-- 				description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**```%s```**New Content**```%s```", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
 -- 				color = colors.blue.value,
 -- 				timestamp = discordia.Date():toISO(),
 -- 				footer = {text = "ID: "..message.id}
