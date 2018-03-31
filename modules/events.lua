@@ -549,32 +549,6 @@ function events.ready()
 	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
-<<<<<<< HEAD
-<<<<<<< HEAD
-		local users = {}
-=======
-		local users = data.Users
->>>>>>> parent of 5eee48c... no need for force update code now
-		for m in g.members:iter() do
-			local roles = {}
-			for role in m.roles:iter() do
-				table.insert(roles, role.id)
-			end
-			if not users[m.id] then
-				users[m.id] = {name=m.username, nick=m.nickname, roles=roles}
-			else
-				users[m.id].nick = m.nickname
-				users[m.id].roles = roles
-				users[m.id].name = m.fullname
-			end
-		end
-<<<<<<< HEAD
-		modules.database:update(guilde, "Users", users)
-=======
-		modules.database:update(g, "Users", users)
->>>>>>> parent of 5eee48c... no need for force update code now
-=======
->>>>>>> f91b5ed346d0fdd482bdcf0b58f16673875958a7
 		modules.timing:load(g)
 	end
 	client:setGame({
