@@ -57,7 +57,7 @@ function events.memberJoin(member)
 	local settings = modules.database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
-		local channel = member.guild:getChannel(settings['welcome_channel'])
+	 	local channel = member.guild:getChannel(settings['welcome_channel'])
 		if typeOf == 'plain' or not typeOf and channel then
 			channel:send(formatMessageSimple(settings['welcome_message'], member))
 		elseif typeOf == 'embed' and channel then
@@ -280,7 +280,7 @@ function events.messageCreate(msg)
 	local data = {}
 	if msg.guild then private=false else private=true end
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-	local rank = getRank(sender, not private)
+	local rank = getRank(sender, private)
 	if not private then
 		--Load settings for the guild, modules.database.lua keeps a cache of requests to avoid making excessive queries
 		data.Settings, data.Ignore, data.Commands = modules.database:get(msg, "Settings"), modules.database:get(msg, "Ignore"), modules.database:get(msg, "Commands")

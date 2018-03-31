@@ -24,19 +24,23 @@ function functions.checkArgs(types, vals)
 end
 
 --Given a member and a guild (or false/nil), get the rank of the member
-function functions.getRank(member, server)
+function functions.getRank(member, private)
 	if not member then return 0 end
 	local rank = 0
-	if server then
+	if not private then
 		local settings = modules.database:get(member, "Settings")
-		for _,v in ipairs(settings['mod_roles']) do
-			if member:hasRole(v) then
-				rank = 1
+		if type(settings.mod_roles)=='table' then
+			for _,v in ipairs(settings['mod_roles']) do
+				if member:hasRole(v) then
+					rank = 1
+				end
 			end
 		end
-		for _,v in ipairs(settings['admin_roles']) do
-			if member:hasRole(v) then
-				rank = 2
+		if type(setting.admin_roles)=='table' then
+			for _,v in ipairs(settings['admin_roles']) do
+				if member:hasRole(v) then
+					rank = 2
+				end
 			end
 		end
 		if member.id == member.guild.owner.id then
