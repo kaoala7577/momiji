@@ -299,7 +299,7 @@ function events.messageCreate(msg)
 					msg:reply("This command is not available in private messages.")
 					return
 				end
-				if data.Commands[tab.name] and data.Commands[tab.name].disable and rank<2 then
+				if not private and data.Commands[tab.name] and data.Commands[tab.name].disable and rank<2 then
 					return
 				end
 				if rank>=tab.rank then
