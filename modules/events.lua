@@ -549,7 +549,11 @@ function events.ready()
 	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
+<<<<<<< HEAD
 		local users = {}
+=======
+		local users = data.Users
+>>>>>>> parent of 5eee48c... no need for force update code now
 		for m in g.members:iter() do
 			local roles = {}
 			for role in m.roles:iter() do
@@ -563,7 +567,11 @@ function events.ready()
 				users[m.id].name = m.fullname
 			end
 		end
+<<<<<<< HEAD
 		modules.database:update(guilde, "Users", users)
+=======
+		modules.database:update(g, "Users", users)
+>>>>>>> parent of 5eee48c... no need for force update code now
 		modules.timing:load(g)
 	end
 	client:setGame({
