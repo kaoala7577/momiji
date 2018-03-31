@@ -549,6 +549,21 @@ function events.ready()
 	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
+		local users = modules.database:get(g, "Users")
+		for m in g.members:iter() do
+			local roles = {}
+			for role in m.roles:iter() do
+				table.insert(roles, role.id)
+			end
+			if not users[m.id] then
+				users[m.id] = {name=m.fullname, nick=m.nickname, roles=roles}
+			else
+				users[m.id].nick = m.nickname
+				users[m.id].roles = roles
+				users[m.id].name = m.fullname
+			end
+		end
+		modules.database:update(g, "Users", users)
 		modules.timing:load(g)
 	end
 	client:setGame({
