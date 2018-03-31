@@ -304,7 +304,7 @@ addCommand('Nerdy info', 'Info for nerds.', {'ninfo','ni','nerdyinfo'}, '', 0, f
 			{name = 'OS:', value = ts(ffi.os)},
 			{name = 'CPU Threads:', value = ts(threads)},
 			{name = 'CPU Model:', value = ts(cpumodel)},
-			{name = 'Memory usage:', value = ts(mem)..' MB'},
+			{name = 'Memory usage:', value = ts(mem)..' MB '.."("..ts(mem/#client.guilds).."MB/guild Average)"},
 			{name = 'Uptime', value = uptime}
 		},
 	}}
