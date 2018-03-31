@@ -217,8 +217,9 @@ function events.memberUpdate(member)
 		if users[member.id] then
 			users[member.id].nick = member.nickname
 			users[member.id].roles = newRoles
+			users[member.id].name = member.username
 		else
-			users[member.id] = {nick = member.nickname, roles = newRoles}
+			users[member.id] = {nick = member.nickname, roles = newRoles, name = member.username}
 		end
 		modules.database:update(member, "Users", users)
 	end
@@ -251,7 +252,7 @@ function events.presenceUpdate(member)
 		if users[member.id] then
 			users[member.id].name = member.username
 		else
-			users[member.id] = {name = member.username}
+			users[member.id] = {nick = member.nickname, name = member.username}
 		end
 		modules.database:update(member, "Users", users)
 	end
