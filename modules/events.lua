@@ -247,14 +247,14 @@ function events.presenceUpdate(member)
 				}}
 			end
 		end
-	end
-	if member.guild.totalMemberCount<600 then
-		if users[member.id] then
-			users[member.id].name = member.username
-		else
-			users[member.id] = {nick = member.nickname, name = member.username}
+		if member.guild.totalMemberCount<600 then
+			if users[member.id] then
+				users[member.id].name = member.username
+			else
+				users[member.id] = {nick = member.nickname, name = member.username}
+			end
+			modules.database:update(member, "Users", users)
 		end
-		modules.database:update(member, "Users", users)
 	end
 	-- Now Live role on my guild
 	local role = '370395740406546432'
