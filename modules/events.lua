@@ -72,17 +72,6 @@ function events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
-	--Create user entry in DB
-	if member.guild.totalMemberCount<500 then --Temporary workaround until reql fixes its shit
-		local roles = {}
-		for role in member.roles:iter() do
-			table.insert(roles, role.id)
-		end
-		local users = modules.database:get(member, "Users")
-		users[member.id] = {nick=member.nickname, roles=roles, name=member.username}
-		modules.database:update(member, "Users", users)
-	end
-	local logging = modules.database:get(member, "Logging")
 	local set = logging.memberJoin
 	if set and not set.disable or not set then
 		--Join message
@@ -103,6 +92,17 @@ function events.memberJoin(member)
 			}}
 		end
 	end
+	--Create user entry in DB
+	if member.guild.totalMemberCount<500 then --Temporary workaround until reql fixes its shit
+		local roles = {}
+		for role in member.roles:iter() do
+			table.insert(roles, role.id)
+		end
+		local users = modules.database:get(member, "Users")
+		users[member.id] = {nick=member.nickname, roles=roles, name=member.username}
+		modules.database:update(member, "Users", users)
+	end
+	local logging = modules.database:get(member, "Logging")
 end
 
 function events.memberLeave(member)
