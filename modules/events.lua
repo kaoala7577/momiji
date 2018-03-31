@@ -24,7 +24,7 @@ function events.guildCreate(guild)
 		end
 	end
 	modules.database:update(guild, "Users", users)
-	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!info` response)", guild.name)
+	guild.owner:sendf("Thanks for inviting me to %s! To get started, you should read the help page with the command `m!help` and configure your settings. If you've got questions or just want to receive updates, join my support server (link is in the `m!binfo` response)", guild.name)
 	storage.guildLog:send{embed={
 		title = "Joined Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
@@ -161,6 +161,7 @@ end
 
 function events.memberUpdate(member)
 	if not ready then return end
+	local changed = false
 	local users = modules.database:get(member, "Users")
 	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
@@ -173,6 +174,7 @@ function events.memberUpdate(member)
 	if set and not set.disable or not set then
 		if users[member.id] and settings.audit and channel then
 			if users[member.id].nick~=member.nickname then
+				changed = true
 				channel:send{embed={
 					title = "Nickname Changed",
 					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].nick or "None",member.nickname or "None"),
@@ -201,6 +203,7 @@ function events.memberUpdate(member)
 				end
 			end
 			if changedRoles[1]~=nil then
+				changed = true
 				local changes = table.concat(changedRoles, ", ")
 				channel:send{embed={
 					title = "Roles Changed",
@@ -213,15 +216,17 @@ function events.memberUpdate(member)
 			end
 		end
 	end
-	if member.guild.totalMemberCount<500 then
-		if users[member.id] then
-			users[member.id].nick = member.nickname
-			users[member.id].roles = newRoles
-			users[member.id].name = member.username
-		else
-			users[member.id] = {nick = member.nickname, roles = newRoles, name = member.username}
+	if changed then
+		if member.guild.totalMemberCount<500 then
+			if users[member.id] then
+				users[member.id].nick = member.nickname
+				users[member.id].roles = newRoles
+				users[member.id].name = member.username
+			else
+				users[member.id] = {nick = member.nickname, roles = newRoles, name = member.username}
+			end
+			modules.database:update(member, "Users", users)
 		end
-		modules.database:update(member, "Users", users)
 	end
 end
 
@@ -232,11 +237,13 @@ function events.presenceUpdate(member)
 	local users = modules.database:get(member, "Users")
 	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
+	local changed = false
 	local logging = modules.database:get(member, "Logging")
 	local set = logging.useernameChange
 	if set and not set.disable or not set then
 		if users[member.id] and settings.audit and channel then
 			if users[member.id].name~=member.username then
+				changed = true
 				channel:send{embed={
 					title = "Username Changed",
 					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].name or "None",member.username or "None"),
@@ -247,13 +254,15 @@ function events.presenceUpdate(member)
 				}}
 			end
 		end
-		if member.guild.totalMemberCount<500 then
-			if users[member.id] then
-				users[member.id].name = member.username
-			else
-				users[member.id] = {nick = member.nickname, name = member.username}
+		if changed then
+			if member.guild.totalMemberCount<500 then
+				if users[member.id] then
+					users[member.id].name = member.username
+				else
+					users[member.id] = {nick = member.nickname, name = member.username}
+				end
+				modules.database:update(member, "Users", users)
 			end
-			modules.database:update(member, "Users", users)
 		end
 	end
 	-- Now Live role on my guild
