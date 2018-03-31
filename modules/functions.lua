@@ -36,7 +36,7 @@ function functions.getRank(member, private)
 				end
 			end
 		end
-		if type(setting.admin_roles)=='table' then
+		if type(settings.admin_roles)=='table' then
 			for _,v in ipairs(settings['admin_roles']) do
 				if member:hasRole(v) then
 					rank = 2
