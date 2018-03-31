@@ -16,7 +16,7 @@ function events.guildCreate(guild)
 			table.insert(roles, role.id)
 		end
 		if not users[m.id] then
-			users[m.id] = {name=m.username, nick=m.nickname, roles=roles}
+			users[m.id] = {name=m.fullname, nick=m.nickname, roles=roles}
 		else
 			users[m.id].nick = m.nickname
 			users[m.id].roles = roles
