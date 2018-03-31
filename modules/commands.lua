@@ -1124,6 +1124,10 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 				settings[v..'_message'] = val --table.concat(table.slice(args, 3, #args, 1), ' ')
 				operation = "set message"
 				value = val --table.concat(table.slice(args, 3, #args, 1), ' ')
+			elseif o=='threshold' and v=='audit' then
+				settings[v..'_threshold'] = val
+				operation = "set threshold"
+				value = val
 			end
 		end
 	end

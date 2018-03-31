@@ -380,14 +380,14 @@ function events.messageUpdate(message)
 	if not ready then return end
 	if message.author.bot then return end
 	local logging = modules.database:get(message, "Logging")
-	local set = logging.messageUpdate
+	local set = logging.messageEdit
 	if set and not set.disable or not set then
 		if message.oldContent then
 			local settings = modules.database:get(message, "Settings")
 			local channel = client:getChannel(settings['audit_channel'])
 			if not channel then return end
 			local oldContent = message.oldContent[message.editedTimestamp]
-			if string.levenshtein(oldContent, message.content)>=5 then
+			if string.levenshtein(oldContent, message.content)>=(tonumber(settings['audit_threshold']) or 0) then
 				channel:send {embed={
 					title = "Message Edited",
 					description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**\n%s\n**New Content**\n%s", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),

@@ -29,6 +29,7 @@ database.default = {
 		autoroles = {},
 		mute_setup = false,
 		ignore_level = 3,
+		audit_threshold = 0,
 	},
 	Roles = {},
 	Notes = {},
