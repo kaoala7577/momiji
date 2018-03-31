@@ -20,7 +20,7 @@ function events.guildCreate(guild)
 		else
 			users[m.id].nick = m.nickname
 			users[m.id].roles = roles
-			users[m.id].name = m.username
+			users[m.id].name = m.fullname
 		end
 	end
 	modules.database:update(guild, "Users", users)
@@ -100,7 +100,7 @@ function events.memberJoin(member)
 			table.insert(roles, role.id)
 		end
 		local users = modules.database:get(member, "Users")
-		users[member.id] = {nick=member.nickname, roles=roles, name=member.username}
+		users[member.id] = {nick=member.nickname, roles=roles, name=member.fullname}
 		modules.database:update(member, "Users", users)
 	end
 end
@@ -221,9 +221,9 @@ function events.memberUpdate(member)
 			if users[member.id] then
 				users[member.id].nick = member.nickname
 				users[member.id].roles = newRoles
-				users[member.id].name = member.username
+				users[member.id].name = member.fullname
 			else
-				users[member.id] = {nick = member.nickname, roles = newRoles, name = member.username}
+				users[member.id] = {nick = member.nickname, roles = newRoles, name = member.fullname}
 			end
 			modules.database:update(member, "Users", users)
 		end
@@ -242,11 +242,11 @@ function events.presenceUpdate(member)
 	local set = logging.useernameChange
 	if set and not set.disable or not set then
 		if users[member.id] and settings.audit and channel then
-			if users[member.id].name~=member.username then
+			if users[member.id].name~=member.fullname then
 				changed = true
 				channel:send{embed={
 					title = "Username Changed",
-					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].name or "None",member.username or "None"),
+					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].name or "None",member.fullname or "None"),
 					thumbnail = {url=member.avatarURL},
 					color = colors.blue.value,
 					timestamp = discordia.Date():toISO(),
@@ -257,9 +257,9 @@ function events.presenceUpdate(member)
 		if changed then
 			if member.guild.totalMemberCount<500 then
 				if users[member.id] then
-					users[member.id].name = member.username
+					users[member.id].name = member.fullname
 				else
-					users[member.id] = {nick = member.nickname, name = member.username}
+					users[member.id] = {nick = member.nickname, name = member.fullname}
 				end
 				modules.database:update(member, "Users", users)
 			end
