@@ -72,6 +72,7 @@ function events.memberJoin(member)
 			member:addRole(r)
 		end
 	end
+	local logging = modules.database:get(member, "Logging")
 	local set = logging.memberJoin
 	if set and not set.disable or not set then
 		--Join message
@@ -102,7 +103,6 @@ function events.memberJoin(member)
 		users[member.id] = {nick=member.nickname, roles=roles, name=member.username}
 		modules.database:update(member, "Users", users)
 	end
-	local logging = modules.database:get(member, "Logging")
 end
 
 function events.memberLeave(member)
