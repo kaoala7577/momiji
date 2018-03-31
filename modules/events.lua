@@ -16,10 +16,11 @@ function events.guildCreate(guild)
 			table.insert(roles, role.id)
 		end
 		if not users[m.id] then
-			users[m.id] = {nick=m.nickname, roles=roles}
+			users[m.id] = {name=m.username, nick=m.nickname, roles=roles}
 		else
 			users[m.id].nick = m.nickname
 			users[m.id].roles = roles
+			userr[m.id].name = m.username
 		end
 	end
 	modules.database:update(guild, "Users", users)
@@ -78,7 +79,7 @@ function events.memberJoin(member)
 			table.insert(roles, role.id)
 		end
 		local users = modules.database:get(member, "Users")
-		users[member.id] = {nick=member.nickname, roles=roles}
+		users[member.id] = {nick=member.nickname, roles=roles, name=member.username}
 		modules.database:update(member, "Users", users)
 	end
 	local logging = modules.database:get(member, "Logging")
@@ -226,6 +227,35 @@ end
 function events.presenceUpdate(member)
 	if not ready then return end
 	if member.user.bot == true then return end
+	-- Username logging
+	local users = modules.database:get(member, "Users")
+	local settings = modules.database:get(member, "Settings")
+	local channel = member.guild:getChannel(settings.audit_channel)
+	local logging = modules.database:get(member, "Logging")
+	local set = logging.useernameChange
+	if set and not set.disable or not set then
+		if users[member.id] and settings.audit and channel then
+			if users[member.id].name~=member.username then
+				channel:send{embed={
+					title = "Username Changed",
+					description = string.format("**User:** %s\n**Old:** %s\n**New:** %s",member.fullname,users[member.id].name or "None",member.username or "None"),
+					thumbnail = {url=member.avatarURL},
+					color = colors.blue.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text="ID: "..member.id},
+				}}
+			end
+		end
+	end
+	if member.guild.totalMemberCount<600 then
+		if users[member.id] then
+			users[member.id].name = member.username
+		else
+			users[member.id] = {name = member.username}
+		end
+		modules.database:update(member, "Users", users)
+	end
+	-- Now Live role on my guild
 	local role = '370395740406546432'
 	if member.guild.id == '348660188951216129' then
 		if (member.gameType == enums.gameType.streaming) and not member:hasRole(role) then
@@ -517,10 +547,11 @@ function events.ready()
 				table.insert(roles, role.id)
 			end
 			if not users[m.id] then
-				users[m.id] = {nick=m.nickname, roles=roles}
+				users[m.id] = {name=m.username, nick=m.nickname, roles=roles}
 			else
 				users[m.id].nick = m.nickname
 				users[m.id].roles = roles
+				users[m.id].name = m.username
 			end
 		end
 		modules.database:update(g,"Users",users)
