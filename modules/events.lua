@@ -20,7 +20,7 @@ function events.guildCreate(guild)
 		else
 			users[m.id].nick = m.nickname
 			users[m.id].roles = roles
-			userr[m.id].name = m.username
+			users[m.id].name = m.username
 		end
 	end
 	modules.database:update(guild, "Users", users)
