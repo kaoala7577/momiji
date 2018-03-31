@@ -73,7 +73,7 @@ function events.memberJoin(member)
 		end
 	end
 	--Create user entry in DB
-	if member.guild.totalMemberCount<600 then --Temporary workaround until reql fixes its shit
+	if member.guild.totalMemberCount<500 then --Temporary workaround until reql fixes its shit
 		local roles = {}
 		for role in member.roles:iter() do
 			table.insert(roles, role.id)
@@ -213,7 +213,7 @@ function events.memberUpdate(member)
 			end
 		end
 	end
-	if member.guild.totalMemberCount<600 then
+	if member.guild.totalMemberCount<500 then
 		if users[member.id] then
 			users[member.id].nick = member.nickname
 			users[member.id].roles = newRoles
@@ -247,7 +247,7 @@ function events.presenceUpdate(member)
 				}}
 			end
 		end
-		if member.guild.totalMemberCount<600 then
+		if member.guild.totalMemberCount<500 then
 			if users[member.id] then
 				users[member.id].name = member.username
 			else
@@ -541,21 +541,6 @@ function events.ready()
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
 		modules.timing:load(g)
-		local users = data.Users
-		for m in g.members:iter() do
-			local roles = {}
-			for role in m.roles:iter() do
-				table.insert(roles, role.id)
-			end
-			if not users[m.id] then
-				users[m.id] = {name=m.username, nick=m.nickname, roles=roles}
-			else
-				users[m.id].nick = m.nickname
-				users[m.id].roles = roles
-				users[m.id].name = m.username
-			end
-		end
-		modules.database:update(g,"Users",users)
 	end
 	client:setGame({
 		name = string.format("%s guilds | m!help", #client.guilds),
