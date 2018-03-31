@@ -549,7 +549,7 @@ function events.ready()
 	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
-		local users = data.Users
+		local users = {}
 		for m in g.members:iter() do
 			local roles = {}
 			for role in m.roles:iter() do
