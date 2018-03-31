@@ -1225,8 +1225,10 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 			"memberLeave",
 			"memberKick",
 			"nicknameChange",
+			"usernameChange",
 			"roleChange",
 			"messageDelete",
+			"messageEdit",
 			"userBan",
 			"userUnban",
 		}
