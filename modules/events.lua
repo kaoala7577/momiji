@@ -550,6 +550,7 @@ function events.ready()
 	for g in client.guilds:iter() do
 		local data = modules.database:get(g)
 <<<<<<< HEAD
+<<<<<<< HEAD
 		local users = {}
 =======
 		local users = data.Users
@@ -572,6 +573,8 @@ function events.ready()
 =======
 		modules.database:update(g, "Users", users)
 >>>>>>> parent of 5eee48c... no need for force update code now
+=======
+>>>>>>> f91b5ed346d0fdd482bdcf0b58f16673875958a7
 		modules.timing:load(g)
 	end
 	client:setGame({
