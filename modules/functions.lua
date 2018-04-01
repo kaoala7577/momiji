@@ -28,7 +28,7 @@ function functions.getRank(member, private)
 	if not member then return 0 end
 	local rank = 0
 	if not private then
-		local settings = modules.database:get(member, "Settings")
+		local settings = modules.database:getCached(member, "Settings")
 		if type(settings.mod_roles)=='table' then
 			for _,v in ipairs(settings['mod_roles']) do
 				if member:hasRole(v) then
