@@ -57,7 +57,7 @@ function events.memberJoin(member)
 	local settings = modules.database:get(member, "Settings")
 	if settings['welcome_message'] ~= "" and settings['welcome_channel'] and settings['welcome'] then
 		local typeOf = getFormatType(settings['welcome_message'], member)
-	 	local channel = member.guild:getChannel(settings['welcome_channel'])
+		local channel = member.guild:getChannel(settings['welcome_channel'])
 		if typeOf == 'plain' or not typeOf and channel then
 			channel:send(formatMessageSimple(settings['welcome_message'], member))
 		elseif typeOf == 'embed' and channel then
@@ -548,7 +548,7 @@ function events.ready()
 	storage.guildLog = client:getChannel('406115496833056789')
 	modules.timing:on(events.timing)
 	for g in client.guilds:iter() do
-		local data = modules.database:get(g)
+		modules.database:get(g)
 		modules.timing:load(g)
 	end
 	client:setGame({

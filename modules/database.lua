@@ -89,7 +89,7 @@ function database:get(guild,index)
 end
 
 function database:update(guild,index,value)
-	if not guild then error"No ID/Guild/Message provided" end
+	assert(guild, "No ID/Guild/Message provided")
 	local id=resolveGuild(guild)
 	if self.cache[id] then
 		if index then
