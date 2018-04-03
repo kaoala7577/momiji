@@ -328,8 +328,8 @@ addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder t
 	local t = timeUntil(parseTime(time))
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t:toTable())
 	if reminder and time then
-		modules.timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
 		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
+		modules.timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
 	else
 		message:reply("I was unable to process your input. Please check the syntax.")
 	end
