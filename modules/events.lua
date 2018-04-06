@@ -419,7 +419,7 @@ end
 function events.messageUpdate(message)
 	if not ready then return end
 	if message.author.bot then return end
-	assert(message.oldContent, "Unable to index old content on messageUpdate: "..message.id)
+	if not message.oldContent then return end
 	local logging = modules.database:getCached(message, "Logging")
 	local set = logging.messageEdit
 	if set and not set.disable or not set then
