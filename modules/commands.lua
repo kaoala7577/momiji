@@ -54,8 +54,6 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 		os.execute("wget "..image1)
 		os.execute("wget "..image2)
 		os.execute("montage -geometry 150x200 "..hex:lower()..".png".. " "..color:lower()..".png".." final.png")
-		os.execute("rm"..hex:lower()..".png")
-		os.execute("rm"..color:lower()..".png")
 		fs.exists("final.png", function(err)
 			if not err then
 				message:reply{
@@ -68,7 +66,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 						},
 					}
 				}
-				os.execute("rm final.png")
+				os.execute("rm *.png")
 			else
 				message:reply{
 					content = "Unable to generate montage",
@@ -79,6 +77,7 @@ addCommand('Color', 'Display the closest named color to a given hex value', {'co
 						},
 					}
 				}
+				os.execute("rm *.png")
 			end
 		end)
 	else
