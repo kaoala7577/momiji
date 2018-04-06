@@ -1578,7 +1578,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 				content = "Output too large for Discord. Uploaded as attachment",
 				file = {'output.txt', ret}
 			}
-		else
+		elseif #ret > 0 then
 			message:reply{
 				content = ret,
 				code = s and true or "lua"

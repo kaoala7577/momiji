@@ -45,6 +45,7 @@ database.default = {
 }
 
 function database:get(guild,index)
+	assert(guild, "No ID/Guild/Message provided in database:get")
 	local id = resolveGuild(guild)
 	if self.cache[id] then
 		local cached = self.cache[id]
@@ -89,7 +90,7 @@ function database:get(guild,index)
 end
 
 function database:update(guild,index,value)
-	assert(guild, "No ID/Guild/Message provided")
+	assert(guild, "No ID/Guild/Message provided in database:update")
 	local id=resolveGuild(guild)
 	if self.cache[id] then
 		if index then
@@ -113,6 +114,7 @@ function database:update(guild,index,value)
 end
 
 function database:getCached(guild,index)
+	assert(guild, "No ID/Guild/Message provided in database:getCached")
 	local id = resolveGuild(guild)
 	if self.cache[id] then
 		local cached=self.cache[id]
@@ -127,7 +129,7 @@ function database:getCached(guild,index)
 end
 
 function database:delete(guild,index)
-	if not guild then error"No ID/Guild/Message provided"end
+	assert(guild, "No ID/Guild/Message provided in database:delete")
 	local id = resolveGuild(guild)
 	if self.cache[id] then
 		local cached = self.cache[id]

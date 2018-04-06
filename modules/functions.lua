@@ -29,6 +29,7 @@ function functions.getRank(member, private)
 	local rank = 0
 	if not private then
 		local settings = modules.database:get(member, "Settings")
+		assert(type(settings)=='table', "Unable to load settings during getRank("..tostring(member)..", "..tostring(private)..")")
 		if type(settings.mod_roles)=='table' then
 			for _,v in ipairs(settings['mod_roles']) do
 				if member:hasRole(v) then
@@ -69,6 +70,7 @@ end
 
 -- Takes a string and attempts to build a time out from the current based on the input (i.e. 5m 20 seconds will build an Date object that time in the future)
 function functions.parseTime(message)
+	assert(type(message)=='string', "Invalid argument to parseTime. String expected, got "..type(message))
 	local t = discordia.Date():toTableUTC()
 	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
 		local u = unit:lower()
