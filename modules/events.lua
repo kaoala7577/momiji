@@ -386,14 +386,13 @@ local function messageDelete(message)
 					body = body.."\n[Attachment "..i.."]("..t.url..")"
 				end
 			end
-			local res, err = channel:send {embed={
+			channel:send {embed={
 				author = {name = "Message Deleted", icon_url = member.avatarURL},
 				description = body,
 				color = colors.red.value,
 				timestamp = discordia.Date():toISO(),
 				footer = {text = "ID: "..message.id}
 			}}
-			assert(res, err)
 		end
 	end
 end
