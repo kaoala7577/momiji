@@ -4,3 +4,4 @@ rethinkdb_data/
 options.json
 .luacheckrc
 deps/luvit-reql
+res/settings.lua
