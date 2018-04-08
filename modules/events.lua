@@ -427,7 +427,6 @@ local function messageUpdate(message)
 	if message.author.bot then return end
 	if not message.oldContent then return end
 	local logging = modules.database:get(message, "Logging")
-	p("edit",logging)
 	local set = logging.messageEdit
 	if set and not set.disable or not set then
 		if message.oldContent then
