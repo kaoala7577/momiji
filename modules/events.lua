@@ -282,6 +282,7 @@ end
 local function messageCreate(msg)
 	if not ready then
 		if msg.author.id~=client.owner.id then
+			p("not ready")
 			return
 		end
 	end
