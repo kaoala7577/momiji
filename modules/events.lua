@@ -290,7 +290,7 @@ local function messageCreate(msg)
 	if not msg.guild then private = true end
 	local data = {}
 	local sender = (private and msg.author or msg.member or msg.guild:getMember(msg.author))
-	local rank = modules.helpers.getRank(sender, private)
+	local rank = getRank(sender, private)
 	if not private then
 		data = modules.database:get(msg)
 		if data.Ignore[msg.channel.id] and rank<data.Settings.ignore_level then
@@ -300,7 +300,7 @@ local function messageCreate(msg)
 	if msg.content:lower():match("^i need a hug$") then
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
 	end
-	local command, rest = modules.helpers.resolveCommand(msg.content, not private and data.Settings.prefix or "")
+	local command, rest = resolveCommand(msg.content, not private and data.Settings.prefix or "")
 	if not command then return end --If the prefix isn't there, don't bother with anything else
 	for _,tab in pairs(modules.commands) do
 		for _,cmd in pairs(tab.commands) do

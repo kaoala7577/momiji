@@ -4,7 +4,6 @@ local function getRank(member, private)
 	local rank = 0
 	if not private then
 		local settings = modules.database:get(member, "Settings")
-		assert(type(settings)=='table', "Unable to load settings during getRank("..tostring(member)..", "..tostring(private)..")")
 		if type(settings.mod_roles)=='table' then
 			for _,v in ipairs(settings['mod_roles']) do
 				if member:hasRole(v) then
