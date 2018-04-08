@@ -302,6 +302,7 @@ local function messageCreate(msg)
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
 	end
 	local command, rest = resolveCommand(msg.content, not private and data.Settings.prefix or "")
+	p("command", command)
 	if not command then return end --If the prefix isn't there, don't bother with anything else
 	for _,tab in pairs(modules.commands) do
 		for _,cmd in pairs(tab.commands) do
