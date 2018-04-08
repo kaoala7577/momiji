@@ -309,8 +309,14 @@ local function messageCreate(msg)
 					msg:reply("This command is not available in private messages.")
 					return
 				end
-				if not private and data.Commands[tab.name] and data.Commands[tab.name].disable and rank<data.Settings.ignore_level then
-					return
+				if not private then
+					if data.Commands[tab.name] then
+						if data.Commands[tab.name].disable then
+							if rank<data.Settings.ignore_level then
+								return
+							end
+						end
+					end
 				end
 				if rank>=tab.rank then
 					local args
