@@ -7,7 +7,7 @@ require('./res/functions')() --load helper functions
 local modules = {}
 local uptime = discordia.Stopwatch() -- stopwatch to count uptime
 local clock = discordia.Clock() -- clock emitter
-local ready = false
+local _ready = false
 
 local client = discordia.Client({
 	cacheAllMembers = true,
@@ -21,7 +21,7 @@ local env = setmetatable({
 	modules = modules,
 	uptime = uptime,
 	clock = clock,
-	ready = ready
+	_ready = _ready
 }, {__index = _G})
 
 local loader = require('./res/loader')(client, modules, env)
