@@ -294,6 +294,7 @@ local function messageCreate(msg)
 	if not private then
 		data = modules.database:get(msg)
 		if data.Ignore[msg.channel.id] and rank<data.Settings.ignore_level then
+			p("ignored")
 			return
 		end
 	end
@@ -313,7 +314,7 @@ local function messageCreate(msg)
 					if data.Commands[tab.name] then
 						if data.Commands[tab.name].disable then
 							if rank<data.Settings.ignore_level then
-								p("ignored")
+								p("disabled")
 								return
 							end
 						end
