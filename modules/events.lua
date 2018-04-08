@@ -7,9 +7,7 @@ local colors = require('./res/colors')
 
 --[[ Guild Events ]]
 
-local function guildCreate(guild)
-	if not _ready then return end
-	modules.database:get(guild)
+local function guildCreate(guild)modules.database:get(guild)
 	local users = modules.database:get(guild, "Users")
 	for m in guild.members:iter() do
 		local roles = {}
@@ -34,9 +32,7 @@ local function guildCreate(guild)
 	}}
 end
 
-local function guildDelete(guild)
-	if not _ready then return end
-	modules.database:update(guild, "Users", {})
+local function guildDelete(guild)modules.database:update(guild, "Users", {})
 	client:getChannel(guildLog):send{embed={
 		title = "Left Guild",
 		description = string.format("**Name:** %s\n**ID:** %s\n**Owner:** %s (%s)", guild.name, guild.id, guild.owner.fullname, guild.owner.id),
@@ -47,9 +43,7 @@ end
 
 --[[ Member Events ]]
 
-local function memberJoin(member)
-	if not _ready then return end
-	--Reference Hackban list
+local function memberJoin(member)--Reference Hackban list
 	local hackbans = modules.database:get(member, "Hackbans")
 	if table.search(hackbans, member.id) then
 		return member:ban("Hackban")
@@ -106,9 +100,7 @@ local function memberJoin(member)
 	end
 end
 
-local function memberLeave(member)
-	if not _ready then return end
-	local settings = modules.database:get(member, "Settings")
+local function memberLeave(member)local settings = modules.database:get(member, "Settings")
 	local logging = modules.database:get(member, "Logging")
 	local set = logging.memberLeave
 	if set and not set.disable or not set then
@@ -160,9 +152,7 @@ local function memberLeave(member)
 	end
 end
 
-local function memberUpdate(member)
-	if not _ready then return end
-	local changed = false
+local function memberUpdate(member)local changed = false
 	local users = modules.database:get(member, "Users")
 	local settings = modules.database:get(member, "Settings")
 	local channel = member.guild:getChannel(settings.audit_channel)
@@ -231,9 +221,7 @@ local function memberUpdate(member)
 	end
 end
 
-local function presenceUpdate(member)
-	if not _ready then return end
-	if member.user.bot == true then return end
+local function presenceUpdate(member)if member.user.bot == true then return end
 	-- Username logging
 	local users = modules.database:get(member, "Users")
 	local settings = modules.database:get(member, "Settings")
@@ -280,11 +268,6 @@ end
 --[[ Message Events ]]
 
 local function messageCreate(msg)
-	if not _ready then
-		if msg.author.id~=client.owner.id then
-			return
-		end
-	end
 	if msg.author.bot then return end
 	local private = false
 	if not msg.guild then private = true end
@@ -364,9 +347,7 @@ local function messageCreate(msg)
 	end
 end
 
-local function messageDelete(message)
-	if not _ready then return end
-	for i,v in ipairs(bulkDeletes) do
+local function messageDelete(message)for i,v in ipairs(bulkDeletes) do
 		if message.id==v then
 			table.remove(bulkDeletes,i)
 			return
@@ -398,9 +379,7 @@ local function messageDelete(message)
 	end
 end
 
-local function messageDeleteUncached(channel, messageID)
-	if not _ready then return end
-	for i,v in ipairs(bulkDeletes) do
+local function messageDeleteUncached(channel, messageID)for i,v in ipairs(bulkDeletes) do
 		if messageID==v then
 			table.remove(bulkDeletes,i)
 			return
@@ -423,9 +402,7 @@ local function messageDeleteUncached(channel, messageID)
 	end
 end
 
-local function messageUpdate(message)
-	if not _ready then return end
-	if message.author.bot then return end
+local function messageUpdate(message)if message.author.bot then return end
 	if not message.oldContent then return end
 	local logging = modules.database:get(message, "Logging")
 	local set = logging.messageEdit
@@ -450,9 +427,7 @@ end
 
 --[[ User Events ]]
 
-local function userBan(user, guild)
-	if not _ready then return end
-	local logging = modules.database:get(guild, "Logging")
+local function userBan(user, guild)local logging = modules.database:get(guild, "Logging")
 	local set = logging.userBan
 	if set and not set.disable or not set then
 		--Wait a few seconds for the audit log to populate
@@ -480,9 +455,7 @@ local function userBan(user, guild)
 	end
 end
 
-local function userUnban(user, guild)
-	if not _ready then return end
-	local logging = modules.database:get(guild, "Logging")
+local function userUnban(user, guild)local logging = modules.database:get(guild, "Logging")
 	local set = logging.userUnban
 	if set and not set.disable or not set then
 		local member = guild:getMember(user) or user
@@ -541,9 +514,7 @@ local function timing(data)
 	end
 end
 
-local function raw(r)
-	if not _ready then return end
-	local payload = json.parse(r)
+local function raw(r)local payload = json.parse(r)
 	if payload.t == 'MESSAGE_DELETE_BULK' then
 		bulkDeletes = payload.d.ids or {}
 	end
@@ -562,7 +533,6 @@ local function ready()
 	})
 	clock:start()
 	uptime:start()
-	_ready = true
 	client:info("Logged in as %s", client.user.fullname)
 end
 
