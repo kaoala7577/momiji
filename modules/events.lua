@@ -282,7 +282,6 @@ end
 local function messageCreate(msg)
 	if not _ready then
 		if msg.author.id~=client.owner.id then
-			p("not _ready")
 			return
 		end
 	end
@@ -295,7 +294,6 @@ local function messageCreate(msg)
 	if not private then
 		data = modules.database:get(msg)
 		if data.Ignore[msg.channel.id] and rank<data.Settings.ignore_level then
-			p("ignored")
 			return
 		end
 	end
@@ -303,7 +301,6 @@ local function messageCreate(msg)
 		msg.channel:sendf("*hugs %s*", msg.author.mentionString)
 	end
 	local command, rest = resolveCommand(msg.content, not private and data.Settings.prefix or "")
-	p("command", command)
 	if not command then return end --If the prefix isn't there, don't bother with anything else
 	for _,tab in pairs(modules.commands) do
 		for _,cmd in pairs(tab.commands) do
@@ -316,7 +313,6 @@ local function messageCreate(msg)
 					if data.Commands[tab.name] then
 						if data.Commands[tab.name].disable then
 							if rank<data.Settings.ignore_level then
-								p("disabled")
 								return
 							end
 						end
