@@ -313,6 +313,7 @@ local function messageCreate(msg)
 					if data.Commands[tab.name] then
 						if data.Commands[tab.name].disable then
 							if rank<data.Settings.ignore_level then
+								p("ignored")
 								return
 							end
 						end
