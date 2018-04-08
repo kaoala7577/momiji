@@ -2,7 +2,7 @@
 
 local json = require('json')
 local rethink=require('luvit-reql')
-local conn=rethink:connect(storage.options.database)
+local conn=rethink:connect(require('../res/settings').db)
 local database={
 	_raw_database=rethink,
 	_conn=conn,
@@ -49,7 +49,7 @@ function database:get(guild,index)
 	local id = resolveGuild(guild)
 	if self.cache[id] then
 		local cached = self.cache[id]
-		if cached[index]then
+		if cached[index] then
 			return cached[index]
 		else
 			return cached
@@ -91,7 +91,7 @@ end
 
 function database:update(guild,index,value)
 	assert(guild, "No ID/Guild/Message provided in database:update")
-	local id=resolveGuild(guild)
+	local id = resolveGuild(guild)
 	if self.cache[id] then
 		if index then
 			self.cache[id][index]=value

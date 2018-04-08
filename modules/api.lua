@@ -4,10 +4,11 @@ local json = require('json')
 local ssl = require('openssl')
 local query = require('querystring')
 local http = require('coro-http')
-local xml = require("xmlSimple").newParser()
+local xml = require("../res/xmlSimple").newParser()
+local settings = require('../res/settings')
 
 local api={
-	data={},
+	data=settings.api,
 	endpoints={
 		['DBots_Stats']='https://discordbots.org/api/bots/%s/stats', --id: the bot ID
 		['Meow']='http://aws.random.cat/meow',
@@ -22,10 +23,6 @@ local api={
 	},
 	misc={},
 }
-
-pcall(function()
-	api.data=storage.options.apiData
-end)
 
 function api.post(endpoint,fmt,...)
 	local uri
