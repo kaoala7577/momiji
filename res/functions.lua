@@ -48,40 +48,6 @@ local function humanReadableTime(table)
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
 end
 
--- Takes a (hopefully) ISO date string and turns it into a Date object, if not ISO formatted, returns the input
-local function parseISOTime(time)
-	if string.match(time or "", '(%d+)-(%d+)-(%d+).(%d+):(%d+):(%d+)(.*)') then return discordia.Date.fromISO(time) else return time end
-end
-
--- Takes a string and attempts to build a time out from the current based on the input (i.e. 5m 20 seconds will build an Date object that time in the future)
-local function parseTime(message)
-	assert(type(message)=='string', "Invalid argument to parseTime. String expected, got "..type(message))
-	local t = discordia.Date():toTableUTC()
-	for time,unit in message:gmatch('(%d+)%s*(%D+)') do
-		local u = unit:lower()
-		if u:startswith('d') then
-			t.day = t.day+time
-		elseif u:startswith('h') then
-			t.hour = t.hour+time
-		elseif u:startswith('m') then
-			t.min = t.min+time
-		elseif u:startswith('s') then
-			t.sec = t.sec+time
-		end
-	end
-	return discordia.Date.fromTableUTC(t)
-end
-
--- Takes a Date object and returns a new Time object representing the time between the given one and the current
-local function timeBetween(time)
-	return discordia.Time.fromSeconds(discordia.Date():toSeconds()-time:toSeconds())
-end
-
--- Takes a Date object and returns a new Time object representing the time between the given one and the current
-local function timeUntil(time)
-	return discordia.Time.fromSeconds(time:toSeconds()-discordia.Date():toSeconds())
-end
-
 -- Given a Lua date time table, create a string with the values and keys
 local function prettyTime(t)
 	local order = {days = "day", hours = "hour", minutes = "minute", seconds = "second"}
@@ -173,10 +139,6 @@ return function()
 	local functions = {
 		checkArgs = checkArgs,
 		humanReadableTime = humanReadableTime,
-		parseISOTime = parseISOTime,
-		parseTime = parseTime,
-		timeBetween = timeBetween,
-		timeUntil = timeUntil,
 		prettyTime = prettyTime,
 		pairsByKeys = pairsByKeys,
 		getIdFromString = getIdFromString,
