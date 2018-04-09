@@ -47,7 +47,7 @@ end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
 	local hex = args:match("#?([0-9a-fA-F]*)")
-	local ntc = require('./ntc')
+	local ntc = require('./res/ntc')
 	if #hex==6 then
 		local color,name = ntc.name(hex)
 		local image1, image2 = "http://www.colorhexa.com/"..hex:lower()..".png", "http://www.colorhexa.com/"..color:lower()..".png"
