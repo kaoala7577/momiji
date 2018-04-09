@@ -14,6 +14,9 @@ local client = discordia.Client({
 	logLevel = discordia.enums.logLevel.info,
 }) -- create client
 
+_G.errLog, _G.comLog, _G.guildLog = settings.logs.err, settings.logs.com, settings.logs.guild
+_G.bulkDeletes = {}
+
 local env = setmetatable({
 	require = require, --luvit custom require
 	discordia = discordia,

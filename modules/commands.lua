@@ -1,6 +1,7 @@
 local uv = require("uv")
 local pprint = require("pretty-print")
 local ffi = require("ffi")
+local fs = require('fs')
 local colors = require('./res/colors')
 local enums = discordia.enums
 local commands = {}
@@ -45,7 +46,6 @@ addCommand('Cat', 'Meow', 'cat', '', 0, false, false, false, function(message)
 end)
 
 addCommand('Color', 'Display the closest named color to a given hex value', {'color','colour'}, '<hexcolor>', 0, false, false, false, function(message,args)
-	local fs = require('fs')
 	local hex = args:match("#?([0-9a-fA-F]*)")
 	local ntc = require('./ntc')
 	if #hex==6 then
@@ -1630,6 +1630,11 @@ addCommand('Restart', 'Restart the bot', 'restart', '[true|false]', 4, false, fa
 	if args == 'true' then
 		os.exit()
 	end
+end)
+
+addCommand('Log', 'Upload the log as a txt file', 'log', '', 4, false, false, false, function(message)
+	local f = fs.readFileSync("log")
+	message:reply{file={"log.txt", f}}
 end)
 
 return commands
