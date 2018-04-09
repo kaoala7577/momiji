@@ -1,4 +1,7 @@
-[![Discord Bots](https://discordbots.org/api/widget/345316276098433025.svg)](https://discordbots.org/bot/345316276098433025)
+[![Discord Bots](https://discordbots.org/api/widget/status/345316276098433025.svg)](https://discordbots.org/bot/345316276098433025)
+[![Discord Bots](https://discordbots.org/api/widget/servers/345316276098433025.svg?noavatar=true)](https://discordbots.org/bot/345316276098433025)
+[![Discord Bots](https://discordbots.org/api/widget/owner/345316276098433025.svg?noavatar=true)](https://discordbots.org/bot/345316276098433025)
+[![Discord Bots](https://discordbots.org/api/widget/lib/345316276098433025.svg?noavatar=true)](https://discordbots.org/bot/345316276098433025)
 
 # Momiji, a general purpose bot for Discord
 
