@@ -96,31 +96,6 @@ local function formatMessageSimple(str, member)
 	return str
 end
 
--- Converts a string into an embed table
-local function formatMessageEmbed(str, member)
-	local embed = {}
-	for word in string.gmatch(str, "$[^$]*") do
-		local field, val = string.match(word, "$(%S+):(.*)")
-		if field=='title' then
-			embed['title'] = formatMessageSimple(val, member)
-		elseif field=='description' then
-			embed['description'] = formatMessageSimple(val, member)
-		elseif field=='thumbnail' then
-			if val:startswith('member') then
-				embed['thumbnail'] = {url=member.avatarURL}
-			elseif val=='guild' then
-				embed['thumbnail'] = {url=member.guild.iconURL}
-			end
-		elseif field=='color' then
-			local color = val:match("#([0-9a-fA-F]*)")
-			if #color==6 then
-				embed['color'] = discordia.Color.fromHex(color).value
-			end
-		end
-	end
-	return embed
-end
-
 -- Also black magic fuckery, but I vaguely understand how this works
 local function getSwitches(str)
     local t = {}
@@ -143,7 +118,6 @@ return function()
 		pairsByKeys = pairsByKeys,
 		getIdFromString = getIdFromString,
 		getFormatType = getFormatType,
-		formatMessageEmbed = formatMessageEmbed,
 		formatMessageSimple = formatMessageSimple,
 		getSwitches = getSwitches,
 	}

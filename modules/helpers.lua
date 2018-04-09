@@ -161,6 +161,31 @@ local function parseTime(message)
 	return discordia.Date.fromTableUTC(t)
 end
 
+-- Converts a string into an embed table
+local function formatMessageEmbed(str, member)
+	local embed = {}
+	for word in string.gmatch(str, "$[^$]*") do
+		local field, val = string.match(word, "$(%S+):(.*)")
+		if field=='title' then
+			embed['title'] = formatMessageSimple(val, member)
+		elseif field=='description' then
+			embed['description'] = formatMessageSimple(val, member)
+		elseif field=='thumbnail' then
+			if val:startswith('member') then
+				embed['thumbnail'] = {url=member.avatarURL}
+			elseif val=='guild' then
+				embed['thumbnail'] = {url=member.guild.iconURL}
+			end
+		elseif field=='color' then
+			local color = val:match("#([0-9a-fA-F]*)")
+			if #color==6 then
+				embed['color'] = discordia.Color.fromHex(color).value
+			end
+		end
+	end
+	return embed
+end
+
 -- Takes a Date object and returns a new Time object representing the time between the given one and the current
 local function timeBetween(time)
 	return discordia.Time.fromSeconds(discordia.Date():toSeconds()-time:toSeconds())
@@ -185,6 +210,7 @@ local t = {
 	parseTime = parseTime,
 	timeBetween = timeBetween,
 	timeUntil = timeUntil,
+	formatMessageEmbed = formatMessageEmbed,
 }
 
 -- Load this shit to global fam
