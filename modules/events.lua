@@ -190,7 +190,7 @@ local function memberUpdate(member)
 	set = logging.roleChange
 	if set and not set.disable or not set then
 		if users[member.id] and settings.audit and channel then
-			local oldRoles = users[member.id].roles
+			local oldRoles = users[member.id].roles or {}
 			local changedRoles, t = {}, ""
 			local longer = #oldRoles>#newRoles and oldRoles or newRoles
 			for _,v in ipairs(longer) do
