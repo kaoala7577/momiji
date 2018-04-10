@@ -364,7 +364,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	local rolesAdded = {}
 	for _,role in ipairs(rolesToAdd) do
-		local r = membr.guild.roles:find(function fn(r) return r.name == role end)
+		local r = membr.guild.roles:find(function(r) return r.name == role end)
 		if not member:hasRole(r) then
 			if member:addRole(r) then
 				rolesAdded[#rolesAdded+1] = role
@@ -409,7 +409,7 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	end
 	local roleList = ""
 	for _,role in ipairs(rolesToRemove) do
-		local r = member.guild.roles:find(function fn(r) return r.name == role end)
+		local r = member.guild.roles:find(function(r) return r.name == role end)
 		if member:removeRole(r) then
 			roleList = roleList..role.."\n"
 		end
@@ -1276,7 +1276,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 	end
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
-		if s~="logging" and s~="commands" s~="help" then
+		if s~="logging" and s~="commands" and s~="help" then
 			modules.database:update(message, "Settings", settings)
 		end
 	end

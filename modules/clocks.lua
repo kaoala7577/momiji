@@ -4,7 +4,7 @@ local clocks = {}
 function clocks.min(time)
 	--Color Change
 	--TODO: set up premium
-	local guilds = { transcend = client:getGuild('348660188951216129'), enbyfolk = client:getGuild('407926063281209344')}
+	local guilds = { transcend = client:getGuild(knownGuilds.TRANSCEND), enbyfolk = client:getGuild('407926063281209344')}
 	local roles = {
 		transcend = {
 			cooldown = '348873284265312267',
