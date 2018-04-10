@@ -127,7 +127,6 @@ local function memberLeave(member)
 	--kill their entry in the DB
 	local users = modules.database:get(member, "Users")
 	users[member.id] = nil
-	modules.database:update(member, "Users", users)
 	set = logging.memberKick
 	if set and not set.disable or not set then
 		--Wait a few seconds for the audit log to populate
