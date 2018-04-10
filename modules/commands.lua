@@ -329,8 +329,8 @@ addCommand('Remind Me', 'Make a reminder!', {'remindme', 'remind'}, '<reminder t
 	local t = timeUntil(parseTime(time))
 	local parsedTime, strTime = t:toSeconds(), prettyTime(t:toTable())
 	if reminder and time then
-		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
 		modules.timing:newTimer(message.guild,parsedTime,string.format('REMINDER||%s||%s||%s||%s',message.guild.id,message.author.id,strTime,reminder))
+		message.channel:sendf("Got it! I'll remind %s to %s in %s.",message.author.name,reminder,strTime)
 	else
 		message:reply("I was unable to process your input. Please check the syntax.")
 	end
@@ -364,9 +364,9 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	local rolesAdded = {}
 	for _,role in ipairs(rolesToAdd) do
-		function fn(r) return r.name == role end
-		if not member:hasRole(member.guild.roles:find(fn)) then
-			if member:addRole(member.guild.roles:find(fn)) then
+		local r = membr.guild.roles:find(function fn(r) return r.name == role end)
+		if not member:hasRole(r) then
+			if member:addRole(r) then
 				rolesAdded[#rolesAdded+1] = role
 			end
 		else rolesFailed[#rolesFailed+1] = "You already have "..role end
@@ -409,8 +409,8 @@ addCommand('Remove Self Role', 'Remove role(s) from the self role list from your
 	end
 	local roleList = ""
 	for _,role in ipairs(rolesToRemove) do
-		function fn(r) return r.name == role end
-		if member:removeRole(member.guild.roles:find(fn)) then
+		local r = member.guild.roles:find(function fn(r) return r.name == role end)
+		if member:removeRole(r) then
 			roleList = roleList..role.."\n"
 		end
 	end
@@ -432,6 +432,7 @@ end)
 addCommand('List Self Roles', 'List all roles in the self role list', 'roles', '[category]', 0, false, false, true, function(message, args)
 	local roleList, cats = {},{}
 	local selfRoles = modules.database:get(message, "Roles")
+	if next(selfRoles)==nil then return message:reply("Role list is empty!") end
 	if args~="" then
 		local found = false
 		for k,v in pairs(selfRoles) do
@@ -588,7 +589,7 @@ addCommand('Server Info', "Get information on the server", {'serverinfo','si', '
 		{name = 'Name', value = guild.name, inline = true},
 		{name = 'Owner', value = guild.owner.mentionString, inline = true},
 		{name = 'Region', value = guild.region, inline = true},
-		{name = 'Channels ['..#guild.textChannels+#guild.voiceChannels..']', value = "Text: "..#guild.textChannels.."\nVoice: "..#guild.voiceChannels, inline = true},
+		{name = 'Channels ['..#guild.textChannels+#guild.voiceChannels+#guild.categories..']', value = "Text: "..#guild.textChannels.."\nVoice: "..#guild.voiceChannels.."\nCategories: "..#guild.categories, inline = true},
 		{name = 'Members ['..online.."/"..#guild.members..']', value = "Humans: "..humans.."\nBots: "..bots, inline = true},
 		{name = 'Roles', value = #guild.roles, inline = true},
 		{name = 'Emojis', value = #guild.emojis, inline = true},
@@ -660,7 +661,7 @@ addCommand('User Info', "Get information on a user", {'userinfo','ui', 'uinfo'},
 			{name = 'Joined', value = joinTime, inline = false},
 			{name = 'Created', value = createTime, inline = false},
 		}
-		if message.guild.id=='348660188951216129' or message.guild.id=='407926063281209344' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
+		if message.guild.id==knownGuilds.TRANSCEND or message.guild.id=='407926063281209344' then table.insert(fields, {name = 'Registered', value = registerTime, inline = false}) end
 		table.insert(fields, {name = 'Extras', value = "[Fullsize Avatar]("..member.avatarURL..")", inline = false})
 		table.insert(fields, {name = 'Roles ('..#member.roles..')', value = roles, inline = false})
 		message.channel:send {
@@ -793,8 +794,8 @@ addCommand('Mute', 'Mutes a user', 'mute', '<@user|userID> [/t time] [/r reason]
 				},
 			}}
 		end
+		modules.database:update(message, "Cases", cases)
 	end
-	modules.database:update(message, "Cases", cases)
 end)
 
 addCommand('Unmute', 'Unmutes a user', 'unmute', '<@user|userID>', 1, false, false, true, function(message, args)
@@ -844,6 +845,7 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 			end
 			message.channel:sendf("Added note `%s` to %s", args, m.name)
 		end
+		modules.database:update(message, "Notes", notes)
 	elseif args:startswith("del") then
 		args = tonumber(args:gsub("^del",""):trim())
 		if args and args ~= "" then
@@ -852,6 +854,7 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 				table.remove(notes[m.id], args)
 			end
 		end
+		modules.database:update(message, "Notes", notes)
 	elseif args:startswith("view") then
 		local notelist = ""
 		if notes[m.id] then
@@ -866,12 +869,11 @@ addCommand('Notes', 'Add the note to, delete a note from, or view all notes for 
 	else
 		message:reply("Please specify add, del, or view")
 	end
-	modules.database:update(message, "Notes", notes)
 end)
 
 -- This command is completely restricted to my guild and one other that I allow it on. It will not run for anyone else
 addCommand('Register', 'Register a given user with the listed roles', {'reg', 'register'}, '<@user|userID> <role[, role, ...]>', 1, false, false, true, function(message, args)
-	if message.guild.id~="348660188951216129" and message.guild.id~='407926063281209344' then message:reply("This command is not available in this guild");return end
+	if message.guild.id~=knownGuilds.TRANSCEND and message.guild.id~='407926063281209344' then message:reply("This command is not available in this guild");return end
 	local users, settings, roles = modules.database:get(message, "Users"), modules.database:get(message, "Settings"), modules.database:get(message, "Roles")
 	local channel = message.guild:getChannel(settings.modlog_channel)
 	local member = resolveMember(message.guild, args)
@@ -905,7 +907,7 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 					roleList = roleList..role.."\n"
 				end
 			end
-			if message.guild.id == "348660188951216129" then
+			if message.guild.id==knownGuilds.TRANSCEND then
 				member:addRole('348873284265312267')
 			elseif message.guild.id == '407926063281209344' then
 				member:addRole('409109782612672513')
@@ -1037,6 +1039,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			users[member.id] = {watchlisted = true}
 		end
 		message.channel:sendf("Added %s to the watchlist",member.mentionString)
+		modules.database:update(message, "Users", users)
 	elseif args[1] == 'remove' then
 		local oldS = false
 		if member and users[member.id] then
@@ -1050,6 +1053,7 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 		else
 			message.channel:sendf("%s was not on the watchlist",member.mentionString)
 		end
+		modules.database:update(message, "Users", users)
 	elseif args[1] == 'list' then
 		local list, mention = ""
 		for id,v in pairs(users) do
@@ -1065,7 +1069,6 @@ addCommand('Watchlist', "Add/remove someone from the watchlist or view everyone 
 			}}
 		end
 	end
-	modules.database:update(message, "Users", users)
 end)
 
 --[[ Rank 2 Commands ]]
@@ -1173,16 +1176,16 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 	elseif s=='help' then
 		local fields,roles,chans = {
 			{name="prefix", value="Usage: config prefix /v <newPrefix>"},
-			{name="autorole", value="Operations:\n\tenable\n\tdisable\n\tadd <role>\n\tremove <role>"},
+			{name="autorole", value="Operations:\n\tenable\n\tdisable\n\tadd </v role>\n\tremove </v role>"},
 		},"",""
 		for _,v in pairs(switches.roles) do
 			if roles == "" then roles=v else roles=roles..", "..v end
 		end
-		table.insert(fields, {name = roles, value = "Operations:\n\tadd <role>\n\tremove <role>"})
+		table.insert(fields, {name = roles, value = "Operations:\n\tadd </v role>\n\tremove </v role>"})
 		for _,v in pairs(switches.channels) do
 			if chans == "" then chans=v else chans=chans..", "..v end
 		end
-		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset <channel>\n\tmessage <message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name"})
+		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset </v channel>\n\theshold </v value>\n\tmessage </v message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name.\nThe threshold option only works for audit and specific the levenshtein distance required in a message edit for the message to log."})
 		message:reply{embed={
 			fields = fields,
 		}}
@@ -1273,7 +1276,9 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 	end
 	if operation then
 		message.channel:sendf("**Operation:** %s\n%s%s", operation, section and "**Section:** "..section.."\n" or "",value and "**Value:** "..value or "")
-		modules.database:update(message, "Settings", settings)
+		if s~="logging" and s~="commands" s~="help" then
+			modules.database:update(message, "Settings", settings)
+		end
 	end
 end)
 
@@ -1296,10 +1301,10 @@ addCommand('Hackban', 'Ban a user by ID before they even join', {'hackban', 'hb'
 			table.remove(hackbans, found)
 		end
 		message.channel:sendf("%s the hackban list. %s", found and "Removed ID "..id.." from" or "Added ID "..id.." to", not found and "If someone joins with this ID, they will be banned with reason \"Hackban.\"" or "")
+		modules.database:update(message, "Hackbans", hackbans)
 	else
 		message:reply("Unable to resolve ID from input.")
 	end
-	modules.database:update(message, "Hackbans", hackbans)
 end)
 
 addCommand('Ignore', 'Ignores the given channel', 'ignore', '<channelID|link>', 2, false, false, true, function(message, args)
@@ -1364,10 +1369,10 @@ addCommand('Make Role', 'Make a role for the rolelist', {'makerole','mr'}, 'role
 		else
 			message:reply("Added "..r.name.." to "..cat.." with aliases "..table.concat(aliases,', '))
 		end
+		modules.database:update(message, "Roles", roles)
 	else
 		message:reply(args.rest.." is not a role. Please make it first.")
 	end
-	modules.database:update(message, "Roles", roles)
 end)
 
 addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '<roleName>', 2, false, false, true, function(message, args)
@@ -1382,8 +1387,12 @@ addCommand('Delete Role', 'Remove a role from the rolelist', {'delrole','dr'}, '
 			roles[cat]=nil
 		end
 	end
-	if removed then message.channel:sendf("Removed %s from the rolelist", args) else message:reply("I couldn't find that role.") end
-	modules.database:update(message, "Roles", roles)
+	if removed then
+		message.channel:sendf("Removed %s from the rolelist", args)
+		modules.database:update(message, "Roles", roles)
+	else
+		message:reply("I couldn't find that role.")
+	end
 end)
 
 addCommand('Prune', 'Bulk deletes messages', 'prune', '<count> [filter]', 2, false, false, true, function(message, args)

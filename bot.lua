@@ -14,6 +14,13 @@ local client = discordia.Client({
 	logLevel = discordia.enums.logLevel.info,
 }) -- create client
 
+_G.knownGuilds = {
+	TRANSCEND = "348660188951216129",
+	SUPPORT = "373561057639268352",
+	DAPI = "81384788765712384",
+	DBOTS = "264445053596991498",
+	PWBOTS = "110373943822540800",
+}
 _G.errLog, _G.comLog, _G.guildLog = settings.logs.err, settings.logs.com, settings.logs.guild
 _G.bulkDeletes = {}
 
