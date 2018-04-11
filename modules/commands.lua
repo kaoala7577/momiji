@@ -364,7 +364,7 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	end
 	local rolesAdded = {}
 	for _,role in ipairs(rolesToAdd) do
-		local r = membr.guild.roles:find(function(r) return r.name == role end)
+		local r = member.guild.roles:find(function(r) return r.name == role end)
 		if not member:hasRole(r) then
 			if member:addRole(r) then
 				rolesAdded[#rolesAdded+1] = role
