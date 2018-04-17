@@ -35,12 +35,13 @@ local function dispatcher(name, ...)
 		client:error("<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
 		return
 	end
+	local args = {...}
 	local ret, err = pcall(modules.events[name], ...)
 	if not ret then
 		if errLog then
 			client:getChannel(errLog):send {embed = {
 				description = err,
-				footer = {text="DISPATCHER: "..name},
+				footer = {text="DISPATCHER: "..name.." "..tostring(args[1])},
 				timestamp = discordia.Date():toISO(),
 				color = discordia.Color.fromRGB(255, 0 ,0).value,
 			}}
