@@ -433,16 +433,14 @@ local function messageUpdate(message)
 			local channel = client:getChannel(settings['audit_channel'])
 			if not channel then return end
 			local oldContent = message.oldContent[message.editedTimestamp]
-			if oldContent then
-				if string.levenshtein(oldContent, message.content)>=(tonumber(settings['audit_threshold']) or 0) then
-					channel:send {embed={
-						title = "Message Edited",
-						description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**\n%s\n**New Content**\n%s", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
-						color = colors.blue.value,
-						timestamp = discordia.Date():toISO(),
-						footer = {text = "ID: "..message.id}
-					}}
-				end
+			if string.levenshtein(oldContent, message.content)>=(tonumber(settings['audit_threshold']) or 0) then
+				channel:send {embed={
+					title = "Message Edited",
+					description = string.format("**Author:** %s (%s)\n**Channel:** %s (%s)\n**Old Content**\n%s\n**New Content**\n%s", message.author.fullname, message.author.id, message.channel.name, message.channel.id, oldContent, message.content),
+					color = colors.blue.value,
+					timestamp = discordia.Date():toISO(),
+					footer = {text = "ID: "..message.id}
+				}}
 			end
 		end
 	end
