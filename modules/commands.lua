@@ -20,10 +20,9 @@ end
 
 addCommand('Bot Info', 'Info on the bot', {'binfo','botinfo','bi'}, '', 0, false, false, false, function(message)
 	message:reply{embed={
-		author = {name=client.user.name, icon_url=client.user.avatarURL},
 		thumbnail = {url=client.user.avatarURL},
 		timestamp = discordia.Date():toISO(),
-		description = "I'm a general purpose bot created in the [Lua](http://www.lua.org/) scripting language using the [Discordia](https://github.com/SinisterRectus/Discordia) framework.",
+		description = "Hi! I'm Momiji, a general purpose bot created in the [Lua](http://www.lua.org/) scripting language using the [Discordia](https://github.com/SinisterRectus/Discordia) library. If you would like a list of my commands, use the `help` command, you can specify a command after help for a more detailed description.",
 		fields = {
 			{name="Guilds",value=#client.guilds,inline=true},
 			{name="Shards",value=client.shardCount,inline=true},
@@ -1075,7 +1074,6 @@ end)
 
 addCommand('Config', 'Update configuration for the current guild', 'config', 'section </o operation> [/v value]', 2, false, true, true, function(message, args)
 	local settings = modules.database:get(message, "Settings")
-	p(settings)
 	local switches = {
 		roles = {'admin', 'mod'},
 		channels = {'audit', 'modlog', 'welcome', 'introduction'},

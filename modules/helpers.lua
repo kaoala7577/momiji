@@ -31,6 +31,7 @@ end
 -- Used to wrap and post errors in all events
 local function dispatcher(name, ...)
 	local b,e,n,g = checkArgs({'string'}, {name})
+	local args = {...}
 	if not b then
 		client:error("<DISPATCHER> Unable to load %s (Expected: %s, Number: %s, Got: %s)", name,e,n,g)
 		return
@@ -40,7 +41,7 @@ local function dispatcher(name, ...)
 		if errLog then
 			client:getChannel(errLog):send {embed = {
 				description = err,
-				footer = {text="DISPATCHER: "..name},
+				footer = {text="DISPATCHER: "..name.." "..tostring(args[1])},
 				timestamp = discordia.Date():toISO(),
 				color = discordia.Color.fromRGB(255, 0 ,0).value,
 			}}
