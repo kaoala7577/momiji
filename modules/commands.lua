@@ -341,9 +341,9 @@ addCommand('Add Self Role', 'Add role(s) to yourself from the self role list', {
 	if not selfRoles then return end
 	local roles = args
 	local rolesToAdd, rolesFailed = {}, {}
-	for k,l in pairs(selfRoles) do
-		for r,a in pairs(l) do
-			for _,role in ipairs(roles) do
+	for _,role in ipairs(roles) do
+		for k,l in pairs(selfRoles) do
+			for r,a in pairs(l) do
 				if string.lower(role) == string.lower(r)  or (table.search(a, string.lower(role))) then
 					--This section is only relevant to my guild unless you somehow got a role with the same snowflake
 					if member:hasRole(member.guild:getRole('348873284265312267')) and (k == 'Opt-In Roles') then
@@ -880,9 +880,9 @@ addCommand('Register', 'Register a given user with the listed roles', {'reg', 'r
 		args = args:gsub("<@!?%d+>",""):gsub(member.id,""):trim()
 		args = string.split(args, ",")
 		local rolesToAdd = {}
-		for k,l in pairs(roles) do
-			for r,a in pairs(l) do
-				for _,role in ipairs(args) do
+		for _,role in ipairs(args) do
+			for k,l in pairs(roles) do
+				for r,a in pairs(l) do
 					role=role:trim()
 					if string.lower(role) == string.lower(r) or table.search(a, string.lower(role)) then
 						if r=='Gamer' or r=='18+' or k== 'Mafia' or k~='Opt-In Roles' then
@@ -1589,7 +1589,7 @@ addCommand('Lua', "Execute arbitrary lua code", "lua", '<code>', 4, false, false
 		elseif #ret > 0 then
 			message:reply{
 				content = ret,
-				code = s and true or "lua"
+				code = "lua"
 			}
 		end
 	else
