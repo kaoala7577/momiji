@@ -1183,7 +1183,7 @@ addCommand('Config', 'Update configuration for the current guild', 'config', 'se
 		for _,v in pairs(switches.channels) do
 			if chans == "" then chans=v else chans=chans..", "..v end
 		end
-		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset </v channel>\n\theshold </v value>\n\tmessage </v message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name.\nThe threshold option only works for audit and specific the levenshtein distance required in a message edit for the message to log."})
+		table.insert(fields, {name = chans, value = "Operations:\n\tenable\n\tdisable\n\tset </v channel>\n\tthreshold </v value>\n\tmessage </v message>\n\n**Notes:** message only works for welcome and introduction.\n{user} is replaced with the member's mention\n{guild} is replace with the guild name.\nThe threshold option only works for audit and specifies the levenshtein distance required in a message edit for the message to log."})
 		message:reply{embed={
 			fields = fields,
 		}}
