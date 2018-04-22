@@ -1,5 +1,3 @@
---[[ Several functions adapted from DannehSC/Electricity-2.0 ]]
-
 -- Traverses a table and returns an iterator sorted by keys
 local function pairsByKeys (t, f)
 	local a = {}
@@ -41,8 +39,8 @@ end
 
 -- This is shit, please fix
 local function humanReadableTime(table)
-	days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
-	months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+	local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+	local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 	if #tostring(table.min) == 1 then table.min = "0"..table.min end
 	if #tostring(table.hour) == 1 then table.hour = "0"..table.hour end
 	return days[table.wday]..", "..months[table.month].." "..table.day..", "..table.year.." at "..table.hour..":"..table.min or table
@@ -99,7 +97,7 @@ end
 -- Also black magic fuckery, but I vaguely understand how this works
 local function getSwitches(str)
     local t = {}
-	str = str:gsub("\\/", "—")
+	str = str:gsub("\\/", "—") --Use a better method to escape than substitution you dumb cunt
 	t.rest = str:match("^([^/]*)/?"):trim()
     for switch, arg in str:gmatch("/%s*(%S*)%s*([^/]*)") do
         t[switch]=arg:trim()
@@ -125,4 +123,5 @@ return function()
 	for k,v in pairs(functions) do
 		_G[k] = v
 	end
+	return functions
 end
