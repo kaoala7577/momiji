@@ -621,6 +621,7 @@ addCommand('Urban', 'Search for a term on Urban Dictionary', {'urban', 'ud'}, '<
 				{name = "Thumbs down", value = data.list[1].thumbs_down or "0", inline=true},
 				{name = "Definition", value = #data.list[1].definition<1000 and data.list[1].definition or string.sub(data.list[1].definition,1,1000).."..."},
 				{name = "Example", value = data.list[1].example~='' and data.list[1].example or "No examples"},
+				{name = "Tags", value = data.list[1].tags~='' and data.list[1].tags or "No tags"},
 			}
 			t.color = colors.blue.value
 		else
